@@ -48,7 +48,7 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 ### Way Yan
 
-<img src="images/wyan.png" width="200px">
+<img src="images/greysome.png" width="200px">
 
 [[homepage](https://wyan.win)]
 [[github](http://github.com/greysome)]
