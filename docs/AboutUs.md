@@ -47,6 +47,15 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 * Role: Developer
 * Responsibilities: Dev Ops + Threading
 
+### Wee Yen Zhe
+
+<img src="images/randomwish.png" width="200px">
+
+[[github](https://github.com/randomwish/)]
+
+* Role: Developer
+* Responsibilities: UI
+
 ### Way Yan
 
 <img src="images/wyan.png" width="200px">
