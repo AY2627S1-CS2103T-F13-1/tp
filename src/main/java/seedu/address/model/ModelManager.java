@@ -6,11 +6,13 @@ import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.person.Person;
+import seedu.address.model.student.Student;
 
 /**
  * Represents the in-memory model of the address book data.
@@ -21,6 +23,8 @@ public class ModelManager implements Model {
     private final AddressBook addressBook;
     private final UserPrefs userPrefs;
     private final FilteredList<Person> filteredPersons;
+    private final FilteredList<Student> filteredStudents;
+    private final ObservableList<Student> readOnlyFilteredStudents;
 
     /**
      * Initializes a ModelManager with the given addressBook and userPrefs.
@@ -33,6 +37,8 @@ public class ModelManager implements Model {
         this.addressBook = new AddressBook(addressBook);
         this.userPrefs = new UserPrefs(userPrefs);
         filteredPersons = new FilteredList<>(this.addressBook.getPersonList());
+        filteredStudents = new FilteredList<>(this.addressBook.getStudentList());
+        readOnlyFilteredStudents = FXCollections.unmodifiableObservableList(filteredStudents);
     }
 
     public ModelManager() {
@@ -93,6 +99,32 @@ public class ModelManager implements Model {
         addressBook.setPerson(target, editedPerson);
     }
 
+    @Override
+    public boolean hasStudent(Student student) {
+        return addressBook.hasStudent(student);
+    }
+
+    @Override
+    public void addStudent(Student student) {
+        addressBook.addStudent(student);
+        updateFilteredStudentList(PREDICATE_SHOW_ALL_STUDENTS);
+    }
+
+    @Override
+    public void deleteStudent(Student student) {
+        addressBook.removeStudent(student);
+    }
+
+    @Override
+    public ObservableList<Student> getFilteredStudentList() {
+        return readOnlyFilteredStudents;
+    }
+
+    @Override
+    public void updateFilteredStudentList(Predicate<Student> predicate) {
+        filteredStudents.setPredicate(requireNonNull(predicate));
+    }
+
     //=========== Filtered Person List Accessors =============================================================
 
     /**
@@ -123,7 +155,8 @@ public class ModelManager implements Model {
 
         return addressBook.equals(otherModelManager.addressBook)
                 && userPrefs.equals(otherModelManager.userPrefs)
-                && filteredPersons.equals(otherModelManager.filteredPersons);
+                && filteredPersons.equals(otherModelManager.filteredPersons)
+                && filteredStudents.equals(otherModelManager.filteredStudents);
     }
 
 }

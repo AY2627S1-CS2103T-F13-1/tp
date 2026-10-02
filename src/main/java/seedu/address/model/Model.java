@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.model.person.Person;
+import seedu.address.model.student.Student;
 
 /**
  * The API of the Model component.
@@ -12,6 +13,24 @@ import seedu.address.model.person.Person;
 public interface Model {
     /** {@code Predicate} that always evaluates to true */
     Predicate<Person> PREDICATE_SHOW_ALL_PERSONS = unused -> true;
+
+    /** Predicate that shows all students. */
+    Predicate<Student> PREDICATE_SHOW_ALL_STUDENTS = unused -> true;
+
+    /** Returns whether a duplicate student already exists. */
+    boolean hasStudent(Student student);
+
+    /** Adds a student and clears the student filter. Rejects duplicates. */
+    void addStudent(Student student);
+
+    /** Deletes an existing student, preserving the student filter. */
+    void deleteStudent(Student student);
+
+    /** Returns an unmodifiable observable view for student commands and the UI. */
+    ObservableList<Student> getFilteredStudentList();
+
+    /** Replaces the student filter. The predicate must not be null. */
+    void updateFilteredStudentList(Predicate<Student> predicate);
 
     /**
      * Returns the user prefs.
