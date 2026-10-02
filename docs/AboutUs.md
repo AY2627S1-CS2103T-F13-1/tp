@@ -25,7 +25,7 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 [[github](http://github.com/keejuanfoo)]]
 
-* Role: Developer
+* Role: Product Manager
 * Responsibilities: Data + Testing
 
 ### Ling Si Han
