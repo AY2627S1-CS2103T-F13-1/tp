@@ -22,6 +22,7 @@ import seedu.address.model.Model;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.ReadOnlyUserPrefs;
 import seedu.address.model.person.Person;
+import seedu.address.model.student.Student;
 import seedu.address.testutil.PersonBuilder;
 
 public class AddCommandTest {
@@ -87,6 +88,31 @@ public class AddCommandTest {
      * A default model stub that has all of the methods failing.
      */
     private class ModelStub implements Model {
+        @Override
+        public boolean hasStudent(Student student) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public void addStudent(Student student) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public void deleteStudent(Student student) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public ObservableList<Student> getFilteredStudentList() {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public void updateFilteredStudentList(Predicate<Student> predicate) {
+            throw new AssertionError("This method should not be called.");
+        }
+
         @Override
         public ReadOnlyUserPrefs getUserPrefs() {
             throw new AssertionError("This method should not be called.");
