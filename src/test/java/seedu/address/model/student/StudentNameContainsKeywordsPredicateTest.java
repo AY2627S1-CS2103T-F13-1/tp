@@ -40,6 +40,13 @@ public class StudentNameContainsKeywordsPredicateTest {
 
         // same keywords searched as guardian names instead of student names -> returns false
         assertFalse(firstPredicate.equals(new StudentNameContainsKeywordsPredicate(List.of(), List.of("first"))));
+
+        // different guardian name keywords -> returns false
+        assertFalse(new StudentNameContainsKeywordsPredicate(List.of("first"), List.of("Tan"))
+                .equals(new StudentNameContainsKeywordsPredicate(List.of("first"), List.of("Lim"))));
+
+        // extra guardian name keywords -> returns false
+        assertFalse(firstPredicate.equals(new StudentNameContainsKeywordsPredicate(List.of("first"), List.of("Tan"))));
     }
 
     @Test
@@ -52,6 +59,27 @@ public class StudentNameContainsKeywordsPredicateTest {
 
         // Mixed-case keyword
         assertTrue(new StudentNameContainsKeywordsPredicate(List.of("aIDEN"), List.of()).test(aiden));
+
+        // Multiple keywords, all matching
+        assertTrue(new StudentNameContainsKeywordsPredicate(List.of("Aiden", "Tan"), List.of()).test(aiden));
+
+        // Keywords in a different order from the name
+        assertTrue(new StudentNameContainsKeywordsPredicate(List.of("Tan", "Aiden"), List.of()).test(aiden));
+
+        // Repeated keyword
+        assertTrue(new StudentNameContainsKeywordsPredicate(List.of("Aiden", "Aiden"), List.of()).test(aiden));
+
+        // Upper-case name
+        Student upperCase = new Student(new Name("AIDEN TAN"), new Phone("91234567"), null);
+        assertTrue(new StudentNameContainsKeywordsPredicate(List.of("aiden"), List.of()).test(upperCase));
+
+        // Name with repeated spaces between words
+        Student extraSpaces = new Student(new Name("Aiden   Tan"), new Phone("91234567"), null);
+        assertTrue(new StudentNameContainsKeywordsPredicate(List.of("Tan"), List.of()).test(extraSpaces));
+
+        // Numeric word in name
+        Student withNumber = new Student(new Name("Aiden Tan 2"), new Phone("91234567"), null);
+        assertTrue(new StudentNameContainsKeywordsPredicate(List.of("2"), List.of()).test(withNumber));
     }
 
     @Test
@@ -61,6 +89,15 @@ public class StudentNameContainsKeywordsPredicateTest {
 
         // Partial word
         assertFalse(new StudentNameContainsKeywordsPredicate(List.of("Aid"), List.of()).test(aiden));
+
+        // Keyword longer than a word in the name
+        assertFalse(new StudentNameContainsKeywordsPredicate(List.of("Aidens"), List.of()).test(aiden));
+
+        // Keyword joining two words of the name
+        assertFalse(new StudentNameContainsKeywordsPredicate(List.of("AidenTan"), List.of()).test(aiden));
+
+        // Multiple non-matching keywords
+        assertFalse(new StudentNameContainsKeywordsPredicate(List.of("Chloe", "Lim", "Joel"), List.of()).test(aiden));
 
         // Keyword matches only the guardian's name
         assertFalse(new StudentNameContainsKeywordsPredicate(List.of("Ling"), List.of()).test(aiden));
@@ -79,6 +116,13 @@ public class StudentNameContainsKeywordsPredicateTest {
 
         // Mixed-case keyword
         assertTrue(new StudentNameContainsKeywordsPredicate(List.of(), List.of("mEI")).test(aiden));
+
+        // Keyword matches the guardian's surname, which the student shares
+        assertTrue(new StudentNameContainsKeywordsPredicate(List.of(), List.of("Tan")).test(aiden));
+
+        // Student without a phone number, reachable only through the guardian
+        assertTrue(aiden.getPhone().isEmpty());
+        assertTrue(new StudentNameContainsKeywordsPredicate(List.of(), List.of("Tan", "Mei", "Ling")).test(aiden));
     }
 
     @Test
@@ -88,6 +132,9 @@ public class StudentNameContainsKeywordsPredicateTest {
 
         // Partial word
         assertFalse(new StudentNameContainsKeywordsPredicate(List.of(), List.of("Lin")).test(aiden));
+
+        // Keyword joining two words of the guardian's name
+        assertFalse(new StudentNameContainsKeywordsPredicate(List.of(), List.of("MeiLing")).test(aiden));
 
         // Keyword matches only the student's own name
         assertFalse(new StudentNameContainsKeywordsPredicate(List.of(), List.of("Aiden")).test(aiden));
@@ -111,6 +158,16 @@ public class StudentNameContainsKeywordsPredicateTest {
 
         // Student name matches, but the student has no guardian
         assertFalse(new StudentNameContainsKeywordsPredicate(List.of("Ryan"), List.of("Lim")).test(ryan));
+    }
+
+    @Test
+    public void test_sameStudentTestedRepeatedly_sameResult() {
+        StudentNameContainsKeywordsPredicate predicate =
+                new StudentNameContainsKeywordsPredicate(List.of("Aiden"), List.of("Ling"));
+        assertTrue(predicate.test(aiden));
+        assertTrue(predicate.test(aiden));
+        assertFalse(predicate.test(ryan));
+        assertFalse(predicate.test(ryan));
     }
 
     @Test

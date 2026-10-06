@@ -33,6 +33,19 @@ public class FindStudentCommandParserTest {
     @Test
     public void parse_nonEmptyPreamble_throwsParseException() {
         assertParseFailure(parser, " Aiden n/Tan", MESSAGE_INVALID_FORMAT);
+        assertParseFailure(parser, " 1 gn/Tan", MESSAGE_INVALID_FORMAT);
+    }
+
+    @Test
+    public void parse_upperCasePrefix_throwsParseException() {
+        // prefixes are case-sensitive, so these are read as preamble text
+        assertParseFailure(parser, " N/Aiden", MESSAGE_INVALID_FORMAT);
+        assertParseFailure(parser, " GN/Tan", MESSAGE_INVALID_FORMAT);
+    }
+
+    @Test
+    public void parse_unrelatedPrefixOnly_throwsParseException() {
+        assertParseFailure(parser, " p/91234567", MESSAGE_INVALID_FORMAT);
     }
 
     @Test
@@ -41,6 +54,7 @@ public class FindStudentCommandParserTest {
         assertParseFailure(parser, " gn/  ", FindStudentCommandParser.MESSAGE_EMPTY_KEYWORDS);
         assertParseFailure(parser, " n/Aiden gn/", FindStudentCommandParser.MESSAGE_EMPTY_KEYWORDS);
         assertParseFailure(parser, " n/ gn/Tan", FindStudentCommandParser.MESSAGE_EMPTY_KEYWORDS);
+        assertParseFailure(parser, " n/ \t\n gn/ ", FindStudentCommandParser.MESSAGE_EMPTY_KEYWORDS);
     }
 
     @Test
@@ -61,10 +75,33 @@ public class FindStudentCommandParserTest {
     }
 
     @Test
+    public void parse_singleKeyword_returnsFindStudentCommand() {
+        assertParseSuccess(parser, " n/Aiden",
+                new FindStudentCommand(new StudentNameContainsKeywordsPredicate(List.of("Aiden"), List.of())));
+        assertParseSuccess(parser, " gn/Tan",
+                new FindStudentCommand(new StudentNameContainsKeywordsPredicate(List.of(), List.of("Tan"))));
+    }
+
+    @Test
+    public void parse_mixedCaseKeywords_keywordsKeptAsTyped() {
+        assertParseSuccess(parser, " n/aIDEN gn/tAN", new FindStudentCommand(
+                new StudentNameContainsKeywordsPredicate(List.of("aIDEN"), List.of("tAN"))));
+    }
+
+    @Test
+    public void parse_numericKeyword_returnsFindStudentCommand() {
+        assertParseSuccess(parser, " n/Aiden 2",
+                new FindStudentCommand(new StudentNameContainsKeywordsPredicate(List.of("Aiden", "2"), List.of())));
+    }
+
+    @Test
     public void parse_guardianNameKeywords_returnsFindStudentCommand() {
         FindStudentCommand expectedCommand = new FindStudentCommand(
                 new StudentNameContainsKeywordsPredicate(List.of(), List.of("Tan", "Lim")));
         assertParseSuccess(parser, " gn/Tan Lim", expectedCommand);
+
+        // multiple whitespaces between keywords
+        assertParseSuccess(parser, " \t gn/  Tan \n Lim ", expectedCommand);
     }
 
     @Test

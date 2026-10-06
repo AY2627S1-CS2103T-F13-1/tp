@@ -1,7 +1,9 @@
 package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
+import static seedu.address.logic.Messages.MESSAGE_STUDENTS_LISTED_OVERVIEW;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.logic.commands.CommandTestUtil.ADDRESS_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.EMAIL_DESC_AMY;
@@ -13,6 +15,7 @@ import static seedu.address.testutil.TypicalPersons.AMY;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,14 +23,21 @@ import org.junit.jupiter.api.io.TempDir;
 
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.CommandResult;
+import seedu.address.logic.commands.FindStudentCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
+import seedu.address.logic.parser.FindStudentCommandParser;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.Phone;
+import seedu.address.model.student.Guardian;
+import seedu.address.model.student.Student;
+import seedu.address.model.student.StudentNameContainsKeywordsPredicate;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
 import seedu.address.storage.StorageManager;
@@ -68,6 +78,36 @@ public class LogicManagerTest {
     public void execute_validCommand_success() throws Exception {
         String listCommand = ListCommand.COMMAND_WORD;
         assertCommandSuccess(listCommand, ListCommand.MESSAGE_SUCCESS, model);
+    }
+
+    @Test
+    public void execute_findStudent_filtersStudentList() throws Exception {
+        Student aiden = new Student(new Name("Aiden Tan"), null,
+                new Guardian(new Name("Tan Mei Ling"), new Phone("91234567")));
+        Student ryan = new Student(new Name("Ryan Lim"), new Phone("93210283"), null);
+        model.addStudent(aiden);
+        model.addStudent(ryan);
+
+        Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
+        expectedModel.updateFilteredStudentList(
+                new StudentNameContainsKeywordsPredicate(List.of("ryan"), List.of()));
+        assertCommandSuccess(FindStudentCommand.COMMAND_WORD + " n/ryan",
+                String.format(MESSAGE_STUDENTS_LISTED_OVERVIEW, 1), expectedModel);
+        assertEquals(List.of(ryan), logic.getFilteredStudentList());
+
+        expectedModel.updateFilteredStudentList(
+                new StudentNameContainsKeywordsPredicate(List.of(), List.of("ling")));
+        assertCommandSuccess(FindStudentCommand.COMMAND_WORD + " gn/ling",
+                String.format(MESSAGE_STUDENTS_LISTED_OVERVIEW, 1), expectedModel);
+        assertEquals(List.of(aiden), logic.getFilteredStudentList());
+    }
+
+    @Test
+    public void execute_findStudentInvalidInput_throwsParseException() {
+        assertParseException(FindStudentCommand.COMMAND_WORD,
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindStudentCommand.MESSAGE_USAGE));
+        assertParseException(FindStudentCommand.COMMAND_WORD + " n/",
+                FindStudentCommandParser.MESSAGE_EMPTY_KEYWORDS);
     }
 
     @Test

@@ -83,6 +83,22 @@ public class AddressBookParserTest {
                 FindStudentCommand.COMMAND_WORD + " n/Aiden Chloe gn/Tan");
         assertEquals(new FindStudentCommand(
                 new StudentNameContainsKeywordsPredicate(List.of("Aiden", "Chloe"), List.of("Tan"))), command);
+
+        command = (FindStudentCommand) parser.parseCommand(FindStudentCommand.COMMAND_WORD + " gn/Tan");
+        assertEquals(new FindStudentCommand(new StudentNameContainsKeywordsPredicate(List.of(), List.of("Tan"))),
+                command);
+    }
+
+    @Test
+    public void parseCommand_findStudentWithoutKeywords_throwsParseException() {
+        assertThrows(ParseException.class,
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindStudentCommand.MESSAGE_USAGE), () ->
+                        parser.parseCommand(FindStudentCommand.COMMAND_WORD));
+    }
+
+    @Test
+    public void parseCommand_findStudentWrongCase_throwsParseException() {
+        assertThrows(ParseException.class, MESSAGE_UNKNOWN_COMMAND, () -> parser.parseCommand("FINDSTUDENT n/Aiden"));
     }
 
     @Test
