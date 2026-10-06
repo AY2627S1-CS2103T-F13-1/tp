@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.Messages.MESSAGE_STUDENTS_LISTED_OVERVIEW;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
+import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 import static seedu.address.testutil.TypicalPersons.getTypicalPersons;
 
@@ -44,6 +45,18 @@ public class FindStudentCommandTest {
     public void setUp() {
         model = new ModelManager(getStudentAddressBook(), new UserPrefs());
         expectedModel = new ModelManager(getStudentAddressBook(), new UserPrefs());
+    }
+
+    @Test
+    public void constructor_nullPredicate_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> new FindStudentCommand(null));
+    }
+
+    @Test
+    public void execute_nullModel_throwsNullPointerException() {
+        FindStudentCommand command = new FindStudentCommand(
+                new StudentNameContainsKeywordsPredicate(List.of("Aiden"), List.of()));
+        assertThrows(NullPointerException.class, () -> command.execute(null));
     }
 
     @Test

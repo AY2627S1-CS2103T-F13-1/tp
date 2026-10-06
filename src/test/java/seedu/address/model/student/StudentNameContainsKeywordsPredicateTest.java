@@ -3,7 +3,10 @@ package seedu.address.model.student;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static seedu.address.testutil.Assert.assertThrows;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -15,6 +18,30 @@ public class StudentNameContainsKeywordsPredicateTest {
     private final Student aiden = new Student(new Name("Aiden Tan"), null,
             new Guardian(new Name("Tan Mei Ling"), new Phone("91234567")));
     private final Student ryan = new Student(new Name("Ryan Lim"), new Phone("93210283"), null);
+
+    @Test
+    public void constructor_null_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> new StudentNameContainsKeywordsPredicate(null, List.of()));
+        assertThrows(NullPointerException.class, () -> new StudentNameContainsKeywordsPredicate(List.of(), null));
+        assertThrows(NullPointerException.class, () ->
+                new StudentNameContainsKeywordsPredicate(Arrays.asList("Aiden", null), List.of()));
+    }
+
+    @Test
+    public void constructor_keywordListChangedAfterwards_predicateUnchanged() {
+        List<String> nameKeywords = new ArrayList<>(List.of("Aiden"));
+        StudentNameContainsKeywordsPredicate predicate =
+                new StudentNameContainsKeywordsPredicate(nameKeywords, List.of());
+        nameKeywords.set(0, "Ryan");
+        assertTrue(predicate.test(aiden));
+        assertFalse(predicate.test(ryan));
+    }
+
+    @Test
+    public void hashCode_equalPredicates_sameHashCode() {
+        assertEquals(new StudentNameContainsKeywordsPredicate(List.of("Aiden"), List.of("Tan")).hashCode(),
+                new StudentNameContainsKeywordsPredicate(List.of("Aiden"), List.of("Tan")).hashCode());
+    }
 
     @Test
     public void equals() {

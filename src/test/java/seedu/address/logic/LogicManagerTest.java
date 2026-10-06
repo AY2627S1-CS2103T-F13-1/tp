@@ -108,6 +108,8 @@ public class LogicManagerTest {
                 String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindStudentCommand.MESSAGE_USAGE));
         assertParseException(FindStudentCommand.COMMAND_WORD + " n/",
                 FindStudentCommandParser.MESSAGE_EMPTY_KEYWORDS);
+        assertParseException(FindStudentCommand.COMMAND_WORD + " n/Aiden p/91234567",
+                String.format(FindStudentCommandParser.MESSAGE_INVALID_KEYWORD, "p/91234567"));
     }
 
     @Test

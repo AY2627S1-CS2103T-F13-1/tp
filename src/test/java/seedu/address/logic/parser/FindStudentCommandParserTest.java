@@ -58,6 +58,16 @@ public class FindStudentCommandParserTest {
     }
 
     @Test
+    public void parse_nonAlphanumericKeyword_throwsParseException() {
+        // unrelated prefix after a valid one is read as a keyword, which cannot match any name
+        assertParseFailure(parser, " n/Aiden p/91234567", invalidKeyword("p/91234567"));
+        assertParseFailure(parser, " n/Tan!", invalidKeyword("Tan!"));
+        assertParseFailure(parser, " gn/Mei-Ling", invalidKeyword("Mei-Ling"));
+        assertParseFailure(parser, " n/Aiden gn/O'Neil", invalidKeyword("O'Neil"));
+        assertParseFailure(parser, " n/Aiden Tan*", invalidKeyword("Tan*"));
+    }
+
+    @Test
     public void parse_duplicatePrefixes_throwsParseException() {
         assertParseFailure(parser, " n/Aiden n/Chloe", Messages.getErrorMessageForDuplicatePrefixes(PREFIX_NAME));
         assertParseFailure(parser, " gn/Tan gn/Lim",
@@ -112,5 +122,9 @@ public class FindStudentCommandParserTest {
 
         // prefixes in either order
         assertParseSuccess(parser, " gn/Mei Ling n/Aiden", expectedCommand);
+    }
+
+    private static String invalidKeyword(String keyword) {
+        return String.format(FindStudentCommandParser.MESSAGE_INVALID_KEYWORD, keyword);
     }
 }
