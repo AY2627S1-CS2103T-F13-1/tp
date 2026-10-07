@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import seedu.address.logic.commands.AddCommand;
+import seedu.address.logic.commands.AddStudentCommand;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.FindStudentCommand;
 import seedu.address.logic.commands.ListCommand;
@@ -78,6 +79,28 @@ public class LogicManagerTest {
     public void execute_validCommand_success() throws Exception {
         String listCommand = ListCommand.COMMAND_WORD;
         assertCommandSuccess(listCommand, ListCommand.MESSAGE_SUCCESS, model);
+    }
+
+    @Test
+    public void execute_addStudentThenFindStudent_success() throws Exception {
+        Student aiden = new Student(new Name("Aiden Tan"), null,
+                new Guardian(new Name("Tan Mei Ling"), new Phone("91234567")));
+
+        CommandResult addResult = logic.execute(
+                AddStudentCommand.COMMAND_WORD + " n/Aiden Tan gn/Tan Mei Ling gp/91234567");
+        assertEquals(String.format(AddStudentCommand.MESSAGE_SUCCESS, aiden), addResult.getFeedbackToUser());
+        assertEquals(List.of(aiden), logic.getFilteredStudentList());
+
+        CommandResult findResult = logic.execute(FindStudentCommand.COMMAND_WORD + " gn/ling");
+        assertEquals(String.format(MESSAGE_STUDENTS_LISTED_OVERVIEW, 1), findResult.getFeedbackToUser());
+        assertEquals(List.of(aiden), logic.getFilteredStudentList());
+    }
+
+    @Test
+    public void execute_addDuplicateStudent_throwsCommandException() throws Exception {
+        logic.execute(AddStudentCommand.COMMAND_WORD + " n/Aiden Tan gn/Tan Mei Ling gp/91234567");
+        assertCommandException(AddStudentCommand.COMMAND_WORD + " n/aiden  tan p/91234567",
+                AddStudentCommand.MESSAGE_DUPLICATE_STUDENT);
     }
 
     @Test
