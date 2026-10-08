@@ -11,6 +11,8 @@ import seedu.address.model.person.Email;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
+import seedu.address.model.student.Guardian;
+import seedu.address.model.student.Student;
 import seedu.address.model.tag.Tag;
 
 /**
@@ -40,10 +42,26 @@ public class SampleDataUtil {
         };
     }
 
+    /**
+     * Returns sample students covering the supported combinations of contact details.
+     */
+    public static Student[] getSampleStudents() {
+        return new Student[] {
+            new Student(new Name("Aiden Tan"), null,
+                    new Guardian(new Name("Tan Mei Ling"), new Phone("91234567"))),
+            new Student(new Name("Chloe Lim"), new Phone("92345678"), null),
+            new Student(new Name("Ryan Ong"), new Phone("93456789"),
+                    new Guardian(new Name("Ong Wei Ling"), new Phone("94567890")))
+        };
+    }
+
     public static ReadOnlyAddressBook getSampleAddressBook() {
         AddressBook sampleAb = new AddressBook();
         for (Person samplePerson : getSamplePersons()) {
             sampleAb.addPerson(samplePerson);
+        }
+        for (Student sampleStudent : getSampleStudents()) {
+            sampleAb.addStudent(sampleStudent);
         }
         return sampleAb;
     }

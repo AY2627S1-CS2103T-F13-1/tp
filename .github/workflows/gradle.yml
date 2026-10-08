@@ -28,7 +28,12 @@ jobs:
           java-version: '25'
           java-package: jdk+fx
 
+      - name: Build and check with Gradle under Xvfb
+        if: runner.os == 'Linux'
+        run: xvfb-run -a -s "-screen 0 1280x1024x24" ./gradlew check coverage
+
       - name: Build and check with Gradle
+        if: runner.os != 'Linux'
         run: ./gradlew check coverage
 
       - name: Upload coverage reports to Codecov
