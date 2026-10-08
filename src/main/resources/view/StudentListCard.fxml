@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<HBox id="cardPane" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+  <VBox alignment="CENTER_LEFT" spacing="4" HBox.hgrow="ALWAYS">
+    <padding>
+      <Insets top="10" right="12" bottom="10" left="12" />
+    </padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="0.5">
+      <Label fx:id="id" styleClass="cell_big_label">
+        <minWidth>
+          <Region fx:constant="USE_PREF_SIZE" />
+        </minWidth>
+      </Label>
+      <Label fx:id="studentName" styleClass="cell_big_label" text="\$studentName" />
+    </HBox>
+
+    <Label styleClass="contact_section_label" text="Student" />
+    <GridPane hgap="10" vgap="3">
+      <columnConstraints>
+        <ColumnConstraints minWidth="70" />
+        <ColumnConstraints hgrow="ALWAYS" />
+      </columnConstraints>
+      <Label styleClass="contact_field_label" text="Phone" GridPane.columnIndex="0" />
+      <Label fx:id="studentPhone" styleClass="cell_small_label" text="\$studentPhone"
+             GridPane.columnIndex="1" />
+    </GridPane>
+
+    <Separator />
+
+    <Label styleClass="contact_section_label" text="Guardian" />
+    <GridPane hgap="10" vgap="3">
+      <columnConstraints>
+        <ColumnConstraints minWidth="70" />
+        <ColumnConstraints hgrow="ALWAYS" />
+      </columnConstraints>
+      <Label styleClass="contact_field_label" text="Name" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+      <Label fx:id="guardianName" styleClass="cell_small_label" text="\$guardianName"
+             GridPane.columnIndex="1" GridPane.rowIndex="0" />
+      <Label styleClass="contact_field_label" text="Phone" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+      <Label fx:id="guardianPhone" styleClass="cell_small_label" text="\$guardianPhone"
+             GridPane.columnIndex="1" GridPane.rowIndex="1" />
+    </GridPane>
+  </VBox>
+</HBox>

@@ -132,6 +132,18 @@
     -fx-text-fill: #010504;
 }
 
+.contact_section_label {
+    -fx-font-family: "Segoe UI Semibold";
+    -fx-font-size: 12px;
+    -fx-text-fill: #b9d9f0;
+}
+
+.contact_field_label {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 12px;
+    -fx-text-fill: #c2c2c2;
+}
+
 .stack-pane {
      -fx-background-color: derive(#1d1d1d, 20%);
 }
