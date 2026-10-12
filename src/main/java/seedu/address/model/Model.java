@@ -4,6 +4,8 @@ import java.util.function.Predicate;
 
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
+import seedu.address.model.lesson.Enrolment;
+import seedu.address.model.lesson.Lesson;
 import seedu.address.model.person.Person;
 import seedu.address.model.student.Student;
 
@@ -16,6 +18,9 @@ public interface Model {
 
     /** Predicate that shows all students. */
     Predicate<Student> PREDICATE_SHOW_ALL_STUDENTS = unused -> true;
+
+    /** Predicate that shows every lesson. */
+    Predicate<Lesson> PREDICATE_SHOW_ALL_LESSONS = unused -> true;
 
     /** Returns whether a duplicate student already exists. */
     boolean hasStudent(Student student);
@@ -31,6 +36,32 @@ public interface Model {
 
     /** Replaces the student filter. The predicate must not be null. */
     void updateFilteredStudentList(Predicate<Student> predicate);
+
+    /** Observe this list to refresh membership labels when links change. */
+    default ObservableList<Enrolment> getEnrolmentList() {
+        return getAddressBook().getEnrolmentList();
+    }
+
+    /** Checks for an existing lesson with the same ID or details. */
+    boolean hasLesson(Lesson lesson);
+
+    /** Adds a lesson and clears only the lesson filter. */
+    void addLesson(Lesson lesson);
+
+    /** Deletes a lesson and its links, preserving students. */
+    void deleteLesson(Lesson lesson);
+
+    /** Links existing records; rejects missing records and duplicate links. */
+    void enrolStudent(Student student, Lesson lesson);
+
+    /** Returns an unmodifiable observable lesson view. */
+    ObservableList<Lesson> getFilteredLessonList();
+
+    /** Replaces the lesson filter. */
+    void updateFilteredLessonList(Predicate<Lesson> predicate);
+
+    /** Filters students by a stable lesson ID, not its displayed index. */
+    void filterStudentsByLesson(Lesson lesson);
 
     /**
      * Returns the user prefs.

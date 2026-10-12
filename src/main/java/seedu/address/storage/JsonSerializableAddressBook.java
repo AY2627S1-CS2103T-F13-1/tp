@@ -26,13 +26,23 @@ class JsonSerializableAddressBook {
 
     private final List<JsonAdaptedPerson> persons = new ArrayList<>();
     private final List<JsonAdaptedStudent> students = new ArrayList<>();
+    private final List<JsonAdaptedLesson> lessons = new ArrayList<>();
+    private final List<JsonAdaptedEnrolment> enrolments = new ArrayList<>();
 
     /**
      * Constructs stored data. Missing lists default to empty for older address books.
      */
     @JsonCreator
     public JsonSerializableAddressBook(@JsonProperty("persons") List<JsonAdaptedPerson> persons,
-            @JsonProperty("students") List<JsonAdaptedStudent> students) {
+            @JsonProperty("students") List<JsonAdaptedStudent> students,
+            @JsonProperty("lessons") List<JsonAdaptedLesson> lessons,
+            @JsonProperty("enrolments") List<JsonAdaptedEnrolment> enrolments) {
+        if (lessons != null) {
+            this.lessons.addAll(lessons);
+        }
+        if (enrolments != null) {
+            this.enrolments.addAll(enrolments);
+        }
         if (persons != null) {
             this.persons.addAll(persons);
         }
@@ -47,6 +57,8 @@ class JsonSerializableAddressBook {
      * @param source future changes to this will not affect the created {@code JsonSerializableAddressBook}.
      */
     public JsonSerializableAddressBook(ReadOnlyAddressBook source) {
+        lessons.addAll(source.getLessonList().stream().map(JsonAdaptedLesson::new).toList());
+        enrolments.addAll(source.getEnrolmentList().stream().map(JsonAdaptedEnrolment::new).toList());
         persons.addAll(source.getPersonList().stream().map(JsonAdaptedPerson::new).collect(Collectors.toList()));
         students.addAll(source.getStudentList().stream().map(JsonAdaptedStudent::new).collect(Collectors.toList()));
     }
@@ -74,6 +86,22 @@ class JsonSerializableAddressBook {
                 throw new IllegalValueException(MESSAGE_DUPLICATE_STUDENT);
             }
             addressBook.addStudent(student);
+        }
+        try {
+            for (JsonAdaptedLesson lesson : lessons) {
+                if (lesson == null) {
+                    throw new IllegalValueException("Lesson records must not be null.");
+                }
+                addressBook.addLesson(lesson.toModelType());
+            }
+            for (JsonAdaptedEnrolment enrolment : enrolments) {
+                if (enrolment == null) {
+                    throw new IllegalValueException("Enrolment records must not be null.");
+                }
+                addressBook.addEnrolment(enrolment.toModelType());
+            }
+        } catch (IllegalArgumentException e) {
+            throw new IllegalValueException(e.getMessage());
         }
         return addressBook;
     }

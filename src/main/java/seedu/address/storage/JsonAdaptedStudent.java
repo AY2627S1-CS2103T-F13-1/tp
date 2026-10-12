@@ -1,5 +1,7 @@
 package seedu.address.storage;
 
+import java.util.UUID;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -11,14 +13,17 @@ import seedu.address.model.student.Student;
 
 /** Jackson-friendly student data. Missing optional fields are stored as null. */
 class JsonAdaptedStudent {
+    private final String id;
     private final String name;
     private final String phone;
     private final String guardianName;
     private final String guardianPhone;
 
     @JsonCreator
-    public JsonAdaptedStudent(@JsonProperty("name") String name, @JsonProperty("phone") String phone,
+    public JsonAdaptedStudent(@JsonProperty("id") String id,
+            @JsonProperty("name") String name, @JsonProperty("phone") String phone,
             @JsonProperty("guardianName") String guardianName, @JsonProperty("guardianPhone") String guardianPhone) {
+        this.id = id;
         this.name = name;
         this.phone = phone;
         this.guardianName = guardianName;
@@ -26,6 +31,7 @@ class JsonAdaptedStudent {
     }
 
     public JsonAdaptedStudent(Student source) {
+        id = source.getId().toString();
         name = source.getName().fullName;
         phone = source.getPhone().map(value -> value.value).orElse(null);
         guardianName = source.getGuardian().map(value -> value.getName().fullName).orElse(null);
@@ -52,6 +58,11 @@ class JsonAdaptedStudent {
         }
         Guardian guardian = guardianName == null ? null
                 : new Guardian(new Name(guardianName), new Phone(guardianPhone));
-        return new Student(new Name(name), phone == null ? null : new Phone(phone), guardian);
+        try {
+            UUID studentId = id == null ? UUID.randomUUID() : UUID.fromString(id);
+            return new Student(studentId, new Name(name), phone == null ? null : new Phone(phone), guardian);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalValueException("Invalid student ID: " + id);
+        }
     }
 }
