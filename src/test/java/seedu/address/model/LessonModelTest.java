@@ -1,0 +1,86 @@
+package seedu.address.model;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.time.DayOfWeek;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.jupiter.api.Test;
+
+import javafx.collections.ListChangeListener;
+import seedu.address.model.lesson.Enrolment;
+import seedu.address.model.lesson.Lesson;
+import seedu.address.model.person.Name;
+import seedu.address.model.person.Phone;
+import seedu.address.model.student.Student;
+
+public class LessonModelTest {
+    private final Student student = new Student(new Name("Aiden"), new Phone("91234567"), null);
+    private final Lesson lesson = new Lesson("Math", DayOfWeek.MONDAY, LocalTime.of(16, 0), LocalTime.of(18, 0));
+
+    @Test
+    public void enrolment_validatesReferencesAndDuplicates_notifiesObservers() {
+        Model model = new ModelManager();
+        model.addStudent(student);
+        model.addLesson(lesson);
+        AtomicInteger changes = new AtomicInteger();
+        model.getEnrolmentList().addListener((ListChangeListener<Enrolment>) change -> changes.incrementAndGet());
+        model.enrolStudent(student, lesson);
+        assertEquals(List.of(student), model.getAddressBook().getStudentsInLesson(lesson));
+        assertEquals(List.of(lesson), model.getAddressBook().getLessonsForStudent(student));
+        assertEquals(1, changes.get());
+        assertThrows(IllegalArgumentException.class, () -> model.enrolStudent(student, lesson));
+        assertThrows(IllegalArgumentException.class, () -> model.addLesson(new Lesson("math", DayOfWeek.MONDAY,
+                LocalTime.of(16, 0), LocalTime.of(18, 0))));
+        assertThrows(IllegalArgumentException.class, () -> new AddressBook()
+                .addEnrolment(new Enrolment(UUID.randomUUID(), lesson.getId())));
+        assertThrows(UnsupportedOperationException.class, () -> model.getEnrolmentList().clear());
+        assertThrows(UnsupportedOperationException.class, () -> model.getFilteredLessonList().clear());
+    }
+
+    @Test
+    public void filteringAndDeletion_keepReferencesConsistent() {
+        Model model = new ModelManager();
+        model.addStudent(student);
+        model.addLesson(lesson);
+        model.filterStudentsByLesson(lesson);
+        assertTrue(model.getFilteredStudentList().isEmpty());
+        model.enrolStudent(student, lesson);
+        assertEquals(List.of(student), model.getFilteredStudentList());
+        model.updateFilteredLessonList(l -> false);
+        assertEquals(List.of(lesson), model.getAddressBook().getLessonsForStudent(student));
+        model.deleteLesson(lesson);
+        assertTrue(model.getEnrolmentList().isEmpty());
+        assertEquals(List.of(student), model.getFilteredStudentList());
+        model.addLesson(lesson);
+        assertEquals(List.of(lesson), model.getFilteredLessonList());
+        model.enrolStudent(student, lesson);
+        model.deleteStudent(student);
+        assertTrue(model.getEnrolmentList().isEmpty());
+        assertEquals(List.of(lesson), model.getFilteredLessonList());
+    }
+
+    @Test
+    public void reset_preservesLinksAndExistingObservableViews() {
+        Model model = new ModelManager();
+        var view = model.getFilteredLessonList();
+        AddressBook replacement = new AddressBook();
+        replacement.addStudent(student);
+        replacement.addLesson(lesson);
+        replacement.addEnrolment(new Enrolment(student.getId(), lesson.getId()));
+        model.setAddressBook(replacement);
+        assertEquals(List.of(lesson), view);
+        assertTrue(model.getAddressBook().isEnrolled(student, lesson));
+        model.filterStudentsByLesson(lesson);
+        model.setAddressBook(new AddressBook());
+        assertTrue(view.isEmpty());
+        assertTrue(model.getEnrolmentList().isEmpty());
+        model.addStudent(student);
+        assertEquals(List.of(student), model.getFilteredStudentList());
+    }
+}
