@@ -3,10 +3,14 @@ package seedu.address.model;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import seedu.address.commons.util.ToStringBuilder;
+import seedu.address.model.lesson.Enrolment;
+import seedu.address.model.lesson.Lesson;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.UniquePersonList;
 import seedu.address.model.student.Student;
@@ -23,6 +27,11 @@ public class AddressBook implements ReadOnlyAddressBook {
 
     private final ObservableList<Student> students = FXCollections.observableArrayList();
     private final ObservableList<Student> readOnlyStudents = FXCollections.unmodifiableObservableList(students);
+
+    private final ObservableList<Lesson> lessons = FXCollections.observableArrayList();
+    private final ObservableList<Enrolment> enrolments = FXCollections.observableArrayList();
+    private final ObservableList<Lesson> readOnlyLessons = FXCollections.unmodifiableObservableList(lessons);
+    private final ObservableList<Enrolment> readOnlyEnrolments = FXCollections.unmodifiableObservableList(enrolments);
 
     public AddressBook() {}
 
@@ -50,16 +59,16 @@ public class AddressBook implements ReadOnlyAddressBook {
     public void resetData(ReadOnlyAddressBook newData) {
         requireNonNull(newData);
 
-        List<Student> newStudents = List.copyOf(newData.getStudentList());
-        for (int i = 0; i < newStudents.size(); i++) {
-            for (int j = i + 1; j < newStudents.size(); j++) {
-                if (newStudents.get(i).isSameStudent(newStudents.get(j))) {
-                    throw new DuplicateStudentException();
-                }
-            }
-        }
-        setPersons(newData.getPersonList());
-        students.setAll(newStudents);
+        // Validate the complete replacement before changing any observable list.
+        AddressBook validated = new AddressBook();
+        validated.setPersons(newData.getPersonList());
+        newData.getStudentList().forEach(validated::addStudent);
+        newData.getLessonList().forEach(validated::addLesson);
+        newData.getEnrolmentList().forEach(validated::addEnrolment);
+        setPersons(validated.getPersonList());
+        students.setAll(validated.students);
+        lessons.setAll(validated.lessons);
+        enrolments.setAll(validated.enrolments);
     }
 
     //// person-level operations
@@ -102,7 +111,8 @@ public class AddressBook implements ReadOnlyAddressBook {
     /** Returns whether a duplicate student exists, using the student's name and phone numbers. */
     public boolean hasStudent(Student student) {
         requireNonNull(student);
-        return students.stream().anyMatch(student::isSameStudent);
+        return students.stream().anyMatch(existing -> existing.getId().equals(student.getId())
+                || student.isSameStudent(existing));
     }
 
     /** Adds a student, rejecting duplicates. */
@@ -116,14 +126,66 @@ public class AddressBook implements ReadOnlyAddressBook {
     /** Removes the student with exactly these details. */
     public void removeStudent(Student student) {
         requireNonNull(student);
-        if (!students.remove(student)) {
+        int index = students.indexOf(student);
+        if (index < 0) {
             throw new StudentNotFoundException();
         }
+        UUID studentId = students.get(index).getId();
+        enrolments.removeIf(link -> link.studentId().equals(studentId));
+        students.remove(index);
     }
 
     @Override
     public ObservableList<Student> getStudentList() {
         return readOnlyStudents;
+    }
+
+    /** Checks both ID collisions and duplicate lesson details. */
+    public boolean hasLesson(Lesson lesson) {
+        requireNonNull(lesson);
+        return lessons.stream().anyMatch(existing -> existing.getId().equals(lesson.getId())
+                || existing.isSameLesson(lesson));
+    }
+
+    /** Adds a lesson; throws IllegalArgumentException for a duplicate. */
+    public void addLesson(Lesson lesson) {
+        if (hasLesson(lesson)) {
+            throw new IllegalArgumentException("This lesson already exists.");
+        }
+        lessons.add(lesson);
+    }
+
+    /** Deletes a lesson and its links, keeping all students. */
+    public void removeLesson(Lesson lesson) {
+        requireNonNull(lesson);
+        if (!lessons.contains(lesson)) {
+            throw new IllegalArgumentException("Lesson not found.");
+        }
+        enrolments.removeIf(link -> link.lessonId().equals(lesson.getId()));
+        lessons.remove(lesson);
+    }
+
+    /** Adds a link after validating its references and uniqueness. */
+    public void addEnrolment(Enrolment enrolment) {
+        requireNonNull(enrolment);
+        if (students.stream().noneMatch(s -> s.getId().equals(enrolment.studentId()))
+                || lessons.stream().noneMatch(l -> l.getId().equals(enrolment.lessonId()))) {
+            throw new IllegalArgumentException("Enrolment refers to a missing student or lesson.");
+        }
+        if (enrolments.contains(enrolment)) {
+            throw new IllegalArgumentException("Student is already enrolled in this lesson.");
+        }
+        enrolments.add(enrolment);
+    }
+
+    @Override
+    public ObservableList<Lesson> getLessonList() {
+        return readOnlyLessons;
+    }
+
+    @Override
+    public ObservableList<Enrolment> getEnrolmentList() {
+        return readOnlyEnrolments;
     }
 
     //// util methods
@@ -133,6 +195,8 @@ public class AddressBook implements ReadOnlyAddressBook {
         return new ToStringBuilder(this)
                 .add("persons", persons)
                 .add("students", students)
+                .add("lessons", lessons)
+                .add("enrolments", enrolments)
                 .toString();
     }
 
@@ -152,11 +216,12 @@ public class AddressBook implements ReadOnlyAddressBook {
             return false;
         }
 
-        return persons.equals(otherAddressBook.persons) && students.equals(otherAddressBook.students);
+        return persons.equals(otherAddressBook.persons) && students.equals(otherAddressBook.students)
+                && lessons.equals(otherAddressBook.lessons) && enrolments.equals(otherAddressBook.enrolments);
     }
 
     @Override
     public int hashCode() {
-        return 31 * persons.hashCode() + students.hashCode();
+        return Objects.hash(persons, students, lessons, enrolments);
     }
 }

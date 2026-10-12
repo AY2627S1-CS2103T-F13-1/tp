@@ -6,6 +6,7 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
@@ -17,6 +18,7 @@ public final class Student {
     public static final String MESSAGE_CONTACT_REQUIRED =
             "At least one phone number is required: p/ for the student, or gn/ with gp/ for the guardian.";
 
+    private final UUID id;
     private final Name name;
     private final Phone phone;
     private final Guardian guardian;
@@ -26,10 +28,20 @@ public final class Student {
      * but at least one must be present. {@code name} must not be null.
      */
     public Student(Name name, Phone phone, Guardian guardian) {
+        this(UUID.randomUUID(), name, phone, guardian);
+    }
+
+    /** Restores a student with a persisted ID; optional contact values may be null. */
+    public Student(UUID id, Name name, Phone phone, Guardian guardian) {
+        this.id = requireNonNull(id);
         this.name = requireNonNull(name);
         checkArgument(phone != null || guardian != null, MESSAGE_CONTACT_REQUIRED);
         this.phone = phone;
         this.guardian = guardian;
+    }
+
+    public UUID getId() {
+        return id;
     }
 
     public Name getName() {
