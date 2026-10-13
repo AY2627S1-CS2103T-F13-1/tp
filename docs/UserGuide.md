@@ -72,6 +72,34 @@ Shows a message explaining how to access the help page.
 
 Format: `help`
 
+### Listing students: `liststudents`
+
+Shows all students, or only the students enrolled in a displayed lesson.
+
+Format: `liststudents [l/LESSON_INDEX]`
+
+* `LESSON_INDEX` refers to the index shown in the current lesson list and must be a positive integer.
+* Running `liststudents` without `l/` clears the student filter.
+* If the lesson used by the student filter is deleted, all remaining students are shown again.
+
+Examples:
+* `liststudents` shows all students.
+* `liststudents l/2` shows students enrolled in the second displayed lesson.
+
+### Listing lessons: `listlessons`
+
+Shows all lessons, or only lessons that start on a specified day.
+
+Format: `listlessons [d/DAY]`
+
+* `DAY` must be `mon`, `tue`, `wed`, `thu`, `fri`, `sat` or `sun`, in any letter case.
+* A lesson that runs past midnight belongs to the day on which it starts.
+* Running `listlessons` without `d/` clears the lesson filter.
+
+Examples:
+* `listlessons` shows all lessons.
+* `listlessons d/mon` shows lessons that start on Monday.
+
 
 ### Adding a person: `add`
 
@@ -195,4 +223,6 @@ Action | Format, Examples
 **Edit** | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
 **Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List** | `list`
+**List students** | `liststudents [l/LESSON_INDEX]`<br> e.g., `liststudents l/1`
+**List lessons** | `listlessons [d/DAY]`<br> e.g., `listlessons d/mon`
 **Help** | `help`

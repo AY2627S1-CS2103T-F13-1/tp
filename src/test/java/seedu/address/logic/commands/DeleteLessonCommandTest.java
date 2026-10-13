@@ -158,6 +158,19 @@ public class DeleteLessonCommandTest {
     }
 
     @Test
+    public void execute_dayFilterActive_deletesDisplayedLessonAndKeepsFilter() {
+        for (Model each : List.of(model, expectedModel)) {
+            new ListLessonsCommand(DayOfWeek.WEDNESDAY).execute(each);
+        }
+        expectedModel.deleteLesson(PHYSICS);
+
+        assertCommandSuccess(new DeleteLessonCommand(INDEX_FIRST_LESSON), model, getSuccessMessage(PHYSICS),
+                expectedModel);
+        assertTrue(model.getFilteredLessonList().isEmpty());
+        assertEquals(List.of(A_MATH, CHEMISTRY), model.getAddressBook().getLessonList());
+    }
+
+    @Test
     public void execute_invalidIndexFilteredList_throwsCommandException() {
         model.updateFilteredLessonList(lesson -> lesson.equals(CHEMISTRY));
 

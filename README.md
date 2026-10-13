@@ -22,6 +22,7 @@ A quick taste of the commands:
 addlesson n/Sec 3 A-Math d/mon st/1600 et/1800
 addstudent n/Aiden Tan gn/Tan Mei Ling gp/91234567
 enrol s/1 l/1
+listlessons d/mon
 liststudents l/1
 findstudent gn/tan
 ```
