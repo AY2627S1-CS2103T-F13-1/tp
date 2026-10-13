@@ -49,7 +49,7 @@ data before mutation and preserves the observable list instances.
 
 Invalid lesson/enrolment operations throw `IllegalArgumentException` with a descriptive message;
 null required arguments throw `NullPointerException`. Commands should convert user-facing failures
-into `CommandException`. Parsers still own command syntax: abbreviated/full day names, strict
+into `CommandException`. Parsers still own command syntax: three-letter day names (`mon` to `sun`), strict
 four-digit HHmm input, repeated prefixes, positive indexes, and appropriate usage messages.
 The model accepts typed day/time values, so it cannot distinguish `1600` from `16:00` user input.
 

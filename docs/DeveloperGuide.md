@@ -679,14 +679,17 @@ testers are expected to do more *exploratory* testing.
    1. Test case: the same command again<br>
       Expected: No lesson is added. The status message shows `This lesson already exists`.
 
+   1. Test case: `addlesson n/sec 3  a-math d/MON st/1600 et/1800`<br>
+      Expected: No lesson is added. The day may be in any letter case, and the name matches the existing lesson's once case and extra spaces are ignored. The status message shows `This lesson already exists`.
+
    1. Test case: `addlesson n/Night Class d/fri st/2200 et/0100`<br>
       Expected: A lesson card for Night Class (Fri 2200-0100) is added. An end time earlier than the start time means the lesson runs past midnight and ends on the next day.
 
    1. Test case: `addlesson n/Sec 3 A-Math d/mon st/1600 et/1600`<br>
       Expected: No lesson is added. The status message states that the end time must not be the same as the start time.
 
-   1. Other incorrect commands to try: `addlesson n/Math d/tues st/1600 et/1800`, `addlesson n/Math d/mon st/4pm et/1800`, `addlesson n/Math d/mon st/2400 et/2430`<br>
-      Expected: No lesson is added. The status message shows the error for the invalid value.
+   1. Other incorrect commands to try: `addlesson n/Math d/tues st/1600 et/1800`, `addlesson n/Math d/monday st/1600 et/1800`, `addlesson n/Math d/mon st/4pm et/1800`, `addlesson n/Math d/mon st/2400 et/2430`<br>
+      Expected: No lesson is added. The status message shows the error for the invalid value: a day must be one of `mon`, `tue`, `wed`, `thu`, `fri`, `sat` and `sun`, and a time must be exactly four digits from `0000` to `2359`.
 
 1. Deleting a lesson
 
@@ -697,6 +700,12 @@ testers are expected to do more *exploratory* testing.
 
    1. Test case: `deletelesson 0`<br>
       Expected: No lesson is deleted. The status message shows the invalid command format error.
+
+   1. Other incorrect delete commands to try: `deletelesson`, `deletelesson abc`, `deletelesson 1 2`<br>
+      Expected: Similar to previous.
+
+   1. Test case: `deletelesson x` (where x is larger than the number of lessons shown)<br>
+      Expected: No lesson is deleted. The status message shows `The lesson index provided is invalid.`
 
 ### Enrolling a student in a lesson
 

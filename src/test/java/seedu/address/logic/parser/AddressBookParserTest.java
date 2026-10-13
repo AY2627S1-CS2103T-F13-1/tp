@@ -5,20 +5,26 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.testutil.Assert.assertThrows;
+import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_LESSON;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.logic.commands.AddLessonCommand;
 import seedu.address.logic.commands.AddStudentCommand;
 import seedu.address.logic.commands.ClearCommand;
+import seedu.address.logic.commands.DeleteLessonCommand;
 import seedu.address.logic.commands.DeleteStudentCommand;
 import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.FindStudentCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListStudentsCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.lesson.Lesson;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
 import seedu.address.model.student.Guardian;
@@ -39,9 +45,57 @@ public class AddressBookParserTest {
     }
 
     @Test
+    public void parseCommand_addLesson() throws Exception {
+        Lesson lesson = new Lesson("Sec 3 A-Math", DayOfWeek.MONDAY, LocalTime.of(16, 0), LocalTime.of(18, 0));
+        AddLessonCommand command = (AddLessonCommand) parser.parseCommand(
+                AddLessonCommand.COMMAND_WORD + " n/Sec 3 A-Math d/mon st/1600 et/1800");
+        assertEquals(new AddLessonCommand(lesson), command);
+    }
+
+    @Test
+    public void parseCommand_addLessonWithoutArguments_throwsParseException() {
+        assertThrows(ParseException.class,
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddLessonCommand.MESSAGE_USAGE), () ->
+                        parser.parseCommand(AddLessonCommand.COMMAND_WORD));
+    }
+
+    @Test
     public void parseCommand_clear() throws Exception {
         assertTrue(parser.parseCommand(ClearCommand.COMMAND_WORD) instanceof ClearCommand);
         assertTrue(parser.parseCommand(ClearCommand.COMMAND_WORD + " 3") instanceof ClearCommand);
+    }
+
+    @Test
+    public void parseCommand_deleteLesson() throws Exception {
+        DeleteLessonCommand command = (DeleteLessonCommand) parser.parseCommand(
+                DeleteLessonCommand.COMMAND_WORD + " " + INDEX_FIRST_LESSON.getOneBased());
+        assertEquals(new DeleteLessonCommand(INDEX_FIRST_LESSON), command);
+    }
+
+    @Test
+    public void parseCommand_deleteLessonWithoutIndex_throwsParseException() {
+        assertThrows(ParseException.class,
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteLessonCommand.MESSAGE_USAGE), () ->
+                        parser.parseCommand(DeleteLessonCommand.COMMAND_WORD));
+    }
+
+    @Test
+    public void parseCommand_lessonCommandMisspelt_throwsParseException() {
+        List<String> misspeltCommands = List.of(
+                // command words are case-sensitive
+                "ADDLESSON n/Sec 3 A-Math d/mon st/1600 et/1800",
+                "addLesson n/Sec 3 A-Math d/mon st/1600 et/1800",
+                "DeleteLesson 1",
+                // near misses are not guessed at
+                "addlessons n/Sec 3 A-Math d/mon st/1600 et/1800",
+                "add lesson n/Sec 3 A-Math d/mon st/1600 et/1800",
+                "deletelessons 1",
+                "delete lesson 1",
+                "dellesson 1");
+
+        for (String command : misspeltCommands) {
+            assertThrows(ParseException.class, MESSAGE_UNKNOWN_COMMAND, () -> parser.parseCommand(command));
+        }
     }
 
     @Test

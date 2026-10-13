@@ -1,7 +1,9 @@
 package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
+import static seedu.address.logic.Messages.MESSAGE_INVALID_LESSON_DISPLAYED_INDEX;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_STUDENT_DISPLAYED_INDEX;
 import static seedu.address.logic.Messages.MESSAGE_STUDENTS_LISTED_OVERVIEW;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
@@ -10,24 +12,31 @@ import static seedu.address.testutil.Assert.assertThrows;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Path;
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import seedu.address.commons.exceptions.DataLoadingException;
+import seedu.address.logic.commands.AddLessonCommand;
 import seedu.address.logic.commands.AddStudentCommand;
 import seedu.address.logic.commands.CommandResult;
+import seedu.address.logic.commands.DeleteLessonCommand;
 import seedu.address.logic.commands.DeleteStudentCommand;
 import seedu.address.logic.commands.FindStudentCommand;
 import seedu.address.logic.commands.ListStudentsCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.FindStudentCommandParser;
+import seedu.address.logic.parser.ParserUtil;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.lesson.Lesson;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
 import seedu.address.model.student.Guardian;
@@ -129,6 +138,119 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_addLesson_addsAndSavesLesson() throws Exception {
+        CommandResult result = logic.execute(AddLessonCommand.COMMAND_WORD + " n/Sec 3 A-Math d/mon st/1600 et/1800");
+
+        assertEquals("New lesson added: Sec 3 A-Math (Mon 1600-1800)", result.getFeedbackToUser());
+        assertEquals(1, logic.getFilteredLessonList().size());
+        Lesson added = logic.getFilteredLessonList().getFirst();
+        assertEquals("Sec 3 A-Math", added.getName());
+        assertEquals(DayOfWeek.MONDAY, added.getDay());
+        assertEquals(LocalTime.of(16, 0), added.getStartTime());
+        assertEquals(LocalTime.of(18, 0), added.getEndTime());
+
+        // the saved file holds the same lesson, ID included
+        assertEquals(List.of(added), readSavedAddressBook().getLessonList());
+    }
+
+    @Test
+    public void execute_addLessonPastMidnight_addsAndSavesLesson() throws Exception {
+        CommandResult result = logic.execute(AddLessonCommand.COMMAND_WORD + " n/Night Class d/fri st/2200 et/0100");
+
+        assertEquals("New lesson added: Night Class (Fri 2200-0100)", result.getFeedbackToUser());
+        Lesson added = logic.getFilteredLessonList().getFirst();
+        assertEquals(DayOfWeek.FRIDAY, added.getDay());
+        assertEquals(LocalTime.of(22, 0), added.getStartTime());
+        assertEquals(LocalTime.of(1, 0), added.getEndTime());
+
+        // the saved file must load again, or the lesson would be lost at the next launch
+        assertEquals(List.of(added), readSavedAddressBook().getLessonList());
+    }
+
+    @Test
+    public void execute_addDuplicateLesson_throwsCommandException() throws Exception {
+        logic.execute(AddLessonCommand.COMMAND_WORD + " n/Sec 3 A-Math d/mon st/1600 et/1800");
+
+        assertCommandException(AddLessonCommand.COMMAND_WORD + " n/sec 3  a-math d/MON st/1600 et/1800",
+                AddLessonCommand.MESSAGE_DUPLICATE_LESSON);
+        assertEquals(1, logic.getFilteredLessonList().size());
+        assertEquals(1, readSavedAddressBook().getLessonList().size());
+    }
+
+    @Test
+    public void execute_addLessonInvalidInput_throwsParseException() {
+        assertParseException(AddLessonCommand.COMMAND_WORD,
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddLessonCommand.MESSAGE_USAGE));
+        assertParseException(AddLessonCommand.COMMAND_WORD + " n/Sec 3 A-Math d/mon st/1600 et/1600",
+                Lesson.MESSAGE_TIME_CONSTRAINTS);
+        assertParseException(AddLessonCommand.COMMAND_WORD + " n/Sec 3 A-Math d/monday st/1600 et/1800",
+                ParserUtil.MESSAGE_INVALID_DAY);
+        assertTrue(logic.getFilteredLessonList().isEmpty());
+    }
+
+    @Test
+    public void execute_addLessonsThenDeleteLesson_remainingLessonSaved() throws Exception {
+        logic.execute(AddLessonCommand.COMMAND_WORD + " n/Sec 3 A-Math d/mon st/1600 et/1800");
+        logic.execute(AddLessonCommand.COMMAND_WORD + " n/Sec 4 Physics d/wed st/1900 et/2030");
+
+        CommandResult result = logic.execute(DeleteLessonCommand.COMMAND_WORD + " 1");
+
+        assertEquals("Deleted Lesson: Sec 3 A-Math (Mon 1600-1800)", result.getFeedbackToUser());
+        assertEquals(1, logic.getFilteredLessonList().size());
+        assertEquals("Sec 4 Physics (Wed 1900-2030)", logic.getFilteredLessonList().getFirst().toString());
+        assertEquals(logic.getFilteredLessonList(), readSavedAddressBook().getLessonList());
+    }
+
+    @Test
+    public void execute_deleteLessonWithStudent_removesEnrolmentAndSaves() throws Exception {
+        Student aiden = new Student(new Name("Aiden Tan"), new Phone("91234567"), null);
+        Lesson math = new Lesson("Sec 3 A-Math", DayOfWeek.MONDAY, LocalTime.of(16, 0), LocalTime.of(18, 0));
+        model.addStudent(aiden);
+        model.addLesson(math);
+        model.enrolStudent(aiden, math);
+
+        logic.execute(DeleteLessonCommand.COMMAND_WORD + " 1");
+
+        assertTrue(logic.getFilteredLessonList().isEmpty());
+        assertTrue(logic.getEnrolmentList().isEmpty());
+        assertEquals(List.of(aiden), logic.getFilteredStudentList());
+
+        // a saved enrolment without its lesson would make the file fail to load at the next launch
+        ReadOnlyAddressBook saved = readSavedAddressBook();
+        assertTrue(saved.getLessonList().isEmpty());
+        assertTrue(saved.getEnrolmentList().isEmpty());
+        assertEquals(List.of(aiden), saved.getStudentList());
+    }
+
+    @Test
+    public void execute_deleteLessonInvalidIndex_throwsException() {
+        assertCommandException(DeleteLessonCommand.COMMAND_WORD + " 1", MESSAGE_INVALID_LESSON_DISPLAYED_INDEX);
+        assertParseException(DeleteLessonCommand.COMMAND_WORD + " 0",
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteLessonCommand.MESSAGE_USAGE));
+    }
+
+    @Test
+    public void execute_deleteStudentInLesson_removesEnrolmentAndSaves() throws Exception {
+        Student aiden = new Student(new Name("Aiden Tan"), new Phone("91234567"), null);
+        Lesson math = new Lesson("Sec 3 A-Math", DayOfWeek.MONDAY, LocalTime.of(16, 0), LocalTime.of(18, 0));
+        model.addStudent(aiden);
+        model.addLesson(math);
+        model.enrolStudent(aiden, math);
+
+        logic.execute(DeleteStudentCommand.COMMAND_WORD + " 1");
+
+        assertTrue(logic.getFilteredStudentList().isEmpty());
+        assertTrue(logic.getEnrolmentList().isEmpty());
+        assertEquals(List.of(math), logic.getFilteredLessonList());
+
+        // a saved enrolment without its student would make the file fail to load at the next launch
+        ReadOnlyAddressBook saved = readSavedAddressBook();
+        assertTrue(saved.getStudentList().isEmpty());
+        assertTrue(saved.getEnrolmentList().isEmpty());
+        assertEquals(List.of(math), saved.getLessonList());
+    }
+
+    @Test
     public void execute_storageThrowsIoException_throwsCommandException() {
         assertCommandFailureForExceptionFromStorage(DUMMY_IO_EXCEPTION, String.format(
                 LogicManager.FILE_OPS_ERROR_FORMAT, DUMMY_IO_EXCEPTION.getMessage()));
@@ -143,6 +265,14 @@ public class LogicManagerTest {
     @Test
     public void getFilteredPersonList_modifyList_throwsUnsupportedOperationException() {
         assertThrows(UnsupportedOperationException.class, () -> logic.getFilteredPersonList().remove(0));
+    }
+
+    /**
+     * Reads back the address book file written by {@code logic} after the last successful command.
+     */
+    private ReadOnlyAddressBook readSavedAddressBook() throws DataLoadingException {
+        return new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"))
+                .readAddressBook().orElseThrow();
     }
 
     /**

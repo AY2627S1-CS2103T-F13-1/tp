@@ -2,11 +2,16 @@ package seedu.address.logic.parser;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static seedu.address.logic.parser.ParserUtil.MESSAGE_INVALID_DAY;
 import static seedu.address.logic.parser.ParserUtil.MESSAGE_INVALID_INDEX;
+import static seedu.address.logic.parser.ParserUtil.MESSAGE_INVALID_TIME;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
@@ -190,5 +195,149 @@ public class ParserUtilTest {
         Set<Tag> expectedTagSet = Set.of(new Tag(VALID_TAG_1), new Tag(VALID_TAG_2));
 
         assertEquals(expectedTagSet, actualTagSet);
+    }
+
+    @Test
+    public void parseDay_null_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> ParserUtil.parseDay(null));
+    }
+
+    @Test
+    public void parseDay_threeLetterAbbreviation_returnsDay() throws Exception {
+        assertEquals(DayOfWeek.MONDAY, ParserUtil.parseDay("mon"));
+        assertEquals(DayOfWeek.TUESDAY, ParserUtil.parseDay("tue"));
+        assertEquals(DayOfWeek.WEDNESDAY, ParserUtil.parseDay("wed"));
+        assertEquals(DayOfWeek.THURSDAY, ParserUtil.parseDay("thu"));
+        assertEquals(DayOfWeek.FRIDAY, ParserUtil.parseDay("fri"));
+        assertEquals(DayOfWeek.SATURDAY, ParserUtil.parseDay("sat"));
+        assertEquals(DayOfWeek.SUNDAY, ParserUtil.parseDay("sun"));
+    }
+
+    @Test
+    public void parseDay_anyLetterCase_returnsDay() throws Exception {
+        for (String day : List.of("WED", "Wed", "wEd", "weD")) {
+            assertEquals(DayOfWeek.WEDNESDAY, ParserUtil.parseDay(day));
+        }
+    }
+
+    @Test
+    public void parseDay_validValueWithWhitespace_returnsDay() throws Exception {
+        assertEquals(DayOfWeek.SUNDAY, ParserUtil.parseDay(WHITESPACE + "sun" + WHITESPACE));
+    }
+
+    @Test
+    public void parseDay_turkishDefaultLocale_returnsDay() throws Exception {
+        // in Turkish, the upper case of "i" is not "I" and the lower case of "I" is not "i"
+        Locale originalLocale = Locale.getDefault();
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+        try {
+            for (String day : List.of("fri", "FRI", "Fri")) {
+                assertEquals(DayOfWeek.FRIDAY, ParserUtil.parseDay(day));
+            }
+        } finally {
+            Locale.setDefault(originalLocale);
+        }
+    }
+
+    @Test
+    public void parseDay_fullName_throwsParseException() {
+        // a day is set in one fixed way, its first three letters, so its full name is not accepted
+        List<String> fullNames = List.of("monday", "tuesday", "wednesday", "thursday", "friday", "saturday",
+                "sunday", "Monday", "MONDAY");
+
+        for (String day : fullNames) {
+            assertThrows(ParseException.class, MESSAGE_INVALID_DAY, () -> ParserUtil.parseDay(day));
+        }
+    }
+
+    @Test
+    public void parseDay_invalidValue_throwsParseException() {
+        List<String> invalidDays = List.of(
+                // empty, too short or too long
+                "", WHITESPACE, "m", "mo", "mond", "mons",
+                // other common abbreviations; "tues" is the Developer Guide's example of an invalid day
+                "tues", "weds", "thur", "thurs",
+                // day numbers
+                "0", "1", "7",
+                // more than one day
+                "mon tue", "mon,tue", "mon-fri", "mon/tue",
+                // punctuation, or spaces inside a day
+                "mon.", "m o n",
+                // three characters that are not a day; the last is "Monday" in Chinese, written as escapes
+                "day", "all", "\u661F\u671F\u4E00",
+                // look-alike letters that Java treats as "i" and "s" when ignoring case: dotless i and long s
+                "fr\u0131", "\u017Fun");
+
+        for (String day : invalidDays) {
+            assertThrows(ParseException.class, MESSAGE_INVALID_DAY, () -> ParserUtil.parseDay(day));
+        }
+    }
+
+    @Test
+    public void parseTime_null_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> ParserUtil.parseTime(null));
+    }
+
+    @Test
+    public void parseTime_validValue_returnsTime() throws Exception {
+        // boundaries of a day
+        assertEquals(LocalTime.of(0, 0), ParserUtil.parseTime("0000"));
+        assertEquals(LocalTime.of(0, 1), ParserUtil.parseTime("0001"));
+        assertEquals(LocalTime.of(23, 59), ParserUtil.parseTime("2359"));
+
+        // boundaries of an hour
+        assertEquals(LocalTime.of(15, 59), ParserUtil.parseTime("1559"));
+        assertEquals(LocalTime.of(16, 0), ParserUtil.parseTime("1600"));
+
+        // leading zeros
+        assertEquals(LocalTime.of(9, 5), ParserUtil.parseTime("0905"));
+        assertEquals(LocalTime.of(12, 0), ParserUtil.parseTime("1200"));
+    }
+
+    @Test
+    public void parseTime_validValueWithWhitespace_returnsTime() throws Exception {
+        assertEquals(LocalTime.of(16, 0), ParserUtil.parseTime(WHITESPACE + "1600" + WHITESPACE));
+    }
+
+    @Test
+    public void parseTime_wrongLength_throwsParseException() {
+        for (String time : List.of("", WHITESPACE, "9", "16", "900", "160", "16000", "001600")) {
+            assertThrows(ParseException.class, MESSAGE_INVALID_TIME, () -> ParserUtil.parseTime(time));
+        }
+    }
+
+    @Test
+    public void parseTime_hourOrMinuteOutOfRange_throwsParseException() {
+        // "2400" is the Developer Guide's example of an invalid time
+        for (String time : List.of("2400", "2401", "2500", "9999", "0060", "1660", "1699")) {
+            assertThrows(ParseException.class, MESSAGE_INVALID_TIME, () -> ParserUtil.parseTime(time));
+        }
+    }
+
+    @Test
+    public void parseTime_otherTimeFormats_throwsParseException() {
+        // "4pm" is the Developer Guide's example of an invalid time
+        List<String> invalidTimes = List.of("4pm", "4:00pm", "0400pm", "16:00", "16.00", "16-00", "16 00",
+                "16h00", "1600h", "1600hrs", "noon", "abcd");
+
+        for (String time : invalidTimes) {
+            assertThrows(ParseException.class, MESSAGE_INVALID_TIME, () -> ParserUtil.parseTime(time));
+        }
+    }
+
+    @Test
+    public void parseTime_fourCharactersThatAreNotAllDigits_throwsParseException() {
+        // each of these has four characters, and some are numbers to Integer#parseInt
+        for (String time : List.of("-100", "+100", "1e03", "0x10", "16.0", "1 00", "100a")) {
+            assertThrows(ParseException.class, MESSAGE_INVALID_TIME, () -> ParserUtil.parseTime(time));
+        }
+    }
+
+    @Test
+    public void parseTime_nonAsciiDigits_throwsParseException() {
+        // "1600" in full-width digits and in Arabic-Indic digits, written as escapes
+        for (String time : List.of("\uFF11\uFF16\uFF10\uFF10", "\u0661\u0666\u0660\u0660")) {
+            assertThrows(ParseException.class, MESSAGE_INVALID_TIME, () -> ParserUtil.parseTime(time));
+        }
     }
 }
