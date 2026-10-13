@@ -13,7 +13,9 @@ Lesson lesson = new Lesson("Sec 3 A-Math", DayOfWeek.MONDAY,
 
 `Lesson` is immutable, in `seedu.address.model.lesson`, and exposes `getId()`, `getName()`,
 `getDay()`, `getStartTime()`, and `getEndTime()`. Days use `java.time.DayOfWeek`; times use
-`java.time.LocalTime`. The constructor validates the name, minute precision and end-after-start.
+`java.time.LocalTime`. The constructor validates the name and minute precision, and rejects an end time
+equal to the start time. An end time earlier than the start time means the lesson runs past midnight and
+ends on the next day; `getDay()` is the day it starts on.
 Names are trimmed and repeated spaces collapsed. `isSameLesson` compares the name ignoring case,
 day and both times. Overlapping lessons are allowed. `equals` includes the ID and exact details.
 

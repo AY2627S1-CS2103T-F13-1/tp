@@ -11,13 +11,16 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 
-/** Immutable weekly lesson. Overlapping lessons are allowed. */
+/**
+ * Immutable weekly lesson. Overlapping lessons are allowed. An end time earlier than the start time
+ * means the lesson runs past midnight and ends on the day after its day.
+ */
 public final class Lesson {
     public static final String MESSAGE_NAME_CONSTRAINTS =
             "Lesson names must be 1 to 50 characters, start with a letter or digit, "
             + "and contain only English letters, digits, spaces and - ' . , & ( ) +.";
     public static final String MESSAGE_TIME_CONSTRAINTS =
-            "Times must have minute precision, and end time must be later than start time.";
+            "Times must have minute precision, and end time must not be the same as start time.";
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HHmm");
 
     private final UUID id;
@@ -37,7 +40,7 @@ public final class Lesson {
         String normalizedName = name.trim().replaceAll(" +", " ");
         checkArgument(normalizedName.matches("[A-Za-z0-9][A-Za-z0-9 '\\-.,&()+]{0,49}"), MESSAGE_NAME_CONSTRAINTS);
         checkArgument(startTime.getSecond() == 0 && startTime.getNano() == 0
-                && endTime.getSecond() == 0 && endTime.getNano() == 0 && endTime.isAfter(startTime),
+                && endTime.getSecond() == 0 && endTime.getNano() == 0 && !endTime.equals(startTime),
                 MESSAGE_TIME_CONSTRAINTS);
         this.id = id;
         this.name = normalizedName;
