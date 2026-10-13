@@ -26,7 +26,7 @@ public class ParserUtil {
     public static final String MESSAGE_INVALID_INDEX = "Index must be a positive integer.";
     public static final String MESSAGE_INVALID_DAY = "Day must be one of mon, tue, wed, thu, fri, sat or sun.";
     public static final String MESSAGE_INVALID_TIME =
-            "Times must be in the 24-hour format HHmm with exactly four digits, from 0000 to 2359, e.g. 0900 or 1600.";
+            "Times must be exactly four digits in 24-hour format, from 0000 to 2359, e.g. 1600.";
 
     private static final int DAY_ABBREVIATION_LENGTH = 3;
     private static final String TIME_VALIDATION_REGEX = "([01][0-9]|2[0-3])[0-5][0-9]";

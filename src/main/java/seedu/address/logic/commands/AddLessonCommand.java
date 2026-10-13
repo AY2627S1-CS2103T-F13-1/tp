@@ -18,14 +18,14 @@ public class AddLessonCommand extends Command {
 
     public static final String COMMAND_WORD = "addlesson";
 
-    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Adds a weekly lesson. "
-            + "DAY is one of mon, tue, wed, thu, fri, sat or sun, and times are four digits such as 1600. "
-            + "An end time earlier than the start time means the lesson ends on the next day.\n"
+    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Adds a weekly lesson.\n"
             + "Parameters: "
             + PREFIX_NAME + "NAME "
             + PREFIX_DAY + "DAY "
             + PREFIX_START_TIME + "START_TIME "
             + PREFIX_END_TIME + "END_TIME\n"
+            + "DAY is one of mon, tue, wed, thu, fri, sat or sun. Times are four digits, e.g. 1600.\n"
+            + "An end time earlier than the start time means the lesson ends on the next day.\n"
             + "Example: " + COMMAND_WORD + " "
             + PREFIX_NAME + "Sec 3 A-Math "
             + PREFIX_DAY + "mon "
