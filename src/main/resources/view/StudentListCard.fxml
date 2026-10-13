@@ -35,6 +35,8 @@
              GridPane.columnIndex="1" />
     </GridPane>
 
+    <Label styleClass="contact_section_label" text="Lessons" />
+    <Label fx:id="lessons" styleClass="cell_small_label" wrapText="true" />
     <Separator />
 
     <Label styleClass="contact_section_label" text="Guardian" />

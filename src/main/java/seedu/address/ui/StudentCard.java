@@ -15,6 +15,8 @@ public class StudentCard extends UiPart<Region> {
     public final Student student;
 
     @FXML
+    private Label lessons;
+    @FXML
     private Label id;
     @FXML
     private Label studentName;
@@ -29,7 +31,13 @@ public class StudentCard extends UiPart<Region> {
      * Creates a {@code StudentCard} with the given student and displayed index.
      */
     public StudentCard(Student student, int displayedIndex) {
+        this(student, displayedIndex, "-");
+    }
+
+    /** Creates a card with its current lesson memberships. */
+    public StudentCard(Student student, int displayedIndex, String lessonText) {
         super(FXML);
+        lessons.setText(lessonText);
         this.student = student;
         StudentCardDetails details = StudentCardDetails.from(student);
 
