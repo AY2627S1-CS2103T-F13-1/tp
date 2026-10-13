@@ -111,4 +111,17 @@ public class ListStudentsCommandTest {
         }
         return addressBook;
     }
+
+    @Test
+    public void equals_lessonFilter_comparesSelectedLesson() {
+        var first = seedu.address.commons.core.index.Index.fromOneBased(1);
+        var second = seedu.address.commons.core.index.Index.fromOneBased(2);
+        var filtered = new ListStudentsCommand(first);
+        assertEquals(filtered, new ListStudentsCommand(first));
+        assertEquals(filtered.hashCode(), new ListStudentsCommand(first).hashCode());
+        assertFalse(filtered.equals(new ListStudentsCommand(second)));
+        assertFalse(filtered.equals(new ListStudentsCommand()));
+        assertFalse(new ListStudentsCommand().equals(filtered));
+    }
+
 }

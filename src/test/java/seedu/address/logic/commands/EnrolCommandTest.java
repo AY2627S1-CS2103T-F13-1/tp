@@ -85,4 +85,16 @@ public class EnrolCommandTest {
         assertEquals(List.of(science, math), model.getAddressBook().getLessonsForStudent(beth));
         assertEquals(List.of(beth, aiden), model.getAddressBook().getStudentsInLesson(math));
     }
+
+    @Test
+    public void equals_comparesBothIndices() throws Exception {
+        var command = parser.parseCommand("enrol s/1 l/2");
+        assertEquals(command, command);
+        assertEquals(command, parser.parseCommand("enrol l/2 s/1"));
+        org.junit.jupiter.api.Assertions.assertNotEquals(command, parser.parseCommand("enrol s/2 l/2"));
+        org.junit.jupiter.api.Assertions.assertNotEquals(command, parser.parseCommand("enrol s/1 l/1"));
+        org.junit.jupiter.api.Assertions.assertNotEquals(command, new ListStudentsCommand());
+        org.junit.jupiter.api.Assertions.assertNotEquals(command, null);
+    }
+
 }

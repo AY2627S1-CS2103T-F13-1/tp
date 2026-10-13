@@ -16,7 +16,7 @@ public class ListStudentsCommandParser implements Parser<ListStudentsCommand> {
         ArgumentMultimap values = ArgumentTokenizer.tokenize(args, PREFIX_LESSON);
         values.verifyNoDuplicatePrefixesFor(PREFIX_LESSON);
         try {
-            if (!values.getPreamble().isEmpty() || values.getValue(PREFIX_LESSON).isEmpty()) {
+            if (!values.getPreamble().isEmpty()) {
                 throw new ParseException("Missing lesson index");
             }
             return new ListStudentsCommand(ParserUtil.parseIndex(values.getValue(PREFIX_LESSON).get()));

@@ -51,4 +51,23 @@ public class EnrolmentPanelsTest {
             return null;
         });
     }
+
+    @Test
+    public void nullLessonCell_clearsGraphic() throws Exception {
+        JavaFxTestUtil.runOnFxThread(() -> {
+            Model model = new ModelManager();
+            var items = javafx.collections.FXCollections.<Lesson>observableArrayList();
+            items.add(null);
+            LessonListPanel panel = new LessonListPanel(items, model.getAddressBook());
+            @SuppressWarnings("unchecked")
+            var view = (javafx.scene.control.ListView<Lesson>) panel.getRoot().lookup("#lessonListView");
+            var cell = view.getCellFactory().call(view);
+            cell.updateListView(view);
+            cell.updateIndex(0);
+            org.junit.jupiter.api.Assertions.assertNull(cell.getGraphic());
+            org.junit.jupiter.api.Assertions.assertNull(cell.getText());
+            return null;
+        });
+    }
+
 }

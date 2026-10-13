@@ -34,4 +34,15 @@ public class ListStudentsCommandParserTest {
                 new ListStudentsCommand(seedu.address.commons.core.index.Index.fromOneBased(2)));
         assertParseFailure(parser, " n/Aiden", MESSAGE_INVALID_FORMAT);
     }
+
+    @Test
+    public void parse_invalidLessonFilter_reportsUsage() {
+        for (String args : new String[] {" l/", " l/0", " l/-1", " l/+1", " l/1.5",
+            " l/2147483648", " l/one", " l/1 extra", " text l/1"}) {
+            assertParseFailure(parser, args, MESSAGE_INVALID_FORMAT);
+        }
+        assertParseFailure(parser, " l/1 l/2",
+                seedu.address.logic.Messages.getErrorMessageForDuplicatePrefixes(CliSyntax.PREFIX_LESSON));
+    }
+
 }
