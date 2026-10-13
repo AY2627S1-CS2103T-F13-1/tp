@@ -28,6 +28,19 @@ public class LessonTest {
     }
 
     @Test
+    public void constructor_timeFinerThanMinute_throwsIllegalArgumentException() {
+        LocalTime start = LocalTime.of(16, 0);
+        LocalTime end = LocalTime.of(18, 0);
+        // seconds or nanoseconds on either the start time or the end time
+        for (LocalTime invalid : new LocalTime[] {start.withSecond(1), start.withNano(1)}) {
+            assertThrows(IllegalArgumentException.class, () -> new Lesson("Math", DayOfWeek.MONDAY, invalid, end));
+        }
+        for (LocalTime invalid : new LocalTime[] {end.withSecond(1), end.withNano(1)}) {
+            assertThrows(IllegalArgumentException.class, () -> new Lesson("Math", DayOfWeek.MONDAY, start, invalid));
+        }
+    }
+
+    @Test
     public void duplicateCheck_ignoresCaseAndSpacingButIncludesSchedule() {
         Lesson lesson = lesson("Sec 3 A-Math", 16, 18);
         assertTrue(lesson.isSameLesson(lesson("sec 3  a-math", 16, 18)));
