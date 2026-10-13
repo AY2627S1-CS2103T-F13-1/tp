@@ -30,8 +30,8 @@ public class ListStudentsCommandParserTest {
 
     @Test
     public void parse_unsupportedPrefix_throwsParseException() {
-        // the l/ lesson filter is not supported until lessons exist
-        assertParseFailure(parser, " l/2", MESSAGE_INVALID_FORMAT);
+        assertParseSuccess(parser, " l/2",
+                new ListStudentsCommand(seedu.address.commons.core.index.Index.fromOneBased(2)));
         assertParseFailure(parser, " n/Aiden", MESSAGE_INVALID_FORMAT);
     }
 }
