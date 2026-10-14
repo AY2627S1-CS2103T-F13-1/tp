@@ -2,8 +2,13 @@ package seedu.address.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.time.DayOfWeek;
+import java.time.LocalTime;
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
+import seedu.address.model.lesson.Lesson;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
 import seedu.address.model.student.Guardian;
@@ -48,5 +53,19 @@ public class StudentCardDetailsTest {
 
         assertEquals("-", details.guardianName());
         assertEquals("-", details.guardianPhone());
+    }
+
+    @Test
+    public void from_enrolledLessons_formatsMemberships() {
+        Student student = new Student(STUDENT_NAME, STUDENT_PHONE, GUARDIAN);
+        Lesson math = new Lesson("Sec 3 A-Math", DayOfWeek.MONDAY,
+                LocalTime.of(16, 0), LocalTime.of(18, 0));
+        Lesson physics = new Lesson("Physics", DayOfWeek.FRIDAY,
+                LocalTime.of(23, 0), LocalTime.of(1, 0));
+
+        StudentCardDetails details = StudentCardDetails.from(student, List.of(math, physics));
+
+        assertEquals("Sec 3 A-Math — Monday, 16:00 – 18:00\n"
+                + "Physics — Friday, 23:00 – 01:00 (next day)", details.lessons());
     }
 }

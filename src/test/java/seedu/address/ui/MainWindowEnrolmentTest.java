@@ -16,6 +16,7 @@ import javafx.event.ActionEvent;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import seedu.address.logic.LogicManager;
 import seedu.address.model.ModelManager;
@@ -56,6 +57,10 @@ public class MainWindowEnrolmentTest {
                 Parent root = stage.getScene().getRoot();
                 root.applyCss();
                 root.layout();
+                assertEquals(2, root.lookupAll(".panel_header_label").size());
+                assertTrue(root.lookupAll(".panel_header_label").stream()
+                        .map(node -> (Label) node)
+                        .allMatch(label -> Color.WHITE.equals(label.getTextFill())));
                 TextField commandBox = (TextField) root.lookup("#commandTextField");
                 commandBox.setText("enrol s/1 l/1");
                 commandBox.fireEvent(new ActionEvent());
@@ -64,8 +69,9 @@ public class MainWindowEnrolmentTest {
                 assertEquals("", commandBox.getText());
                 String students = labels((Parent) root.lookup("#studentListPanelPlaceholder"));
                 String lessons = labels((Parent) root.lookup("#lessonListPanelPlaceholder"));
-                assertTrue(students.contains("Math (Mon 1600-1800)"), students);
-                assertTrue(lessons.contains("Students: Aiden Tan"), lessons);
+                assertTrue(students.contains("Math — Monday, 16:00 – 18:00"), students);
+                assertTrue(lessons.contains("Students"), lessons);
+                assertTrue(lessons.contains("Aiden Tan"), lessons);
                 assertTrue(storage.readAddressBook().orElseThrow().isEnrolled(student, lesson));
             } finally {
                 stage.close();

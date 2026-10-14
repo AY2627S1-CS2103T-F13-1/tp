@@ -49,11 +49,11 @@
 
         <SplitPane VBox.vgrow="ALWAYS" dividerPositions="0.5">
           <VBox styleClass="pane-with-border" minWidth="250">
-            <Label text="Students" styleClass="cell_big_label" />
+            <Label text="Students" styleClass="panel_header_label" />
             <StackPane fx:id="studentListPanelPlaceholder" VBox.vgrow="ALWAYS" />
           </VBox>
           <VBox styleClass="pane-with-border" minWidth="250">
-            <Label text="Lessons" styleClass="cell_big_label" />
+            <Label text="Lessons" styleClass="panel_header_label" />
             <StackPane fx:id="lessonListPanelPlaceholder" VBox.vgrow="ALWAYS" />
           </VBox>
         </SplitPane>
