@@ -3,14 +3,15 @@ package seedu.address.model.student;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Predicate;
 
-import seedu.address.commons.util.StringUtil;
 import seedu.address.commons.util.ToStringBuilder;
 
 /**
  * Tests that a {@code Student}'s name and their guardian's name match the given keywords.
- * Matching is case-insensitive and by whole word. Within each list, any one keyword may match.
+ * Matching is case-insensitive, and a keyword may match any part of a name. Within each list,
+ * any one keyword may match.
  * When both lists are non-empty, the student must match both. An empty list places no condition
  * on that name, but a predicate with no keywords at all matches no student.
  */
@@ -33,15 +34,20 @@ public class StudentNameContainsKeywordsPredicate implements Predicate<Student> 
         if (nameKeywords.isEmpty() && guardianNameKeywords.isEmpty()) {
             return false;
         }
-        boolean nameMatches = nameKeywords.isEmpty() || containsAnyWord(student.getName().fullName, nameKeywords);
+        boolean nameMatches = nameKeywords.isEmpty() || containsAnySubstring(student.getName().fullName, nameKeywords);
         boolean guardianNameMatches = guardianNameKeywords.isEmpty() || student.getGuardian()
-                .map(guardian -> containsAnyWord(guardian.getName().fullName, guardianNameKeywords))
+                .map(guardian -> containsAnySubstring(guardian.getName().fullName, guardianNameKeywords))
                 .orElse(false);
         return nameMatches && guardianNameMatches;
     }
 
-    private static boolean containsAnyWord(String name, List<String> keywords) {
-        return keywords.stream().anyMatch(keyword -> StringUtil.containsWordIgnoreCase(name, keyword));
+    private static boolean containsAnySubstring(String name, List<String> keywords) {
+        String normalizedName = name.toLowerCase(Locale.ROOT);
+        return keywords.stream()
+                .map(String::trim)
+                .filter(keyword -> !keyword.isEmpty())
+                .map(keyword -> keyword.toLowerCase(Locale.ROOT))
+                .anyMatch(normalizedName::contains);
     }
 
     @Override

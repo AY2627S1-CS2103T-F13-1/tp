@@ -117,14 +117,14 @@ public class LogicManagerTest {
 
         Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
         expectedModel.updateFilteredStudentList(
-                new StudentNameContainsKeywordsPredicate(List.of("ryan"), List.of()));
-        assertCommandSuccess(FindStudentCommand.COMMAND_WORD + " n/ryan",
+                new StudentNameContainsKeywordsPredicate(List.of("rya"), List.of()));
+        assertCommandSuccess(FindStudentCommand.COMMAND_WORD + " n/rya",
                 String.format(MESSAGE_STUDENTS_LISTED_OVERVIEW, 1), expectedModel);
         assertEquals(List.of(ryan), logic.getFilteredStudentList());
 
         expectedModel.updateFilteredStudentList(
-                new StudentNameContainsKeywordsPredicate(List.of(), List.of("ling")));
-        assertCommandSuccess(FindStudentCommand.COMMAND_WORD + " gn/ling",
+                new StudentNameContainsKeywordsPredicate(List.of(), List.of("lin")));
+        assertCommandSuccess(FindStudentCommand.COMMAND_WORD + " gn/lin",
                 String.format(MESSAGE_STUDENTS_LISTED_OVERVIEW, 1), expectedModel);
         assertEquals(List.of(aiden), logic.getFilteredStudentList());
     }
