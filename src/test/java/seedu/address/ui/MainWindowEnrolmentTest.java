@@ -64,8 +64,9 @@ public class MainWindowEnrolmentTest {
                 assertEquals("", commandBox.getText());
                 String students = labels((Parent) root.lookup("#studentListPanelPlaceholder"));
                 String lessons = labels((Parent) root.lookup("#lessonListPanelPlaceholder"));
-                assertTrue(students.contains("Math (Mon 1600-1800)"), students);
-                assertTrue(lessons.contains("Students: Aiden Tan"), lessons);
+                assertTrue(students.contains("Math — Monday, 16:00 – 18:00"), students);
+                assertTrue(lessons.contains("Students"), lessons);
+                assertTrue(lessons.contains("Aiden Tan"), lessons);
                 assertTrue(storage.readAddressBook().orElseThrow().isEnrolled(student, lesson));
             } finally {
                 stage.close();
