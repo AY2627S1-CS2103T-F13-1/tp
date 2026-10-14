@@ -53,6 +53,7 @@ public class MainWindowEnrolmentTest {
                 MainWindow window = new MainWindow(stage, logic, dataPath);
                 window.fillInnerParts();
                 stage.show();
+                assertEquals("TutorReach", stage.getTitle());
                 Parent root = stage.getScene().getRoot();
                 root.applyCss();
                 root.layout();
