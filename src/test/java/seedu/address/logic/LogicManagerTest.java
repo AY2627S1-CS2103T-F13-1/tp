@@ -26,7 +26,9 @@ import seedu.address.logic.commands.AddStudentCommand;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.DeleteLessonCommand;
 import seedu.address.logic.commands.DeleteStudentCommand;
+import seedu.address.logic.commands.EnrolCommand;
 import seedu.address.logic.commands.FindStudentCommand;
+import seedu.address.logic.commands.ListLessonsCommand;
 import seedu.address.logic.commands.ListStudentsCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.FindStudentCommandParser;
@@ -227,6 +229,33 @@ public class LogicManagerTest {
         assertCommandException(DeleteLessonCommand.COMMAND_WORD + " 1", MESSAGE_INVALID_LESSON_DISPLAYED_INDEX);
         assertParseException(DeleteLessonCommand.COMMAND_WORD + " 0",
                 String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteLessonCommand.MESSAGE_USAGE));
+    }
+
+    @Test
+    public void execute_filterAndDelete_resetsStudentFilter() throws Exception {
+        logic.execute(AddStudentCommand.COMMAND_WORD + " n/Aiden Tan p/91234567");
+        logic.execute(AddStudentCommand.COMMAND_WORD + " n/Ryan Lim p/92345678");
+        logic.execute(AddLessonCommand.COMMAND_WORD + " n/Math d/mon st/1600 et/1800");
+        logic.execute(AddLessonCommand.COMMAND_WORD + " n/Physics d/wed st/1900 et/2030");
+        logic.execute(EnrolCommand.COMMAND_WORD + " s/1 l/1");
+
+        CommandResult lessonResult = logic.execute(ListLessonsCommand.COMMAND_WORD + " d/mon");
+        assertEquals(String.format(ListLessonsCommand.MESSAGE_SUCCESS_BY_DAY, "Monday"),
+                lessonResult.getFeedbackToUser());
+        assertEquals(List.of("Math"), logic.getFilteredLessonList().stream().map(Lesson::getName).toList());
+
+        Lesson displayedLesson = logic.getFilteredLessonList().getFirst();
+        CommandResult studentResult = logic.execute(ListStudentsCommand.COMMAND_WORD + " l/1");
+        assertEquals("Listed students enrolled in " + displayedLesson, studentResult.getFeedbackToUser());
+        assertEquals(List.of("Aiden Tan"), logic.getFilteredStudentList().stream()
+                .map(student -> student.getName().fullName).toList());
+
+        logic.execute(DeleteLessonCommand.COMMAND_WORD + " 1");
+        assertEquals(List.of("Aiden Tan", "Ryan Lim"), logic.getFilteredStudentList().stream()
+                .map(student -> student.getName().fullName).toList());
+        assertTrue(logic.getFilteredLessonList().isEmpty());
+        assertEquals(List.of("Physics"), readSavedAddressBook().getLessonList().stream()
+                .map(Lesson::getName).toList());
     }
 
     @Test

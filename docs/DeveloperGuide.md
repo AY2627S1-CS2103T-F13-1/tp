@@ -691,6 +691,19 @@ testers are expected to do more *exploratory* testing.
    1. Other incorrect commands to try: `addlesson n/Math d/tues st/1600 et/1800`, `addlesson n/Math d/monday st/1600 et/1800`, `addlesson n/Math d/mon st/4pm et/1800`, `addlesson n/Math d/mon st/2400 et/2430`<br>
       Expected: No lesson is added. The status message shows the error for the invalid value: a day must be one of `mon`, `tue`, `wed`, `thu`, `fri`, `sat` and `sun`, and a time must be exactly four digits from `0000` to `2359`.
 
+1. Filtering lessons by day
+
+   1. Prerequisites: Add lessons on at least two different days, including Monday.
+
+   1. Test case: `listlessons d/mon`<br>
+      Expected: Only lessons starting on Monday are shown. Matching is case-insensitive.
+
+   1. Test case: `listlessons`<br>
+      Expected: All lessons are shown again.
+
+   1. Other incorrect commands to try: `listlessons mon`, `listlessons d/monday`, `listlessons d/mon d/tue`, `listlessons n/Math`<br>
+      Expected: The list is unchanged. The status message shows the relevant invalid command, day or duplicate-prefix error.
+
 1. Deleting a lesson
 
    1. Prerequisites: List all lessons using `listlessons`. The first lesson has at least one student enrolled.
@@ -736,6 +749,16 @@ testers are expected to do more *exploratory* testing.
 
    1. Test case: `liststudents 1`<br>
       Expected: The list is unchanged. The status message shows the invalid command format error.
+
+   1. Test case: `liststudents`<br>
+      Expected: All students are shown again.
+
+1. Deleting the lesson used to filter students
+
+   1. Prerequisites: At least two students and one lesson are shown. Enrol only the first student in the first lesson, then execute `liststudents l/1`.
+
+   1. Test case: `deletelesson 1`<br>
+      Expected: The selected lesson is deleted and all remaining students are shown again, because the lesson used by the student filter no longer exists.
 
 1. Finding students
 

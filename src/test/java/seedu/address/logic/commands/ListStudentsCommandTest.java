@@ -8,15 +8,21 @@ import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 import static seedu.address.testutil.TypicalPersons.getTypicalPersons;
 
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import seedu.address.commons.core.index.Index;
+import seedu.address.logic.Messages;
+import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.lesson.Lesson;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
 import seedu.address.model.student.Guardian;
@@ -32,6 +38,10 @@ public class ListStudentsCommandTest {
     private static final Student CHLOE = new Student(new Name("Chloe Tan"), new Phone("88888888"),
             new Guardian(new Name("Tan Mei Ling"), new Phone("91234567")));
     private static final Student RYAN = new Student(new Name("Ryan Lim"), new Phone("93210283"), null);
+    private static final Lesson MATH = new Lesson("Math", DayOfWeek.MONDAY,
+            LocalTime.of(16, 0), LocalTime.of(18, 0));
+    private static final Lesson PHYSICS = new Lesson("Physics", DayOfWeek.WEDNESDAY,
+            LocalTime.of(19, 0), LocalTime.of(20, 30));
 
     private Model model;
     private Model expectedModel;
@@ -86,6 +96,54 @@ public class ListStudentsCommandTest {
     }
 
     @Test
+    public void execute_withLessonIndex_showsStudentsInSelectedLesson() {
+        for (Model each : List.of(model, expectedModel)) {
+            addLessonsAndEnrolments(each);
+        }
+        expectedModel.filterStudentsByLesson(MATH);
+
+        assertCommandSuccess(new ListStudentsCommand(Index.fromOneBased(1)), model,
+                "Listed students enrolled in " + MATH, expectedModel);
+        assertEquals(List.of(AIDEN, CHLOE), model.getFilteredStudentList());
+    }
+
+    @Test
+    public void execute_withLessonIndex_usesDisplayedLessonList() {
+        for (Model each : List.of(model, expectedModel)) {
+            addLessonsAndEnrolments(each);
+            each.updateFilteredLessonList(lesson -> lesson.equals(PHYSICS));
+        }
+        expectedModel.filterStudentsByLesson(PHYSICS);
+
+        assertCommandSuccess(new ListStudentsCommand(Index.fromOneBased(1)), model,
+                "Listed students enrolled in " + PHYSICS, expectedModel);
+        assertEquals(List.of(RYAN), model.getFilteredStudentList());
+    }
+
+    @Test
+    public void execute_lessonIndexOutsideDisplayedList_throwsCommandException() {
+        addLessonsAndEnrolments(model);
+        model.updateFilteredLessonList(lesson -> lesson.equals(MATH));
+
+        List<Student> studentsBefore = List.copyOf(model.getFilteredStudentList());
+        assertThrows(CommandException.class, Messages.MESSAGE_INVALID_LESSON_DISPLAYED_INDEX, () ->
+                new ListStudentsCommand(Index.fromOneBased(2)).execute(model));
+        assertEquals(studentsBefore, model.getFilteredStudentList());
+    }
+
+    @Test
+    public void execute_afterLessonFilterWithoutIndex_showsAllStudents() throws Exception {
+        for (Model each : List.of(model, expectedModel)) {
+            addLessonsAndEnrolments(each);
+        }
+        new ListStudentsCommand(Index.fromOneBased(1)).execute(model);
+        assertEquals(List.of(AIDEN, CHLOE), model.getFilteredStudentList());
+
+        assertCommandSuccess(new ListStudentsCommand(), model, ListStudentsCommand.MESSAGE_SUCCESS, expectedModel);
+        assertEquals(List.of(AIDEN, CHLOE, RYAN), model.getFilteredStudentList());
+    }
+
+    @Test
     public void equals() {
         ListStudentsCommand listStudentsCommand = new ListStudentsCommand();
 
@@ -110,6 +168,14 @@ public class ListStudentsCommandTest {
             addressBook.addStudent(student);
         }
         return addressBook;
+    }
+
+    private static void addLessonsAndEnrolments(Model model) {
+        model.addLesson(MATH);
+        model.addLesson(PHYSICS);
+        model.enrolStudent(AIDEN, MATH);
+        model.enrolStudent(CHLOE, MATH);
+        model.enrolStudent(RYAN, PHYSICS);
     }
 
     @Test

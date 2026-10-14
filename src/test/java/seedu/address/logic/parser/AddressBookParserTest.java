@@ -22,6 +22,7 @@ import seedu.address.logic.commands.DeleteStudentCommand;
 import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.FindStudentCommand;
 import seedu.address.logic.commands.HelpCommand;
+import seedu.address.logic.commands.ListLessonsCommand;
 import seedu.address.logic.commands.ListStudentsCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.lesson.Lesson;
@@ -91,7 +92,8 @@ public class AddressBookParserTest {
                 "add lesson n/Sec 3 A-Math d/mon st/1600 et/1800",
                 "deletelessons 1",
                 "delete lesson 1",
-                "dellesson 1");
+                "dellesson 1",
+                "listlesson");
 
         for (String command : misspeltCommands) {
             assertThrows(ParseException.class, MESSAGE_UNKNOWN_COMMAND, () -> parser.parseCommand(command));
@@ -152,6 +154,19 @@ public class AddressBookParserTest {
     public void parseCommand_listStudents() throws Exception {
         assertEquals(new ListStudentsCommand(), parser.parseCommand(ListStudentsCommand.COMMAND_WORD));
         assertEquals(new ListStudentsCommand(), parser.parseCommand(ListStudentsCommand.COMMAND_WORD + "   "));
+    }
+
+    @Test
+    public void parseCommand_listLessons() throws Exception {
+        assertEquals(new ListLessonsCommand(), parser.parseCommand(ListLessonsCommand.COMMAND_WORD));
+        assertEquals(new ListLessonsCommand(DayOfWeek.MONDAY),
+                parser.parseCommand(ListLessonsCommand.COMMAND_WORD + " d/mon"));
+    }
+
+    @Test
+    public void parseCommand_listLessonsInvalidDay_throwsParseException() {
+        assertThrows(ParseException.class, ParserUtil.MESSAGE_INVALID_DAY, () ->
+                parser.parseCommand(ListLessonsCommand.COMMAND_WORD + " d/monday"));
     }
 
     @Test
