@@ -66,6 +66,37 @@ public class LessonModelTest {
     }
 
     @Test
+    public void filterStudentsByLesson_lessonAbsent_throwsIllegalArgumentException() {
+        Model model = new ModelManager();
+
+        assertThrows(IllegalArgumentException.class, () -> model.filterStudentsByLesson(lesson));
+    }
+
+    @Test
+    public void setAddressBook_activeLessonFilter_refreshesEnrolledStudents() {
+        Student ryan = new Student(new Name("Ryan"), new Phone("92345678"), null);
+        AddressBook initial = new AddressBook();
+        initial.addStudent(student);
+        initial.addStudent(ryan);
+        initial.addLesson(lesson);
+        initial.addEnrolment(new Enrolment(student.getId(), lesson.getId()));
+        Model model = new ModelManager(initial, new UserPrefs());
+        model.filterStudentsByLesson(lesson);
+        var filteredStudents = model.getFilteredStudentList();
+        assertEquals(List.of(student), filteredStudents);
+
+        AddressBook replacement = new AddressBook();
+        replacement.addStudent(student);
+        replacement.addStudent(ryan);
+        replacement.addLesson(lesson);
+        replacement.addEnrolment(new Enrolment(ryan.getId(), lesson.getId()));
+        model.setAddressBook(replacement);
+
+        assertEquals(List.of(ryan), filteredStudents);
+        assertEquals(filteredStudents, model.getFilteredStudentList());
+    }
+
+    @Test
     public void reset_preservesLinksAndExistingObservableViews() {
         Model model = new ModelManager();
         var view = model.getFilteredLessonList();

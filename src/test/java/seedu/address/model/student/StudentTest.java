@@ -29,13 +29,19 @@ public class StudentTest {
 
     @Test
     public void isSameStudent_normalizedNameAndSharedNumber() {
-        Student student = new Student(name, phone, null);
+        Student ownContact = new Student(name, phone, null);
+        Student sameOwnContact = new Student(new Name("aiden  tan "), phone, null);
         Student guardianContact = new Student(new Name("aiden  tan "), null, guardian);
-        assertTrue(student.isSameStudent(guardianContact));
-        assertTrue(guardianContact.isSameStudent(student));
-        assertFalse(student.isSameStudent(new Student(name, new Phone("88888888"), null)));
-        assertFalse(student.isSameStudent(new Student(new Name("Chloe Tan"), null, guardian)));
-        assertFalse(student.isSameStudent(null));
+        Student sameGuardianContact = new Student(name, null,
+                new Guardian(new Name("Lim Mei Ling"), phone));
+
+        assertTrue(ownContact.isSameStudent(sameOwnContact));
+        assertTrue(ownContact.isSameStudent(guardianContact));
+        assertTrue(guardianContact.isSameStudent(ownContact));
+        assertTrue(guardianContact.isSameStudent(sameGuardianContact));
+        assertFalse(ownContact.isSameStudent(new Student(name, new Phone("88888888"), null)));
+        assertFalse(ownContact.isSameStudent(new Student(new Name("Chloe Tan"), null, guardian)));
+        assertFalse(ownContact.isSameStudent(null));
     }
 
     @Test

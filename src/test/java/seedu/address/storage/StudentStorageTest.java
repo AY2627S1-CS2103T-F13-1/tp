@@ -52,11 +52,14 @@ public class StudentStorageTest {
         String[] invalidRecords = {
             "null",
             "{\"name\":\"Aiden\"}",
+            "{\"name\":\"Aiden!\",\"phone\":\"91234567\"}",
             "{\"name\":\"Aiden\",\"phone\":\"abc\"}",
             "{\"phone\":\"91234567\"}",
             "{\"name\":\"Aiden\",\"phone\":\"91234567\",\"guardianName\":\"Mei\"}",
             "{\"name\":\"Aiden\",\"guardianPhone\":\"91234567\"}",
-            "{\"name\":\"Aiden\",\"guardianName\":\"\",\"guardianPhone\":\"91234567\"}"
+            "{\"name\":\"Aiden\",\"guardianName\":\"\",\"guardianPhone\":\"91234567\"}",
+            "{\"name\":\"Aiden\",\"guardianName\":\"Mei\",\"guardianPhone\":\"abc\"}",
+            "{\"id\":\"not-a-uuid\",\"name\":\"Aiden\",\"phone\":\"91234567\"}"
         };
         Path file = testFolder.resolve("invalid.json");
         for (String record : invalidRecords) {

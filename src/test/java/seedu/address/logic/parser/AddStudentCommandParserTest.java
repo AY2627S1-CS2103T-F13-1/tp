@@ -42,6 +42,10 @@ public class AddStudentCommandParserTest {
                 AddStudentCommandParser.MESSAGE_INCOMPLETE_GUARDIAN);
         assertParseFailure(parser, " n/Aiden Tan gp/91234567",
                 AddStudentCommandParser.MESSAGE_INCOMPLETE_GUARDIAN);
+        assertParseFailure(parser, " n/Aiden Tan p/93210283 gn/Tan Mei Ling",
+                AddStudentCommandParser.MESSAGE_INCOMPLETE_GUARDIAN);
+        assertParseFailure(parser, " n/Aiden Tan p/93210283 gp/91234567",
+                AddStudentCommandParser.MESSAGE_INCOMPLETE_GUARDIAN);
     }
 
     @Test
