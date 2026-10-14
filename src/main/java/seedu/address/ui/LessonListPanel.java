@@ -1,51 +1,57 @@
 package seedu.address.ui;
 
-import java.util.stream.Collectors;
+import static java.util.Objects.requireNonNull;
 
 import javafx.beans.InvalidationListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.lesson.Lesson;
 
-/** Displays lessons and their enrolled students using the displayed lesson indices. */
+/**
+ * Panel containing the list of lessons.
+ */
 public class LessonListPanel extends UiPart<Region> {
+
+    private static final String FXML = "LessonListPanel.fxml";
+
+    private final ReadOnlyAddressBook addressBook;
+
     @FXML
     private ListView<Lesson> lessonListView;
 
-    /** Creates a panel whose membership labels follow changes in the complete data. */
+    /**
+     * Creates a lesson panel backed by the given observable list and complete membership data.
+     */
     public LessonListPanel(ObservableList<Lesson> lessons, ReadOnlyAddressBook addressBook) {
-        super("LessonListPanel.fxml");
-        lessonListView.setItems(lessons);
-        lessonListView.setCellFactory(view -> new ListCell<>() {
-            @Override
-            protected void updateItem(Lesson lesson, boolean empty) {
-                super.updateItem(lesson, empty);
-                setText(null);
-                if (empty || lesson == null) {
-                    setGraphic(null);
-                    return;
-                }
-                Label title = new Label((getIndex() + 1) + ". " + lesson);
-                title.getStyleClass().add("cell_big_label");
-                title.setWrapText(true);
-                String names = addressBook.getStudentsInLesson(lesson).stream()
-                        .map(student -> student.getName().fullName).collect(Collectors.joining("\n"));
-                Label students = new Label("Students: " + (names.isEmpty() ? "-" : names));
-                students.getStyleClass().add("cell_small_label");
-                students.setWrapText(true);
-                VBox card = new VBox(4, title, students);
-                card.setStyle("-fx-padding: 10 12 10 12;");
-                setGraphic(card);
-            }
-        });
+        super(FXML);
+        this.addressBook = requireNonNull(addressBook);
+        lessonListView.setItems(requireNonNull(lessons));
+        lessonListView.setCellFactory(view -> new LessonListViewCell());
+
         InvalidationListener refresh = observable -> lessonListView.refresh();
         addressBook.getEnrolmentList().addListener(refresh);
         addressBook.getStudentList().addListener(refresh);
+    }
+
+    /**
+     * Displays each lesson using a {@link LessonCard}.
+     */
+    class LessonListViewCell extends ListCell<Lesson> {
+        @Override
+        protected void updateItem(Lesson lesson, boolean empty) {
+            super.updateItem(lesson, empty);
+
+            if (empty || lesson == null) {
+                setGraphic(null);
+                setText(null);
+            } else {
+                setGraphic(new LessonCard(lesson, getIndex() + 1,
+                        addressBook.getStudentsInLesson(lesson)).getRoot());
+            }
+        }
     }
 }

@@ -47,7 +47,8 @@ public class EnrolmentPanelsTest {
             String lessonText = lessons.getRoot().lookupAll(".label").stream()
                     .map(node -> ((Label) node).getText()).collect(Collectors.joining("\n"));
             assertTrue(studentText.contains("Math (Mon 1600-1800)"), studentText);
-            assertTrue(lessonText.contains("Students: Aiden Tan"), lessonText);
+            assertTrue(lessonText.contains("Students"), lessonText);
+            assertTrue(lessonText.contains("Aiden Tan"), lessonText);
             return null;
         });
     }
