@@ -11,19 +11,19 @@ import seedu.address.model.student.StudentNameContainsKeywordsPredicate;
 
 /**
  * Finds and lists all students whose name, or whose guardian's name, contains any of the given keywords.
- * Keyword matching is case insensitive.
+ * Keyword matching is case insensitive and supports partial names.
  */
 public class FindStudentCommand extends Command {
 
     public static final String COMMAND_WORD = "findstudent";
 
     public static final String MESSAGE_USAGE = COMMAND_WORD + ": Finds all students whose names, or whose "
-            + "guardians' names, contain any of the specified keywords (case-insensitive) and displays them "
-            + "as a list with index numbers. If both are given, a student must match both.\n"
+            + "guardians' names, contain any of the specified keywords (case-insensitive; partial matches allowed) "
+            + "and displays them as a list with index numbers. If both are given, a student must match both.\n"
             + "Parameters: [" + PREFIX_NAME + "NAME_KEYWORD [MORE_NAME_KEYWORDS]...] "
             + "[" + PREFIX_GUARDIAN_NAME + "GUARDIAN_NAME_KEYWORD [MORE_GUARDIAN_NAME_KEYWORDS]...] "
             + "(at least one)\n"
-            + "Example: " + COMMAND_WORD + " " + PREFIX_NAME + "aiden chloe " + PREFIX_GUARDIAN_NAME + "tan";
+            + "Example: " + COMMAND_WORD + " " + PREFIX_NAME + "aid chl " + PREFIX_GUARDIAN_NAME + "tan";
 
     private final StudentNameContainsKeywordsPredicate predicate;
 

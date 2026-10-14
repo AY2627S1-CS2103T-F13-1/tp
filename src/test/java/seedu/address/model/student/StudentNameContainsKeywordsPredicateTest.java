@@ -87,6 +87,9 @@ public class StudentNameContainsKeywordsPredicateTest {
         // Mixed-case keyword
         assertTrue(new StudentNameContainsKeywordsPredicate(List.of("aIDEN"), List.of()).test(aiden));
 
+        // Partial keyword
+        assertTrue(new StudentNameContainsKeywordsPredicate(List.of("Aid"), List.of()).test(aiden));
+
         // Multiple keywords, all matching
         assertTrue(new StudentNameContainsKeywordsPredicate(List.of("Aiden", "Tan"), List.of()).test(aiden));
 
@@ -113,9 +116,6 @@ public class StudentNameContainsKeywordsPredicateTest {
     public void test_studentNameDoesNotContainKeywords_returnsFalse() {
         // Non-matching keyword
         assertFalse(new StudentNameContainsKeywordsPredicate(List.of("Chloe"), List.of()).test(aiden));
-
-        // Partial word
-        assertFalse(new StudentNameContainsKeywordsPredicate(List.of("Aid"), List.of()).test(aiden));
 
         // Keyword longer than a word in the name
         assertFalse(new StudentNameContainsKeywordsPredicate(List.of("Aidens"), List.of()).test(aiden));
@@ -144,6 +144,9 @@ public class StudentNameContainsKeywordsPredicateTest {
         // Mixed-case keyword
         assertTrue(new StudentNameContainsKeywordsPredicate(List.of(), List.of("mEI")).test(aiden));
 
+        // Partial keyword
+        assertTrue(new StudentNameContainsKeywordsPredicate(List.of(), List.of("Lin")).test(aiden));
+
         // Keyword matches the guardian's surname, which the student shares
         assertTrue(new StudentNameContainsKeywordsPredicate(List.of(), List.of("Tan")).test(aiden));
 
@@ -156,9 +159,6 @@ public class StudentNameContainsKeywordsPredicateTest {
     public void test_guardianNameDoesNotContainKeywords_returnsFalse() {
         // Non-matching keyword
         assertFalse(new StudentNameContainsKeywordsPredicate(List.of(), List.of("Wei")).test(aiden));
-
-        // Partial word
-        assertFalse(new StudentNameContainsKeywordsPredicate(List.of(), List.of("Lin")).test(aiden));
 
         // Keyword joining two words of the guardian's name
         assertFalse(new StudentNameContainsKeywordsPredicate(List.of(), List.of("MeiLing")).test(aiden));

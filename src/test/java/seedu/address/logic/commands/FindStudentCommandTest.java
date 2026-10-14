@@ -125,9 +125,11 @@ public class FindStudentCommandTest {
     }
 
     @Test
-    public void execute_partialWordKeywords_noStudentFound() {
-        assertFindSuccess(new StudentNameContainsKeywordsPredicate(List.of("Ai", "Chlo"), List.of()), List.of());
-        assertFindSuccess(new StudentNameContainsKeywordsPredicate(List.of(), List.of("Ta")), List.of());
+    public void execute_partialWordKeywords_studentsFound() {
+        assertFindSuccess(new StudentNameContainsKeywordsPredicate(List.of("Ai", "Chl"), List.of()),
+                List.of(AIDEN, CHLOE));
+        assertFindSuccess(new StudentNameContainsKeywordsPredicate(List.of(), List.of("Ta")),
+                List.of(AIDEN, CHLOE));
     }
 
     @Test
