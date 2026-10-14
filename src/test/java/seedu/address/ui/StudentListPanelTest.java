@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
+import java.time.DayOfWeek;
+import java.time.LocalTime;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -12,6 +15,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import seedu.address.model.ModelManager;
+import seedu.address.model.lesson.Lesson;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
 import seedu.address.model.student.Student;
@@ -53,6 +58,28 @@ public class StudentListPanelTest {
             cell.updateItem(null, true);
             assertNull(cell.getGraphic());
             assertNull(cell.getText());
+            return null;
+        });
+    }
+
+    @Test
+    public void listCell_enrolledStudent_displaysLessonMembership() throws Exception {
+        ModelManager model = new ModelManager();
+        Student student = createStudent("Aiden Tan", "92345678");
+        Lesson lesson = new Lesson("Math", DayOfWeek.MONDAY,
+                LocalTime.of(16, 0), LocalTime.of(18, 0));
+        model.addStudent(student);
+        model.addLesson(lesson);
+        model.enrolStudent(student, lesson);
+
+        JavaFxTestUtil.runOnFxThread(() -> {
+            StudentListPanel panel = new StudentListPanel(model.getFilteredStudentList(), model.getAddressBook());
+            StudentListPanel.StudentListViewCell cell = panel.new StudentListViewCell();
+
+            cell.updateItem(student, false);
+
+            Label lessonsLabel = (Label) cell.getGraphic().lookup("#lessons");
+            assertEquals("Math — Monday, 16:00 – 18:00", lessonsLabel.getText());
             return null;
         });
     }

@@ -1,6 +1,8 @@
 package seedu.address.ui;
 
-import java.util.stream.Collectors;
+import static java.util.Objects.requireNonNull;
+
+import java.util.List;
 
 import javafx.beans.InvalidationListener;
 import javafx.collections.ObservableList;
@@ -18,7 +20,7 @@ public class StudentListPanel extends UiPart<Region> {
 
     private static final String FXML = "StudentListPanel.fxml";
 
-    private ReadOnlyAddressBook addressBook;
+    private final ReadOnlyAddressBook addressBook;
 
     @FXML
     private ListView<Student> studentListView;
@@ -27,18 +29,23 @@ public class StudentListPanel extends UiPart<Region> {
      * Creates a {@code StudentListPanel} backed by the given observable student list.
      */
     public StudentListPanel(ObservableList<Student> studentList) {
-        super(FXML);
-        studentListView.setItems(studentList);
-        studentListView.setCellFactory(listView -> new StudentListViewCell());
+        this(studentList, null);
     }
 
-    /** Creates a panel that refreshes when membership or lesson details change. */
+    /**
+     * Creates a panel that refreshes when membership or lesson details change.
+     */
     public StudentListPanel(ObservableList<Student> students, ReadOnlyAddressBook addressBook) {
-        this(students);
+        super(FXML);
         this.addressBook = addressBook;
-        InvalidationListener refresh = observable -> studentListView.refresh();
-        addressBook.getEnrolmentList().addListener(refresh);
-        addressBook.getLessonList().addListener(refresh);
+        studentListView.setItems(requireNonNull(students));
+        studentListView.setCellFactory(listView -> new StudentListViewCell());
+
+        if (addressBook != null) {
+            InvalidationListener refresh = observable -> studentListView.refresh();
+            addressBook.getEnrolmentList().addListener(refresh);
+            addressBook.getLessonList().addListener(refresh);
+        }
     }
 
     /**
@@ -53,9 +60,8 @@ public class StudentListPanel extends UiPart<Region> {
                 setGraphic(null);
                 setText(null);
             } else {
-                String lessons = addressBook == null ? "" : addressBook.getLessonsForStudent(student).stream()
-                        .map(Object::toString).collect(Collectors.joining("\n"));
-                setGraphic(new StudentCard(student, getIndex() + 1, lessons.isEmpty() ? "-" : lessons).getRoot());
+                setGraphic(new StudentCard(student, getIndex() + 1,
+                        addressBook == null ? List.of() : addressBook.getLessonsForStudent(student)).getRoot());
             }
         }
     }
