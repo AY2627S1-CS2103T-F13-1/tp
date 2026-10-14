@@ -205,6 +205,12 @@ public class StudentNameContainsKeywordsPredicateTest {
     }
 
     @Test
+    public void test_blankKeyword_returnsFalse() {
+        assertFalse(new StudentNameContainsKeywordsPredicate(List.of("   "), List.of()).test(aiden));
+        assertFalse(new StudentNameContainsKeywordsPredicate(List.of(), List.of("   ")).test(aiden));
+    }
+
+    @Test
     public void toStringMethod() {
         List<String> nameKeywords = List.of("keyword1", "keyword2");
         List<String> guardianNameKeywords = List.of("keyword3");
