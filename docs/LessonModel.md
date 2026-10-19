@@ -17,7 +17,9 @@ Lesson lesson = new Lesson("Sec 3 A-Math", DayOfWeek.MONDAY,
 equal to the start time. An end time earlier than the start time means the lesson runs past midnight and
 ends on the next day; `getDay()` is the day it starts on.
 Names are trimmed and repeated spaces collapsed. `isSameLesson` compares the name ignoring case,
-day and both times. Overlapping lessons are allowed. `equals` includes the ID and exact details.
+day and both times. Overlapping lessons are allowed. `overlaps` reports whether two lessons' weekly
+time ranges overlap: a lesson that starts exactly when another ends does not overlap it, and a lesson
+past midnight also covers the start of the next day. `equals` includes the ID and exact details.
 
 `Student.getId()` now returns a permanent UUID. Existing constructors still work and generate
 new IDs. The extra constructor taking a UUID is for restoring records from storage. Student
@@ -61,9 +63,10 @@ logic.getEnrolmentList(); // Observable links; listen here to refresh membership
 logic.getAddressBook().getStudentsInLesson(lesson);
 logic.getAddressBook().getLessonsForStudent(student);
 logic.getAddressBook().isEnrolled(student, lesson);
+logic.getAddressBook().getClashingLessons(lesson); // Overlapping lessons, excluding lesson's own ID.
 ```
 
-The last three are also available through `model.getAddressBook()`. Membership queries return
+The last four are also available through `model.getAddressBook()`. These queries return
 unmodifiable snapshots in insertion order, independent of either panel's filters. Query again
 when observable enrolments change. Also observe the relevant student/lesson list for additions,
 deletions or data resets. Cards do not automatically redraw merely because their record is immutable.

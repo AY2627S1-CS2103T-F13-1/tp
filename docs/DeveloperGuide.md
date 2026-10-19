@@ -438,6 +438,12 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
+* 1d. The lesson's time overlaps an existing lesson.
+
+    * 1d1. TutorReach adds the lesson and warns which lessons it clashes with.
+
+      Use case ends.
+
 **Use case: UC04 - Enrol a student in a lesson**
 
 **MSS**
@@ -690,6 +696,16 @@ testers are expected to do more *exploratory* testing.
 
    1. Other incorrect commands to try: `addlesson n/Math d/tues st/1600 et/1800`, `addlesson n/Math d/monday st/1600 et/1800`, `addlesson n/Math d/mon st/4pm et/1800`, `addlesson n/Math d/mon st/2400 et/2430`<br>
       Expected: No lesson is added. The status message shows the error for the invalid value: a day must be one of `mon`, `tue`, `wed`, `thu`, `fri`, `sat` and `sun`, and a time must be exactly four digits from `0000` to `2359`.
+
+1. Adding a lesson that clashes with another
+
+   1. Prerequisites: The lesson Sec 3 A-Math (Mon 1600-1800) exists, and no other lesson is on Monday evening.
+
+   1. Test case: `addlesson n/Sec 3 E-Math d/mon st/1700 et/1900`<br>
+      Expected: The lesson is added. The status message shows the added lesson and, on the next line, a warning that it clashes with Sec 3 A-Math (Mon 1600-1800).
+
+   1. Test case: `addlesson n/Sec 2 Math d/mon st/1900 et/2000`<br>
+      Expected: The lesson is added with no warning, since it starts exactly when Sec 3 E-Math ends.
 
 1. Filtering lessons by day
 
