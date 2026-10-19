@@ -4,6 +4,9 @@ import static java.util.Objects.requireNonNull;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_GUARDIAN_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
 
+import java.util.logging.Logger;
+
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.Messages;
 import seedu.address.model.Model;
@@ -25,6 +28,8 @@ public class FindStudentCommand extends Command {
             + "(at least one)\n"
             + "Example: " + COMMAND_WORD + " " + PREFIX_NAME + "aid chl " + PREFIX_GUARDIAN_NAME + "tan";
 
+    private static final Logger logger = LogsCenter.getLogger(FindStudentCommand.class);
+
     private final StudentNameContainsKeywordsPredicate predicate;
 
     /**
@@ -39,8 +44,9 @@ public class FindStudentCommand extends Command {
     public CommandResult execute(Model model) {
         requireNonNull(model);
         model.updateFilteredStudentList(predicate);
-        return new CommandResult(
-                String.format(Messages.MESSAGE_STUDENTS_LISTED_OVERVIEW, model.getFilteredStudentList().size()));
+        int matchCount = model.getFilteredStudentList().size();
+        logger.fine("Found " + matchCount + " student(s) matching " + predicate);
+        return new CommandResult(String.format(Messages.MESSAGE_STUDENTS_LISTED_OVERVIEW, matchCount));
     }
 
     @Override
