@@ -27,6 +27,7 @@ import seedu.address.logic.commands.AddStudentCommand;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.DeleteLessonCommand;
 import seedu.address.logic.commands.DeleteStudentCommand;
+import seedu.address.logic.commands.EditLessonCommand;
 import seedu.address.logic.commands.EditStudentCommand;
 import seedu.address.logic.commands.EnrolCommand;
 import seedu.address.logic.commands.FindStudentCommand;
@@ -219,6 +220,33 @@ public class LogicManagerTest {
         assertParseException(AddLessonCommand.COMMAND_WORD + " n/Sec 3 A-Math d/monday st/1600 et/1800",
                 ParserUtil.MESSAGE_INVALID_DAY);
         assertTrue(logic.getFilteredLessonList().isEmpty());
+    }
+
+    @Test
+    public void execute_editLesson_preservesIdentityEnrolmentAndSaves() throws Exception {
+        logic.execute(AddStudentCommand.COMMAND_WORD + " n/Aiden Tan p/91234567");
+        logic.execute(AddLessonCommand.COMMAND_WORD + " n/Math d/mon st/1600 et/1800");
+        logic.execute(EnrolCommand.COMMAND_WORD + " s/1 l/1");
+        UUID studentId = logic.getFilteredStudentList().getFirst().getId();
+        UUID originalLessonId = logic.getFilteredLessonList().getFirst().getId();
+
+        CommandResult result = logic.execute(EditLessonCommand.COMMAND_WORD
+                + " 1 n/Advanced Math d/tue st/2200 et/0100");
+
+        Lesson editedLesson = logic.getFilteredLessonList().getFirst();
+        assertEquals("Edited lesson: Advanced Math (Tue 2200-0100)", result.getFeedbackToUser());
+        assertEquals(originalLessonId, editedLesson.getId());
+        assertEquals("Advanced Math", editedLesson.getName());
+        assertEquals(DayOfWeek.TUESDAY, editedLesson.getDay());
+        assertEquals(LocalTime.of(22, 0), editedLesson.getStartTime());
+        assertEquals(LocalTime.of(1, 0), editedLesson.getEndTime());
+        assertEquals(List.of(new Enrolment(studentId, originalLessonId)), logic.getEnrolmentList());
+
+        ReadOnlyAddressBook saved = readSavedAddressBook();
+        Lesson savedLesson = saved.getLessonList().getFirst();
+        assertEquals(originalLessonId, savedLesson.getId());
+        assertEquals(editedLesson, savedLesson);
+        assertEquals(List.of(new Enrolment(studentId, originalLessonId)), saved.getEnrolmentList());
     }
 
     @Test

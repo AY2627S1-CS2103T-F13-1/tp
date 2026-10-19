@@ -19,6 +19,8 @@ import seedu.address.logic.commands.AddStudentCommand;
 import seedu.address.logic.commands.ClearCommand;
 import seedu.address.logic.commands.DeleteLessonCommand;
 import seedu.address.logic.commands.DeleteStudentCommand;
+import seedu.address.logic.commands.EditLessonCommand;
+import seedu.address.logic.commands.EditLessonCommand.EditLessonDescriptor;
 import seedu.address.logic.commands.EditStudentCommand;
 import seedu.address.logic.commands.EditStudentCommand.EditStudentDescriptor;
 import seedu.address.logic.commands.ExitCommand;
@@ -125,6 +127,17 @@ public class AddressBookParserTest {
                 EditStudentCommand.COMMAND_WORD + " 1 n/Aiden Lim");
 
         assertEquals(new EditStudentCommand(INDEX_FIRST_PERSON, descriptor), command);
+    }
+
+    @Test
+    public void parseCommand_editLesson() throws Exception {
+        EditLessonDescriptor descriptor = new EditLessonDescriptor();
+        descriptor.setDay(DayOfWeek.TUESDAY);
+
+        EditLessonCommand command = (EditLessonCommand) parser.parseCommand(
+                EditLessonCommand.COMMAND_WORD + " 1 d/tue");
+
+        assertEquals(new EditLessonCommand(INDEX_FIRST_LESSON, descriptor), command);
     }
 
     @Test

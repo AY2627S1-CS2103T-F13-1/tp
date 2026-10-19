@@ -188,6 +188,28 @@ public class AddressBook implements ReadOnlyAddressBook {
         lessons.add(lesson);
     }
 
+    /**
+     * Replaces {@code target} with {@code editedLesson} while retaining the record ID.
+     * The target must exist, and the edited lesson must not duplicate another lesson.
+     */
+    public void setLesson(Lesson target, Lesson editedLesson) {
+        requireAllNonNull(target, editedLesson);
+        if (!target.getId().equals(editedLesson.getId())) {
+            throw new IllegalArgumentException("Edited lesson must retain the original ID.");
+        }
+
+        int targetIndex = findLessonIndex(target.getId());
+        boolean hasDuplicate = lessons.stream()
+                .filter(lesson -> !lesson.getId().equals(target.getId()))
+                .anyMatch(lesson -> lesson.getId().equals(editedLesson.getId())
+                        || editedLesson.isSameLesson(lesson));
+        if (hasDuplicate) {
+            throw new IllegalArgumentException("This lesson already exists.");
+        }
+
+        lessons.set(targetIndex, editedLesson);
+    }
+
     /** Deletes a lesson and its links, keeping all students. */
     public void removeLesson(Lesson lesson) {
         requireNonNull(lesson);
@@ -196,6 +218,16 @@ public class AddressBook implements ReadOnlyAddressBook {
         }
         enrolments.removeIf(link -> link.lessonId().equals(lesson.getId()));
         lessons.remove(lesson);
+    }
+
+    /** Returns the list index of the lesson with {@code lessonId}. */
+    private int findLessonIndex(UUID lessonId) {
+        for (int i = 0; i < lessons.size(); i++) {
+            if (lessons.get(i).getId().equals(lessonId)) {
+                return i;
+            }
+        }
+        throw new IllegalArgumentException("Lesson not found.");
     }
 
     /** Adds a link after validating its references and uniqueness. */

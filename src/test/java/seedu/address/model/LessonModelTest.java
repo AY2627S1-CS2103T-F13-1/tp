@@ -114,4 +114,37 @@ public class LessonModelTest {
         model.addStudent(student);
         assertEquals(List.of(student), model.getFilteredStudentList());
     }
+
+    @Test
+    public void setLesson_preservesIdEnrolmentAndActiveFilters() {
+        Model model = new ModelManager();
+        model.addStudent(student);
+        model.addLesson(lesson);
+        model.enrolStudent(student, lesson);
+        model.updateFilteredLessonList(candidate -> candidate.getDay() == DayOfWeek.TUESDAY);
+        model.filterStudentsByLesson(lesson);
+        Lesson editedLesson = new Lesson(lesson.getId(), "Advanced Math", DayOfWeek.TUESDAY,
+                LocalTime.of(17, 0), LocalTime.of(19, 0));
+
+        model.setLesson(lesson, editedLesson);
+
+        assertEquals(List.of(editedLesson), model.getFilteredLessonList());
+        assertEquals(List.of(student), model.getFilteredStudentList());
+        assertEquals(List.of(new Enrolment(student.getId(), lesson.getId())), model.getEnrolmentList());
+        assertEquals(List.of(editedLesson), model.getAddressBook().getLessonsForStudent(student));
+    }
+
+    @Test
+    public void setLesson_duplicateResult_throwsIllegalArgumentException() {
+        Lesson science = new Lesson("Science", DayOfWeek.TUESDAY,
+                LocalTime.of(14, 0), LocalTime.of(16, 0));
+        Model model = new ModelManager();
+        model.addLesson(lesson);
+        model.addLesson(science);
+        Lesson duplicateScience = new Lesson(lesson.getId(), science.getName(), science.getDay(),
+                science.getStartTime(), science.getEndTime());
+
+        assertThrows(IllegalArgumentException.class, () -> model.setLesson(lesson, duplicateScience));
+        assertEquals(List.of(lesson, science), model.getAddressBook().getLessonList());
+    }
 }

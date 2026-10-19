@@ -160,6 +160,11 @@ public class ModelManager implements Model {
     }
 
     @Override
+    public void setLesson(Lesson target, Lesson editedLesson) {
+        addressBook.setLesson(target, editedLesson);
+    }
+
+    @Override
     public void deleteLesson(Lesson lesson) {
         addressBook.removeLesson(lesson);
         if (lesson.getId().equals(studentLessonFilter)) {

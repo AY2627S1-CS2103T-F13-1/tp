@@ -51,6 +51,9 @@ public interface Model {
     /** Adds a lesson and clears only the lesson filter. */
     void addLesson(Lesson lesson);
 
+    /** Replaces a lesson while preserving active filters and enrolments. */
+    void setLesson(Lesson target, Lesson editedLesson);
+
     /** Deletes a lesson and its links, preserving students. */
     void deleteLesson(Lesson lesson);
 
