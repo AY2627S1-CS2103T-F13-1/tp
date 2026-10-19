@@ -46,12 +46,26 @@ public class FindStudentCommandParser implements Parser<FindStudentCommand> {
 
         argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_NAME, PREFIX_GUARDIAN_NAME, PREFIX_PHONE);
 
-        // a name keyword is a single word, so it is valid exactly when it is a valid name
-        return new FindStudentCommand(new StudentContainsKeywordsPredicate(
-                parseKeywords(nameKeywords, Name::isValidName, MESSAGE_INVALID_KEYWORD),
-                parseKeywords(guardianNameKeywords, Name::isValidName, MESSAGE_INVALID_KEYWORD),
-                parseKeywords(phoneKeywords, keyword -> keyword.matches(PHONE_KEYWORD_VALIDATION_REGEX),
-                        MESSAGE_INVALID_PHONE_KEYWORD)));
+        return new FindStudentCommand(new StudentContainsKeywordsPredicate(parseNameKeywords(nameKeywords),
+                parseNameKeywords(guardianNameKeywords), parsePhoneKeywords(phoneKeywords)));
+    }
+
+    /**
+     * Splits the value of a name prefix into keywords. A keyword is a single word, so it is valid exactly
+     * when it is a valid name.
+     * @throws ParseException if the prefix is present with no keywords, or a keyword is not a valid name
+     */
+    private static List<String> parseNameKeywords(Optional<String> value) throws ParseException {
+        return parseKeywords(value, Name::isValidName, MESSAGE_INVALID_KEYWORD);
+    }
+
+    /**
+     * Splits the value of the phone prefix into keywords.
+     * @throws ParseException if the prefix is present with no keywords, or a keyword is not all digits
+     */
+    private static List<String> parsePhoneKeywords(Optional<String> value) throws ParseException {
+        return parseKeywords(value, keyword -> keyword.matches(PHONE_KEYWORD_VALIDATION_REGEX),
+                MESSAGE_INVALID_PHONE_KEYWORD);
     }
 
     /**
