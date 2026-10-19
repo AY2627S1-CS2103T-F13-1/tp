@@ -83,6 +83,15 @@ public interface Model {
      */
     void setAddressBook(ReadOnlyAddressBook addressBook);
 
+    /**
+     * Captures data for rollback after a failed save. Implementations with display filters
+     * should also restore those filters.
+     */
+    default Runnable createRestorePoint() {
+        AddressBook snapshot = new AddressBook(getAddressBook());
+        return () -> setAddressBook(snapshot);
+    }
+
     /** Returns the AddressBook */
     ReadOnlyAddressBook getAddressBook();
 

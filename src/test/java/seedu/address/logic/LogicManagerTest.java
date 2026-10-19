@@ -382,9 +382,7 @@ public class LogicManagerTest {
 
         // Triggers the saveAddressBook method by executing an add student command
         String addCommand = AddStudentCommand.COMMAND_WORD + " n/Aiden Tan p/91234567";
-        Student expectedStudent = new Student(new Name("Aiden Tan"), new Phone("91234567"), null);
         ModelManager expectedModel = new ModelManager();
-        expectedModel.addStudent(expectedStudent);
         assertCommandFailure(addCommand, CommandException.class, expectedMessage, expectedModel);
     }
 }

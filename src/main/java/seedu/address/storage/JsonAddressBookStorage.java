@@ -4,13 +4,14 @@ import static java.util.Objects.requireNonNull;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.commons.exceptions.IllegalValueException;
-import seedu.address.commons.util.FileUtil;
 import seedu.address.commons.util.JsonUtil;
 import seedu.address.model.ReadOnlyAddressBook;
 
@@ -21,7 +22,8 @@ public class JsonAddressBookStorage {
 
     private static final Logger logger = LogsCenter.getLogger(JsonAddressBookStorage.class);
 
-    private Path filePath;
+    private final Path filePath;
+    private final Set<Path> failedLoads = new HashSet<>();
 
     public JsonAddressBookStorage(Path filePath) {
         this.filePath = filePath;
@@ -50,17 +52,18 @@ public class JsonAddressBookStorage {
     public Optional<ReadOnlyAddressBook> readAddressBook(Path filePath) throws DataLoadingException {
         requireNonNull(filePath);
 
-        Optional<JsonSerializableAddressBook> jsonAddressBook = JsonUtil.readJsonFile(
-                filePath, JsonSerializableAddressBook.class);
-        if (!jsonAddressBook.isPresent()) {
-            return Optional.empty();
-        }
-
+        Path normalizedPath = filePath.toAbsolutePath().normalize();
         try {
-            return Optional.of(jsonAddressBook.get().toModelType());
-        } catch (IllegalValueException ive) {
-            logger.info("Illegal values found in " + filePath + ": " + ive.getMessage());
-            throw new DataLoadingException(ive);
+            Optional<JsonSerializableAddressBook> jsonAddressBook = JsonUtil.readJsonFile(
+                    filePath, JsonSerializableAddressBook.class);
+            Optional<ReadOnlyAddressBook> result = jsonAddressBook.isEmpty() ? Optional.empty()
+                    : Optional.of(jsonAddressBook.get().toModelType());
+            failedLoads.remove(normalizedPath);
+            return result;
+        } catch (IllegalValueException | DataLoadingException e) {
+            failedLoads.add(normalizedPath);
+            logger.info("Could not load " + filePath + ": " + e.getMessage());
+            throw new DataLoadingException(e);
         }
     }
 
@@ -82,7 +85,10 @@ public class JsonAddressBookStorage {
         requireNonNull(addressBook);
         requireNonNull(filePath);
 
-        FileUtil.createIfMissing(filePath);
+        if (failedLoads.contains(filePath.toAbsolutePath().normalize())) {
+            throw new IOException("Saving is disabled because this data file could not be loaded. "
+                    + "Back up and repair or move the file, then restart the app: " + filePath);
+        }
         JsonUtil.saveJsonFile(new JsonSerializableAddressBook(addressBook), filePath);
     }
 
