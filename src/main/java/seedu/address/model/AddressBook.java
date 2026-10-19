@@ -1,6 +1,7 @@
 package seedu.address.model;
 
 import static java.util.Objects.requireNonNull;
+import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.util.List;
 import java.util.Objects;
@@ -123,6 +124,28 @@ public class AddressBook implements ReadOnlyAddressBook {
         students.add(student);
     }
 
+    /**
+     * Replaces {@code target} with {@code editedStudent} while retaining the record ID.
+     * The target must exist, and the edited student must not duplicate another student.
+     */
+    public void setStudent(Student target, Student editedStudent) {
+        requireAllNonNull(target, editedStudent);
+        if (!target.getId().equals(editedStudent.getId())) {
+            throw new IllegalArgumentException("Edited student must retain the original ID.");
+        }
+
+        int targetIndex = findStudentIndex(target.getId());
+        boolean hasDuplicate = students.stream()
+                .filter(student -> !student.getId().equals(target.getId()))
+                .anyMatch(student -> student.getId().equals(editedStudent.getId())
+                        || editedStudent.isSameStudent(student));
+        if (hasDuplicate) {
+            throw new DuplicateStudentException();
+        }
+
+        students.set(targetIndex, editedStudent);
+    }
+
     /** Removes the student with exactly these details. */
     public void removeStudent(Student student) {
         requireNonNull(student);
@@ -133,6 +156,16 @@ public class AddressBook implements ReadOnlyAddressBook {
         UUID studentId = students.get(index).getId();
         enrolments.removeIf(link -> link.studentId().equals(studentId));
         students.remove(index);
+    }
+
+    /** Returns the list index of the student with {@code studentId}. */
+    private int findStudentIndex(UUID studentId) {
+        for (int i = 0; i < students.size(); i++) {
+            if (students.get(i).getId().equals(studentId)) {
+                return i;
+            }
+        }
+        throw new StudentNotFoundException();
     }
 
     @Override

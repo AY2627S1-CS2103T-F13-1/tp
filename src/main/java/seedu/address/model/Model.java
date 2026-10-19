@@ -28,6 +28,9 @@ public interface Model {
     /** Adds a student and clears the student filter. Rejects duplicates. */
     void addStudent(Student student);
 
+    /** Replaces a student while preserving the active filter and enrolments. */
+    void setStudent(Student target, Student editedStudent);
+
     /** Deletes an existing student, preserving the student filter. */
     void deleteStudent(Student student);
 

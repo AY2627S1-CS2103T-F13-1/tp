@@ -127,6 +127,11 @@ public class ModelManager implements Model {
     }
 
     @Override
+    public void setStudent(Student target, Student editedStudent) {
+        addressBook.setStudent(target, editedStudent);
+    }
+
+    @Override
     public void deleteStudent(Student student) {
         addressBook.removeStudent(student);
     }

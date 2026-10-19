@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ import seedu.address.logic.commands.AddStudentCommand;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.DeleteLessonCommand;
 import seedu.address.logic.commands.DeleteStudentCommand;
+import seedu.address.logic.commands.EditStudentCommand;
 import seedu.address.logic.commands.EnrolCommand;
 import seedu.address.logic.commands.FindStudentCommand;
 import seedu.address.logic.commands.ListLessonsCommand;
@@ -38,6 +40,7 @@ import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.lesson.Enrolment;
 import seedu.address.model.lesson.Lesson;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
@@ -137,6 +140,34 @@ public class LogicManagerTest {
                 FindStudentCommandParser.MESSAGE_EMPTY_KEYWORDS);
         assertParseException(FindStudentCommand.COMMAND_WORD + " n/Aiden p/91234567",
                 String.format(FindStudentCommandParser.MESSAGE_INVALID_KEYWORD, "p/91234567"));
+    }
+
+    @Test
+    public void execute_editStudent_preservesIdentityEnrolmentAndSaves() throws Exception {
+        logic.execute(AddStudentCommand.COMMAND_WORD + " n/Aiden Tan p/91234567");
+        logic.execute(AddLessonCommand.COMMAND_WORD + " n/Math d/mon st/1600 et/1800");
+        logic.execute(EnrolCommand.COMMAND_WORD + " s/1 l/1");
+        UUID originalStudentId = logic.getFilteredStudentList().getFirst().getId();
+        UUID lessonId = logic.getFilteredLessonList().getFirst().getId();
+
+        CommandResult result = logic.execute(EditStudentCommand.COMMAND_WORD
+                + " 1 n/Aiden Lim p/92345678 gn/Lim Mei Ling gp/93456789");
+
+        Student editedStudent = logic.getFilteredStudentList().getFirst();
+        assertEquals("Edited student: Aiden Lim; Phone: 92345678; Guardian: Lim Mei Ling (93456789)",
+                result.getFeedbackToUser());
+        assertEquals(originalStudentId, editedStudent.getId());
+        assertEquals(new Name("Aiden Lim"), editedStudent.getName());
+        assertEquals(new Phone("92345678"), editedStudent.getPhone().orElseThrow());
+        assertEquals(new Guardian(new Name("Lim Mei Ling"), new Phone("93456789")),
+                editedStudent.getGuardian().orElseThrow());
+        assertEquals(List.of(new Enrolment(originalStudentId, lessonId)), logic.getEnrolmentList());
+
+        ReadOnlyAddressBook saved = readSavedAddressBook();
+        Student savedStudent = saved.getStudentList().getFirst();
+        assertEquals(originalStudentId, savedStudent.getId());
+        assertEquals(editedStudent, savedStudent);
+        assertEquals(List.of(new Enrolment(originalStudentId, lessonId)), saved.getEnrolmentList());
     }
 
     @Test
