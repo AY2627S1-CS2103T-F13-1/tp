@@ -71,7 +71,7 @@ public class AddLessonCommandTest {
         expectedModel.addLesson(nightClass);
 
         assertCommandSuccess(new AddLessonCommand(nightClass), model,
-                "New lesson added: Night Class (Fri 2200-0100, next day)", expectedModel);
+                "New lesson added: Night Class (Fri 2200-0100) (next day)", expectedModel);
     }
 
     @Test

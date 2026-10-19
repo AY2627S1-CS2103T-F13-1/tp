@@ -41,6 +41,16 @@ public class LessonTest {
     }
 
     @Test
+    public void endsNextDay_trueOnlyIfEndTimeIsBeforeStartTime() {
+        assertFalse(lesson("Math", 16, 18).endsNextDay());
+        assertTrue(lesson("Math", 22, 1).endsNextDay());
+        // times swapped by mistake are still read as a lesson past midnight
+        assertTrue(lesson("Math", 18, 16).endsNextDay());
+        assertTrue(new Lesson("Math", DayOfWeek.MONDAY, LocalTime.of(23, 59), LocalTime.MIDNIGHT).endsNextDay());
+        assertFalse(new Lesson("Math", DayOfWeek.MONDAY, LocalTime.MIDNIGHT, LocalTime.of(23, 59)).endsNextDay());
+    }
+
+    @Test
     public void duplicateCheck_ignoresCaseAndSpacingButIncludesSchedule() {
         Lesson lesson = lesson("Sec 3 A-Math", 16, 18);
         assertTrue(lesson.isSameLesson(lesson("sec 3  a-math", 16, 18)));

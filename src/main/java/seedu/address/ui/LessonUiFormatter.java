@@ -21,7 +21,7 @@ final class LessonUiFormatter {
     }
 
     static String formatTimeRange(Lesson lesson) {
-        String nextDaySuffix = lesson.getEndTime().isBefore(lesson.getStartTime()) ? " (next day)" : "";
+        String nextDaySuffix = lesson.endsNextDay() ? " (next day)" : "";
         return lesson.getStartTime().format(TIME_FORMAT) + " – " + lesson.getEndTime().format(TIME_FORMAT)
                 + nextDaySuffix;
     }

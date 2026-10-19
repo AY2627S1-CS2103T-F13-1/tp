@@ -177,7 +177,7 @@ public class DeleteLessonCommandTest {
         Index nightClassIndex = Index.fromOneBased(model.getFilteredLessonList().size());
 
         assertCommandSuccess(new DeleteLessonCommand(nightClassIndex), model,
-                "Deleted lesson: Night Class (Fri 2200-0100, next day)", expectedModel);
+                "Deleted lesson: Night Class (Fri 2200-0100) (next day)", expectedModel);
     }
 
     @Test

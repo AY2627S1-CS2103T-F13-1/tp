@@ -20,11 +20,11 @@ public class MessagesTest {
 
     @Test
     public void formatLesson_pastMidnight_marksNextDay() {
-        assertEquals("Night Class (Fri 2200-0100, next day)", Messages.format(lesson("Night Class", DayOfWeek.FRIDAY,
+        assertEquals("Night Class (Fri 2200-0100) (next day)", Messages.format(lesson("Night Class", DayOfWeek.FRIDAY,
                 "22:00", "01:00")));
 
         // ending at midnight still ends on the next day
-        assertEquals("Late Revision (Sun 2359-0000, next day)", Messages.format(lesson("Late Revision",
+        assertEquals("Late Revision (Sun 2359-0000) (next day)", Messages.format(lesson("Late Revision",
                 DayOfWeek.SUNDAY, "23:59", "00:00")));
     }
 

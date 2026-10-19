@@ -159,7 +159,7 @@ public class LogicManagerTest {
     public void execute_addLessonPastMidnight_addsAndSavesLesson() throws Exception {
         CommandResult result = logic.execute(AddLessonCommand.COMMAND_WORD + " n/Night Class d/fri st/2200 et/0100");
 
-        assertEquals("New lesson added: Night Class (Fri 2200-0100, next day)", result.getFeedbackToUser());
+        assertEquals("New lesson added: Night Class (Fri 2200-0100) (next day)", result.getFeedbackToUser());
         Lesson added = logic.getFilteredLessonList().getFirst();
         assertEquals(DayOfWeek.FRIDAY, added.getDay());
         assertEquals(LocalTime.of(22, 0), added.getStartTime());
