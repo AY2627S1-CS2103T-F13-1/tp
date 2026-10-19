@@ -8,6 +8,7 @@ import static seedu.address.logic.Messages.MESSAGE_INVALID_STUDENT_DISPLAYED_IND
 import static seedu.address.logic.Messages.MESSAGE_STUDENTS_LISTED_OVERVIEW;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.testutil.Assert.assertThrows;
+import static seedu.address.testutil.StudentTestUtil.assertStudentDetailsEqual;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
@@ -94,11 +95,14 @@ public class LogicManagerTest {
         CommandResult addResult = logic.execute(
                 AddStudentCommand.COMMAND_WORD + " n/Aiden Tan gn/Tan Mei Ling gp/91234567");
         assertEquals(String.format(AddStudentCommand.MESSAGE_SUCCESS, aiden), addResult.getFeedbackToUser());
-        assertEquals(List.of(aiden), logic.getFilteredStudentList());
+        assertEquals(1, logic.getFilteredStudentList().size());
+        assertStudentDetailsEqual(aiden, logic.getFilteredStudentList().getFirst());
+
+        Student added = logic.getFilteredStudentList().getFirst();
 
         CommandResult findResult = logic.execute(FindStudentCommand.COMMAND_WORD + " gn/ling");
         assertEquals(String.format(MESSAGE_STUDENTS_LISTED_OVERVIEW, 1), findResult.getFeedbackToUser());
-        assertEquals(List.of(aiden), logic.getFilteredStudentList());
+        assertEquals(List.of(added), logic.getFilteredStudentList());
     }
 
     @Test

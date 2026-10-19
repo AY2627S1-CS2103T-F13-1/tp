@@ -21,7 +21,8 @@ day and both times. Overlapping lessons are allowed. `equals` includes the ID an
 
 `Student.getId()` now returns a permanent UUID. Existing constructors still work and generate
 new IDs. The extra constructor taking a UUID is for restoring records from storage. Student
-`equals` retains its existing contact-value semantics for compatibility; use `getId()` for links.
+`equals` and `hashCode` include the ID and all contact details, consistently with Lesson.
+Copies of the same record must preserve its ID; use `getId()` for identity-only comparisons and links.
 Do not create a new Student just to enrol someone: take the existing record from the model.
 
 `Enrolment(UUID studentId, UUID lessonId)` is an immutable record linking those IDs. Never store

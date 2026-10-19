@@ -77,16 +77,17 @@ public final class Student {
         return number.equals(phone) || (guardian != null && number.equals(guardian.getPhone()));
     }
 
+    /** Returns true for the same record ID and identical contact details. */
     @Override
     public boolean equals(Object other) {
         return other == this || (other instanceof Student student
-                && name.equals(student.name) && Objects.equals(phone, student.phone)
+                && id.equals(student.id) && name.equals(student.name) && Objects.equals(phone, student.phone)
                 && Objects.equals(guardian, student.guardian));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, phone, guardian);
+        return Objects.hash(id, name, phone, guardian);
     }
 
     @Override

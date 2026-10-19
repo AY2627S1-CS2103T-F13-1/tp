@@ -21,7 +21,7 @@ Student studentWithPhone = new Student(new Name("Chloe Tan"), new Phone("8888888
 - `student.getGuardian()` returns `Optional<Guardian>`.
 - `guardian.getName()` and `guardian.getPhone()` return required values.
 - Empty strings are invalid values; use absence instead.
-- `equals` compares all stored details. `isSameStudent` checks for duplicates: same name
+- `equals` and `hashCode` include the record ID and all contact details. Preserve the ID when copying a record. `isSameStudent` checks for duplicates: same name
   ignoring case and extra spaces, plus any shared student/guardian phone number.
 
 ## Command work

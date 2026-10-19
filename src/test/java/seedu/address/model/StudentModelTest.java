@@ -36,6 +36,18 @@ public class StudentModelTest {
     }
 
     @Test
+    public void deleteStudent_requiresMatchingIdAndDetails() {
+        Model model = new ModelManager();
+        model.addStudent(aiden);
+        Student differentRecord = new Student(aiden.getName(), aiden.getPhone().orElseThrow(), null);
+        assertThrows(StudentNotFoundException.class, () -> model.deleteStudent(differentRecord));
+        assertEquals(List.of(aiden), model.getFilteredStudentList());
+        Student copy = new Student(aiden.getId(), aiden.getName(), aiden.getPhone().orElseThrow(), null);
+        model.deleteStudent(copy);
+        assertTrue(model.getFilteredStudentList().isEmpty());
+    }
+
+    @Test
     public void filtering_deletePreservesFilter_addClearsFilter() {
         Model model = new ModelManager();
         model.addStudent(aiden);
