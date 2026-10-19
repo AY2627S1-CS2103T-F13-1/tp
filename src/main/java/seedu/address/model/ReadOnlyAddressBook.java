@@ -1,5 +1,7 @@
 package seedu.address.model;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.List;
 
 import javafx.collections.ObservableList;
@@ -49,6 +51,7 @@ public interface ReadOnlyAddressBook {
      * with its own old times.
      */
     default List<Lesson> getClashingLessons(Lesson lesson) {
+        requireNonNull(lesson);
         return getLessonList().stream()
                 .filter(other -> !other.getId().equals(lesson.getId()) && other.overlaps(lesson))
                 .toList();

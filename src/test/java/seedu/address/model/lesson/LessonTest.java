@@ -53,6 +53,11 @@ public class LessonTest {
     }
 
     @Test
+    public void overlaps_null_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> lesson("Math", 16, 18).overlaps(null));
+    }
+
+    @Test
     public void overlaps_sameDay_trueOnlyIfTimeRangesOverlap() {
         Lesson math = lessonOn(DayOfWeek.MONDAY, "16:00", "18:00");
 

@@ -127,6 +127,12 @@ public class LessonModelTest {
     }
 
     @Test
+    public void getClashingLessons_nullLesson_throwsNullPointerException() {
+        // checked even when there are no lessons to compare against
+        assertThrows(NullPointerException.class, () -> new AddressBook().getClashingLessons(null));
+    }
+
+    @Test
     public void reset_preservesLinksAndExistingObservableViews() {
         Model model = new ModelManager();
         var view = model.getFilteredLessonList();
