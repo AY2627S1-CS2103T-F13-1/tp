@@ -166,6 +166,44 @@ public class FindStudentCommandTest {
     }
 
     @Test
+    public void execute_phoneKeyword_studentsWithMatchingOwnOrGuardianPhoneFound() {
+        // AIDEN has no phone of their own; AIDEN and CHLOE share a guardian with phone 91234567
+        assertFindSuccess(phoneKeywords("9123"), List.of(AIDEN, CHLOE));
+
+        // own phone only
+        assertFindSuccess(phoneKeywords("8888"), List.of(CHLOE));
+        assertFindSuccess(phoneKeywords("0283"), List.of(RYAN));
+
+        // WEI_JIE's own phone is 81112222 and their guardian's phone is 82223333
+        assertFindSuccess(phoneKeywords("2222"), List.of(WEI_JIE));
+        assertFindSuccess(phoneKeywords("3333"), List.of(WEI_JIE));
+    }
+
+    @Test
+    public void execute_phoneKeywords_studentsMatchingAnyKeywordFound() {
+        assertFindSuccess(phoneKeywords("5432", "0283"), List.of(RYAN, JOEL));
+
+        // a single digit can match many numbers
+        assertFindSuccess(phoneKeywords("8"), List.of(CHLOE, RYAN, JOEL, WEI_JIE));
+    }
+
+    @Test
+    public void execute_noMatchingPhone_noStudentFound() {
+        assertFindSuccess(phoneKeywords("0000"), List.of());
+    }
+
+    @Test
+    public void execute_nameAndPhoneKeywords_studentsMatchingBothFound() {
+        // WEI_JIE's name contains "Tan", but neither of their phone numbers contains 9123
+        assertFindSuccess(new StudentContainsKeywordsPredicate(List.of("Tan"), List.of(), List.of("9123")),
+                List.of(AIDEN, CHLOE));
+        assertFindSuccess(new StudentContainsKeywordsPredicate(List.of("Ryan"), List.of(), List.of("9123")),
+                List.of());
+        assertFindSuccess(new StudentContainsKeywordsPredicate(List.of(), List.of("Ling"), List.of("8888")),
+                List.of(CHLOE));
+    }
+
+    @Test
     public void execute_previousFilter_replacedNotNarrowed() {
         model.updateFilteredStudentList(student -> student.equals(RYAN));
         assertFindSuccess(new StudentContainsKeywordsPredicate(List.of("Aiden"), List.of()), List.of(AIDEN));
@@ -212,6 +250,10 @@ public class FindStudentCommandTest {
         FindStudentCommand findStudentCommand = new FindStudentCommand(predicate);
         String expected = FindStudentCommand.class.getCanonicalName() + "{predicate=" + predicate + "}";
         assertEquals(expected, findStudentCommand.toString());
+    }
+
+    private static StudentContainsKeywordsPredicate phoneKeywords(String... keywords) {
+        return new StudentContainsKeywordsPredicate(List.of(), List.of(), List.of(keywords));
     }
 
     private void assertFindSuccess(StudentContainsKeywordsPredicate predicate, List<Student> expectedStudents) {
