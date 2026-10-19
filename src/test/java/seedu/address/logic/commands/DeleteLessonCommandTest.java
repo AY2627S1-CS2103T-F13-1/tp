@@ -12,7 +12,9 @@ import static seedu.address.testutil.TypicalIndexes.INDEX_THIRD_LESSON;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -71,7 +73,8 @@ public class DeleteLessonCommandTest {
     @Test
     public void execute_validIndexUnfilteredList_success() {
         // the full message is spelled out once to pin its exact wording
-        String expectedMessage = "Deleted Lesson: Sec 3 A-Math (Mon 1600-1800)";
+        String expectedMessage = "Deleted lesson: Sec 3 A-Math (Mon 1600-1800)\n"
+                + "Unenrolled 2 student(s): Aiden Tan, Chloe Tan";
         expectedModel.deleteLesson(A_MATH);
 
         assertCommandSuccess(new DeleteLessonCommand(INDEX_FIRST_LESSON), model, expectedMessage, expectedModel);
@@ -119,8 +122,8 @@ public class DeleteLessonCommandTest {
     public void execute_lessonWithStudents_removesOnlyItsEnrolments() {
         expectedModel.deleteLesson(A_MATH);
 
-        assertCommandSuccess(new DeleteLessonCommand(INDEX_FIRST_LESSON), model, getSuccessMessage(A_MATH),
-                expectedModel);
+        assertCommandSuccess(new DeleteLessonCommand(INDEX_FIRST_LESSON), model,
+                getSuccessMessage(A_MATH, AIDEN, CHLOE), expectedModel);
 
         ReadOnlyAddressBook addressBook = model.getAddressBook();
         // every student is kept, including Aiden who was only in the deleted lesson
@@ -133,13 +136,48 @@ public class DeleteLessonCommandTest {
     }
 
     @Test
+    public void execute_lessonWithOneStudent_listsThatStudent() {
+        expectedModel.deleteLesson(PHYSICS);
+
+        assertCommandSuccess(new DeleteLessonCommand(INDEX_SECOND_LESSON), model,
+                "Deleted lesson: Sec 4 Physics (Wed 1900-2030)\nUnenrolled 1 student(s): Chloe Tan", expectedModel);
+    }
+
+    @Test
     public void execute_lessonWithoutStudents_enrolmentsUnchanged() {
         List<Enrolment> enrolmentsBefore = new ArrayList<>(model.getEnrolmentList());
         expectedModel.deleteLesson(CHEMISTRY);
 
-        assertCommandSuccess(new DeleteLessonCommand(INDEX_THIRD_LESSON), model, getSuccessMessage(CHEMISTRY),
-                expectedModel);
+        // no one was unenrolled, so there is no second line
+        assertCommandSuccess(new DeleteLessonCommand(INDEX_THIRD_LESSON), model,
+                "Deleted lesson: Sec 4 Chemistry (Fri 1400-1530)", expectedModel);
         assertEquals(enrolmentsBefore, model.getEnrolmentList());
+    }
+
+    @Test
+    public void execute_studentsEnrolledOutOfOrder_listedInStudentListOrder() {
+        for (Model each : List.of(model, expectedModel)) {
+            each.enrolStudent(RYAN, CHEMISTRY);
+            each.enrolStudent(AIDEN, CHEMISTRY);
+        }
+        expectedModel.deleteLesson(CHEMISTRY);
+
+        // the same order as on the lesson card, not the order of enrolment
+        assertCommandSuccess(new DeleteLessonCommand(INDEX_THIRD_LESSON), model,
+                getSuccessMessage(CHEMISTRY, AIDEN, RYAN), expectedModel);
+    }
+
+    @Test
+    public void execute_lessonPastMidnight_marksNextDay() {
+        Lesson nightClass = new Lesson("Night Class", DayOfWeek.FRIDAY, LocalTime.of(22, 0), LocalTime.of(1, 0));
+        for (Model each : List.of(model, expectedModel)) {
+            each.addLesson(nightClass);
+        }
+        expectedModel.deleteLesson(nightClass);
+        Index nightClassIndex = Index.fromOneBased(model.getFilteredLessonList().size());
+
+        assertCommandSuccess(new DeleteLessonCommand(nightClassIndex), model,
+                "Deleted lesson: Night Class (Fri 2200-0100, next day)", expectedModel);
     }
 
     @Test
@@ -164,7 +202,7 @@ public class DeleteLessonCommandTest {
         }
         expectedModel.deleteLesson(PHYSICS);
 
-        assertCommandSuccess(new DeleteLessonCommand(INDEX_FIRST_LESSON), model, getSuccessMessage(PHYSICS),
+        assertCommandSuccess(new DeleteLessonCommand(INDEX_FIRST_LESSON), model, getSuccessMessage(PHYSICS, CHLOE),
                 expectedModel);
         assertTrue(model.getFilteredLessonList().isEmpty());
         assertEquals(List.of(A_MATH, CHEMISTRY), model.getAddressBook().getLessonList());
@@ -195,8 +233,8 @@ public class DeleteLessonCommandTest {
         expectedModel.deleteLesson(A_MATH);
 
         // the lesson being viewed no longer exists, so an empty students panel would mislead
-        assertCommandSuccess(new DeleteLessonCommand(INDEX_FIRST_LESSON), model, getSuccessMessage(A_MATH),
-                expectedModel);
+        assertCommandSuccess(new DeleteLessonCommand(INDEX_FIRST_LESSON), model,
+                getSuccessMessage(A_MATH, AIDEN, CHLOE), expectedModel);
         assertEquals(List.of(AIDEN, CHLOE, RYAN), model.getFilteredStudentList());
     }
 
@@ -206,8 +244,8 @@ public class DeleteLessonCommandTest {
         expectedModel.filterStudentsByLesson(PHYSICS);
         expectedModel.deleteLesson(A_MATH);
 
-        assertCommandSuccess(new DeleteLessonCommand(INDEX_FIRST_LESSON), model, getSuccessMessage(A_MATH),
-                expectedModel);
+        assertCommandSuccess(new DeleteLessonCommand(INDEX_FIRST_LESSON), model,
+                getSuccessMessage(A_MATH, AIDEN, CHLOE), expectedModel);
         assertEquals(List.of(CHLOE), model.getFilteredStudentList());
     }
 
@@ -217,8 +255,9 @@ public class DeleteLessonCommandTest {
         expectedModel.updateFilteredStudentList(student -> student.equals(RYAN));
         expectedModel.deleteLesson(A_MATH);
 
-        assertCommandSuccess(new DeleteLessonCommand(INDEX_FIRST_LESSON), model, getSuccessMessage(A_MATH),
-                expectedModel);
+        // students hidden by the search are still reported, as they were unenrolled too
+        assertCommandSuccess(new DeleteLessonCommand(INDEX_FIRST_LESSON), model,
+                getSuccessMessage(A_MATH, AIDEN, CHLOE), expectedModel);
         assertEquals(List.of(RYAN), model.getFilteredStudentList());
     }
 
@@ -233,8 +272,8 @@ public class DeleteLessonCommandTest {
         expectedModel.deleteLesson(thursdayMath);
         Index thursdayMathIndex = Index.fromOneBased(model.getFilteredLessonList().size());
 
-        assertCommandSuccess(new DeleteLessonCommand(thursdayMathIndex), model, getSuccessMessage(thursdayMath),
-                expectedModel);
+        assertCommandSuccess(new DeleteLessonCommand(thursdayMathIndex), model,
+                getSuccessMessage(thursdayMath, RYAN), expectedModel);
         assertEquals(List.of(A_MATH, PHYSICS, CHEMISTRY), model.getFilteredLessonList());
         assertEquals(List.of(AIDEN, CHLOE), model.getAddressBook().getStudentsInLesson(A_MATH));
         assertTrue(model.getAddressBook().getLessonsForStudent(RYAN).isEmpty());
@@ -299,8 +338,21 @@ public class DeleteLessonCommandTest {
         assertEquals(expectedFilteredStudents, model.getFilteredStudentList());
     }
 
-    private static String getSuccessMessage(Lesson deletedLesson) {
-        return String.format(DeleteLessonCommand.MESSAGE_DELETE_LESSON_SUCCESS, deletedLesson);
+    /**
+     * Returns the message for deleting {@code deletedLesson}, listing {@code unenrolledStudents} on a second
+     * line if there are any.
+     */
+    private static String getSuccessMessage(Lesson deletedLesson, Student... unenrolledStudents) {
+        String message = String.format(DeleteLessonCommand.MESSAGE_DELETE_LESSON_SUCCESS,
+                Messages.format(deletedLesson));
+        if (unenrolledStudents.length == 0) {
+            return message;
+        }
+        String names = Arrays.stream(unenrolledStudents)
+                .map(student -> student.getName().fullName)
+                .collect(Collectors.joining(", "));
+        return message + "\n" + String.format(DeleteLessonCommand.MESSAGE_UNENROLLED_STUDENTS,
+                unenrolledStudents.length, names);
     }
 
     /**

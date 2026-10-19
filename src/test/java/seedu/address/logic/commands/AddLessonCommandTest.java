@@ -15,6 +15,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
@@ -70,7 +71,7 @@ public class AddLessonCommandTest {
         expectedModel.addLesson(nightClass);
 
         assertCommandSuccess(new AddLessonCommand(nightClass), model,
-                "New lesson added: Night Class (Fri 2200-0100)", expectedModel);
+                "New lesson added: Night Class (Fri 2200-0100, next day)", expectedModel);
     }
 
     @Test
@@ -88,7 +89,7 @@ public class AddLessonCommandTest {
         model.addLesson(A_MATH);
 
         // the full message is spelled out once to pin its exact wording
-        assertAddFailure(new AddLessonCommand(A_MATH), "This lesson already exists");
+        assertAddFailure(new AddLessonCommand(A_MATH), "This lesson already exists.");
     }
 
     @Test
@@ -311,7 +312,7 @@ public class AddLessonCommandTest {
     }
 
     private static String getSuccessMessage(Lesson addedLesson) {
-        return String.format(AddLessonCommand.MESSAGE_SUCCESS, addedLesson);
+        return String.format(AddLessonCommand.MESSAGE_SUCCESS, Messages.format(addedLesson));
     }
 
     /** Creates a lesson with a newly generated ID; times are given as {@code HH:mm}. */
