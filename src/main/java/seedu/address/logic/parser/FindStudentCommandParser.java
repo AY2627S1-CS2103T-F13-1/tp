@@ -9,7 +9,7 @@ import java.util.Optional;
 
 import seedu.address.logic.commands.FindStudentCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
-import seedu.address.model.student.StudentNameContainsKeywordsPredicate;
+import seedu.address.model.student.StudentContainsKeywordsPredicate;
 
 /**
  * Parses input arguments and creates a new FindStudentCommand object
@@ -39,7 +39,7 @@ public class FindStudentCommandParser implements Parser<FindStudentCommand> {
 
         argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_NAME, PREFIX_GUARDIAN_NAME);
 
-        return new FindStudentCommand(new StudentNameContainsKeywordsPredicate(
+        return new FindStudentCommand(new StudentContainsKeywordsPredicate(
                 parseKeywords(nameKeywords), parseKeywords(guardianNameKeywords)));
     }
 

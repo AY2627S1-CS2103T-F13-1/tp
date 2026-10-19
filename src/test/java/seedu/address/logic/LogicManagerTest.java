@@ -43,7 +43,7 @@ import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
 import seedu.address.model.student.Guardian;
 import seedu.address.model.student.Student;
-import seedu.address.model.student.StudentNameContainsKeywordsPredicate;
+import seedu.address.model.student.StudentContainsKeywordsPredicate;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
 import seedu.address.storage.StorageManager;
@@ -117,13 +117,13 @@ public class LogicManagerTest {
 
         Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
         expectedModel.updateFilteredStudentList(
-                new StudentNameContainsKeywordsPredicate(List.of("rya"), List.of()));
+                new StudentContainsKeywordsPredicate(List.of("rya"), List.of()));
         assertCommandSuccess(FindStudentCommand.COMMAND_WORD + " n/rya",
                 String.format(MESSAGE_STUDENTS_LISTED_OVERVIEW, 1), expectedModel);
         assertEquals(List.of(ryan), logic.getFilteredStudentList());
 
         expectedModel.updateFilteredStudentList(
-                new StudentNameContainsKeywordsPredicate(List.of(), List.of("lin")));
+                new StudentContainsKeywordsPredicate(List.of(), List.of("lin")));
         assertCommandSuccess(FindStudentCommand.COMMAND_WORD + " gn/lin",
                 String.format(MESSAGE_STUDENTS_LISTED_OVERVIEW, 1), expectedModel);
         assertEquals(List.of(aiden), logic.getFilteredStudentList());

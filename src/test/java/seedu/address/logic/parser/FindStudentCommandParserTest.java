@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.FindStudentCommand;
-import seedu.address.model.student.StudentNameContainsKeywordsPredicate;
+import seedu.address.model.student.StudentContainsKeywordsPredicate;
 
 public class FindStudentCommandParserTest {
     private static final String MESSAGE_INVALID_FORMAT =
@@ -77,7 +77,7 @@ public class FindStudentCommandParserTest {
     @Test
     public void parse_studentNameKeywords_returnsFindStudentCommand() {
         FindStudentCommand expectedCommand = new FindStudentCommand(
-                new StudentNameContainsKeywordsPredicate(List.of("Aiden", "Chloe"), List.of()));
+                new StudentContainsKeywordsPredicate(List.of("Aiden", "Chloe"), List.of()));
         assertParseSuccess(parser, " n/Aiden Chloe", expectedCommand);
 
         // multiple whitespaces between keywords
@@ -87,27 +87,27 @@ public class FindStudentCommandParserTest {
     @Test
     public void parse_singleKeyword_returnsFindStudentCommand() {
         assertParseSuccess(parser, " n/Aiden",
-                new FindStudentCommand(new StudentNameContainsKeywordsPredicate(List.of("Aiden"), List.of())));
+                new FindStudentCommand(new StudentContainsKeywordsPredicate(List.of("Aiden"), List.of())));
         assertParseSuccess(parser, " gn/Tan",
-                new FindStudentCommand(new StudentNameContainsKeywordsPredicate(List.of(), List.of("Tan"))));
+                new FindStudentCommand(new StudentContainsKeywordsPredicate(List.of(), List.of("Tan"))));
     }
 
     @Test
     public void parse_mixedCaseKeywords_keywordsKeptAsTyped() {
         assertParseSuccess(parser, " n/aIDEN gn/tAN", new FindStudentCommand(
-                new StudentNameContainsKeywordsPredicate(List.of("aIDEN"), List.of("tAN"))));
+                new StudentContainsKeywordsPredicate(List.of("aIDEN"), List.of("tAN"))));
     }
 
     @Test
     public void parse_numericKeyword_returnsFindStudentCommand() {
         assertParseSuccess(parser, " n/Aiden 2",
-                new FindStudentCommand(new StudentNameContainsKeywordsPredicate(List.of("Aiden", "2"), List.of())));
+                new FindStudentCommand(new StudentContainsKeywordsPredicate(List.of("Aiden", "2"), List.of())));
     }
 
     @Test
     public void parse_guardianNameKeywords_returnsFindStudentCommand() {
         FindStudentCommand expectedCommand = new FindStudentCommand(
-                new StudentNameContainsKeywordsPredicate(List.of(), List.of("Tan", "Lim")));
+                new StudentContainsKeywordsPredicate(List.of(), List.of("Tan", "Lim")));
         assertParseSuccess(parser, " gn/Tan Lim", expectedCommand);
 
         // multiple whitespaces between keywords
@@ -117,7 +117,7 @@ public class FindStudentCommandParserTest {
     @Test
     public void parse_studentAndGuardianNameKeywords_returnsFindStudentCommand() {
         FindStudentCommand expectedCommand = new FindStudentCommand(
-                new StudentNameContainsKeywordsPredicate(List.of("Aiden"), List.of("Mei", "Ling")));
+                new StudentContainsKeywordsPredicate(List.of("Aiden"), List.of("Mei", "Ling")));
         assertParseSuccess(parser, " n/Aiden gn/Mei Ling", expectedCommand);
 
         // prefixes in either order

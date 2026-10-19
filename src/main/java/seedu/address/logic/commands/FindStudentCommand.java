@@ -7,7 +7,7 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.Messages;
 import seedu.address.model.Model;
-import seedu.address.model.student.StudentNameContainsKeywordsPredicate;
+import seedu.address.model.student.StudentContainsKeywordsPredicate;
 
 /**
  * Finds and lists all students whose name, or whose guardian's name, contains any of the given keywords.
@@ -25,12 +25,12 @@ public class FindStudentCommand extends Command {
             + "(at least one)\n"
             + "Example: " + COMMAND_WORD + " " + PREFIX_NAME + "aid chl " + PREFIX_GUARDIAN_NAME + "tan";
 
-    private final StudentNameContainsKeywordsPredicate predicate;
+    private final StudentContainsKeywordsPredicate predicate;
 
     /**
      * Creates a command that filters the student list with {@code predicate}.
      */
-    public FindStudentCommand(StudentNameContainsKeywordsPredicate predicate) {
+    public FindStudentCommand(StudentContainsKeywordsPredicate predicate) {
         requireNonNull(predicate);
         this.predicate = predicate;
     }

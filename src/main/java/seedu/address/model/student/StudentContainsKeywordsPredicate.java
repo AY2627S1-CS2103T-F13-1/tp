@@ -15,7 +15,7 @@ import seedu.address.commons.util.ToStringBuilder;
  * When both lists are non-empty, the student must match both. An empty list places no condition
  * on that name, but a predicate with no keywords at all matches no student.
  */
-public class StudentNameContainsKeywordsPredicate implements Predicate<Student> {
+public class StudentContainsKeywordsPredicate implements Predicate<Student> {
     private final List<String> nameKeywords;
     private final List<String> guardianNameKeywords;
 
@@ -23,7 +23,7 @@ public class StudentNameContainsKeywordsPredicate implements Predicate<Student> 
      * Creates a predicate from keywords for the student's name and for the guardian's name.
      * Neither list, nor any keyword in them, may be null.
      */
-    public StudentNameContainsKeywordsPredicate(List<String> nameKeywords, List<String> guardianNameKeywords) {
+    public StudentContainsKeywordsPredicate(List<String> nameKeywords, List<String> guardianNameKeywords) {
         requireAllNonNull(nameKeywords, guardianNameKeywords);
         this.nameKeywords = List.copyOf(nameKeywords);
         this.guardianNameKeywords = List.copyOf(guardianNameKeywords);
@@ -57,7 +57,7 @@ public class StudentNameContainsKeywordsPredicate implements Predicate<Student> 
         }
 
         // instanceof handles nulls
-        if (!(other instanceof StudentNameContainsKeywordsPredicate otherPredicate)) {
+        if (!(other instanceof StudentContainsKeywordsPredicate otherPredicate)) {
             return false;
         }
 
