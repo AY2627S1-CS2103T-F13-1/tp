@@ -161,6 +161,43 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 This section describes some noteworthy details on how certain features are implemented.
 
+### Warning about clashing lessons
+
+`addlesson` adds a lesson even if its time overlaps an existing lesson, since a tutor may teach overlapping lessons on purpose. It then warns which lessons clash, so that an accidental double-booking is noticed.
+
+The sequence diagram below shows how `AddLessonCommand` finds the clashes before adding the lesson.
+
+![Interactions inside the Logic and Model components when adding a lesson](images/AddLessonSequenceDiagram.png)
+
+1. `AddLessonCommand#execute()` first calls `Model#hasLesson()`. A duplicate lesson is rejected with a `CommandException`, so it never gets a warning instead.
+1. It calls `ReadOnlyAddressBook#getClashingLessons()`, which checks the full lesson list, so lessons hidden by `listlessons d/DAY` still count. A lesson with the same ID as the new lesson is skipped, so that a future `editlesson` does not report a lesson as clashing with its own old times.
+1. `getClashingLessons()` compares each lesson with the new one using `Lesson#overlaps()`.
+1. The command adds the lesson, and returns a `CommandResult` whose second line names the clashing lessons, if any.
+
+`Lesson#overlaps()` places each lesson on a weekly cycle of 7 × 24 × 60 minutes. A lesson starts at minute `(day - 1) × 1440 + start time` and lasts `(end time - start time) mod 1440` minutes, which also gives the right length for a lesson that runs past midnight. Two lessons overlap if either one starts before the other has ended, counting forward around the week. Counting around the week lets a Sunday lesson that runs past midnight clash with an early Monday lesson. A lesson that starts exactly when another ends does not clash with it.
+
+#### Design considerations:
+
+**Aspect: What to do with a clashing lesson:**
+
+* **Alternative 1 (current choice):** Add the lesson and warn.
+  * Pros: Tutors who teach overlapping groups on purpose are not blocked.
+  * Cons: A warning can be overlooked.
+
+* **Alternative 2:** Reject the lesson.
+  * Pros: A double-booking cannot happen by accident.
+  * Cons: Overlapping lessons cannot be recorded at all, even when they are intended.
+
+**Aspect: How to compare lessons that run past midnight:**
+
+* **Alternative 1 (current choice):** Compare time ranges on a weekly cycle.
+  * Pros: One comparison covers every case, including Sunday into Monday.
+  * Cons: The modular arithmetic is less obvious than comparing two times.
+
+* **Alternative 2:** Split a lesson that runs past midnight into one range on each day, and compare ranges on the same day.
+  * Pros: Each comparison is simple.
+  * Cons: A lesson may become two ranges, and Sunday into Monday still needs special handling.
+
 ### \[Proposed\] Enrolling a student in a lesson
 
 #### Proposed Implementation
