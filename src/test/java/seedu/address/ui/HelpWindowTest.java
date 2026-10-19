@@ -29,7 +29,11 @@ public class HelpWindowTest {
                 assertFalse(stage.isResizable());
                 assertEquals(HelpWindow.HELP_MESSAGE, helpMessage.getText());
                 assertTrue(helpMessage.getText().contains("addstudent"));
+                assertTrue(helpMessage.getText().contains(
+                        "editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]"));
                 assertTrue(helpMessage.getText().contains("addlesson"));
+                assertTrue(helpMessage.getText().contains(
+                        "editlesson INDEX [n/NAME] [d/DAY] [st/START_TIME] [et/END_TIME]"));
                 assertTrue(helpMessage.getText().contains("listlessons"));
                 assertTrue(helpMessage.getText().contains(HelpWindow.USERGUIDE_URL));
             } finally {

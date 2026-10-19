@@ -81,8 +81,28 @@ Format: `liststudents [l/LESSON_INDEX]`
 * If the lesson used by the student filter is deleted, all remaining students are shown again.
 
 Examples:
+
 * `liststudents` shows all students.
 * `liststudents l/2` shows students enrolled in the second displayed lesson.
+
+### Editing a student: `editstudent`
+
+Edits the student at the specified index in the displayed student list.
+
+Format: `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`
+
+* `INDEX` must be a positive integer and refers to the index shown in the current student list.
+* At least one optional field must be provided. Fields that are not provided remain unchanged.
+* `gn/GUARDIAN_NAME` and `gp/GUARDIAN_PHONE` must be provided together. They replace the student's existing guardian details.
+* Names must contain only alphanumeric characters and spaces and must not be blank. Phone numbers must contain only digits and be at least three digits long.
+* The edited student must not duplicate another student.
+* The student's identity and lesson enrolments are preserved.
+* The active student filter remains in effect and is re-evaluated after the edit. For example, a renamed student may disappear from a name search that they no longer match.
+
+Examples:
+
+* `editstudent 1 p/92345678` changes only the phone number of the first displayed student.
+* `editstudent 2 gn/Lim Mei gp/91234567` replaces only the guardian details of the second displayed student.
 
 ### Listing lessons: `listlessons`
 
@@ -95,8 +115,29 @@ Format: `listlessons [d/DAY]`
 * Running `listlessons` without `d/` clears the lesson filter.
 
 Examples:
+
 * `listlessons` shows all lessons.
 * `listlessons d/mon` shows lessons that start on Monday.
+
+### Editing a lesson: `editlesson`
+
+Edits the lesson at the specified index in the displayed lesson list.
+
+Format: `editlesson INDEX [n/NAME] [d/DAY] [st/START_TIME] [et/END_TIME]`
+
+* `INDEX` must be a positive integer and refers to the index shown in the current lesson list.
+* At least one optional field must be provided. Fields that are not provided remain unchanged.
+* `NAME` must be 1 to 50 characters long, start with a letter or digit, and contain only English letters, digits, spaces and `- ' . , & ( ) +`.
+* `DAY` must be `mon`, `tue`, `wed`, `thu`, `fri`, `sat` or `sun`, in any letter case.
+* Times must use four-digit 24-hour format from `0000` to `2359`. The start and end times cannot be equal. An end time earlier than the start time means that the lesson ends on the next day.
+* The edited lesson must not duplicate another lesson.
+* The lesson's identity and student enrolments are preserved. A student list filtered by this lesson remains valid.
+* The active lesson filter remains in effect and is re-evaluated after the edit. For example, changing the day may remove the lesson from the displayed day filter.
+
+Examples:
+
+* `editlesson 1 d/tue st/1700 et/1900` changes only the day and times of the first displayed lesson.
+* `editlesson 2 n/Sec 3 Mathematics` changes only the name of the second displayed lesson.
 
 
 ### Adding a person: `add`
@@ -219,6 +260,8 @@ Action | Format, Examples
 **Clear** | `clear`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **Edit** | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
+**Edit student** | `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `editstudent 1 p/92345678`
+**Edit lesson** | `editlesson INDEX [n/NAME] [d/DAY] [st/START_TIME] [et/END_TIME]`<br> e.g., `editlesson 1 d/tue st/1700 et/1900`
 **Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List** | `list`
 **List students** | `liststudents [l/LESSON_INDEX]`<br> e.g., `liststudents l/1`
