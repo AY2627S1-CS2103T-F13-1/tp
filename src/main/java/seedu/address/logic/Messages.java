@@ -1,10 +1,14 @@
 package seedu.address.logic;
 
+import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import seedu.address.logic.parser.Prefix;
+import seedu.address.model.lesson.Lesson;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
 import seedu.address.model.student.Guardian;
@@ -23,6 +27,8 @@ public class Messages {
     public static final String MESSAGE_STUDENTS_LISTED_OVERVIEW = "%1$d student(s) listed!";
     public static final String MESSAGE_DUPLICATE_FIELDS =
                 "Multiple values specified for the following single-valued field(s): ";
+
+    private static final DateTimeFormatter LESSON_TIME_FORMAT = DateTimeFormatter.ofPattern("HHmm");
 
     /**
      * Returns an error message indicating the duplicate prefixes.
@@ -60,6 +66,17 @@ public class Messages {
         return student.getName()
                 + "; Phone: " + student.getPhone().map(Phone::toString).orElse("-")
                 + "; Guardian: " + student.getGuardian().map(Guardian::toString).orElse("-");
+    }
+
+    /**
+     * Formats the {@code lesson} for display to the user, e.g. {@code Sec 3 A-Math (Mon 1600-1800)}.
+     * A lesson that ends the next day is marked {@code next day}, matching the "(next day)" on lesson cards.
+     */
+    public static String format(Lesson lesson) {
+        String nextDaySuffix = lesson.getEndTime().isBefore(lesson.getStartTime()) ? ", next day" : "";
+        return lesson.getName() + " (" + lesson.getDay().getDisplayName(TextStyle.SHORT, Locale.ENGLISH) + " "
+                + lesson.getStartTime().format(LESSON_TIME_FORMAT) + "-"
+                + lesson.getEndTime().format(LESSON_TIME_FORMAT) + nextDaySuffix + ")";
     }
 
 }
