@@ -11,7 +11,9 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Logger;
 
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.CollectionUtil;
 import seedu.address.commons.util.ToStringBuilder;
@@ -46,6 +48,8 @@ public class EditLessonCommand extends Command {
     public static final String MESSAGE_NOT_EDITED = "At least one field to edit must be provided.";
     public static final String MESSAGE_DUPLICATE_LESSON = "This lesson already exists";
 
+    private static final Logger logger = LogsCenter.getLogger(EditLessonCommand.class);
+
     private final Index index;
     private final EditLessonDescriptor editLessonDescriptor;
 
@@ -78,10 +82,16 @@ public class EditLessonCommand extends Command {
                 .filter(lesson -> !lesson.getId().equals(lessonToEdit.getId()))
                 .anyMatch(lesson -> lesson.isSameLesson(editedLesson));
         if (hasDuplicate) {
+            logger.fine("Rejected duplicate lesson edit for ID: " + lessonToEdit.getId());
             throw new CommandException(MESSAGE_DUPLICATE_LESSON);
         }
 
         model.setLesson(lessonToEdit, editedLesson);
+        assert model.getAddressBook().getLessonList().stream()
+                .anyMatch(lesson -> lesson.getId().equals(editedLesson.getId())
+                        && lesson.equals(editedLesson))
+                : "Editing a lesson should update the address book";
+        logger.info("Edited lesson with ID: " + editedLesson.getId());
         return new CommandResult(String.format(MESSAGE_EDIT_LESSON_SUCCESS, editedLesson));
     }
 

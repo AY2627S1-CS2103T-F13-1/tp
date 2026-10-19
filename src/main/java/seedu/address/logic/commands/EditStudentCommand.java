@@ -9,7 +9,9 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Logger;
 
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.CollectionUtil;
 import seedu.address.commons.util.ToStringBuilder;
@@ -42,6 +44,8 @@ public class EditStudentCommand extends Command {
     public static final String MESSAGE_NOT_EDITED = "At least one field to edit must be provided.";
     public static final String MESSAGE_DUPLICATE_STUDENT = "This student already exists";
 
+    private static final Logger logger = LogsCenter.getLogger(EditStudentCommand.class);
+
     private final Index index;
     private final EditStudentDescriptor editStudentDescriptor;
 
@@ -72,10 +76,16 @@ public class EditStudentCommand extends Command {
                 .filter(student -> !student.getId().equals(studentToEdit.getId()))
                 .anyMatch(editedStudent::isSameStudent);
         if (hasDuplicate) {
+            logger.fine("Rejected duplicate student edit for ID: " + studentToEdit.getId());
             throw new CommandException(MESSAGE_DUPLICATE_STUDENT);
         }
 
         model.setStudent(studentToEdit, editedStudent);
+        assert model.getAddressBook().getStudentList().stream()
+                .anyMatch(student -> student.getId().equals(editedStudent.getId())
+                        && student.equals(editedStudent))
+                : "Editing a student should update the address book";
+        logger.info("Edited student with ID: " + editedStudent.getId());
         return new CommandResult(String.format(MESSAGE_EDIT_STUDENT_SUCCESS, Messages.format(editedStudent)));
     }
 

@@ -169,6 +169,10 @@ The `editstudent` and `editlesson` commands replace immutable domain objects wit
 1. The model rejects a replacement that would duplicate another student or lesson, then replaces the target in the source list.
 1. The filtered list re-evaluates its predicate when the source item is replaced. An edited item therefore remains visible only if it still matches the active filter.
 
+The following sequence diagram shows the successful execution of `editstudent 1 p/92345678`. The `editlesson` command follows the same sequence using its lesson-specific parser, command, filtered list and model operation.
+
+![Interactions for editing a student](images/EditStudentSequenceDiagram.png)
+
 Enrolments link the stable student and lesson UUIDs. Because an edit retains the target UUID, existing enrolments continue to refer to the edited record without being recreated. This also keeps a student list filtered by lesson valid when that lesson is edited.
 
 ### Enrolling a student in a lesson

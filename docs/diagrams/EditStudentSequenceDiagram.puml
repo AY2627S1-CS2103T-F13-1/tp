@@ -1,0 +1,97 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+
+box Logic LOGIC_COLOR_T1
+participant ":LogicManager" as LogicManager LOGIC_COLOR
+participant ":AddressBookParser" as AddressBookParser LOGIC_COLOR
+participant ":EditStudentCommandParser" as EditStudentCommandParser LOGIC_COLOR
+participant "e:EditStudentCommand" as EditStudentCommand LOGIC_COLOR
+participant "r:CommandResult" as CommandResult LOGIC_COLOR
+end box
+
+box Model MODEL_COLOR_T1
+participant "m:ModelManager" as ModelManager MODEL_COLOR
+participant "ab:AddressBook" as AddressBook MODEL_COLOR
+end box
+
+[-> LogicManager : execute("editstudent 1 p/92345678")
+activate LogicManager
+
+LogicManager -> AddressBookParser : parseCommand("editstudent 1 p/92345678")
+activate AddressBookParser
+
+create EditStudentCommandParser
+AddressBookParser -> EditStudentCommandParser
+activate EditStudentCommandParser
+EditStudentCommandParser --> AddressBookParser
+deactivate EditStudentCommandParser
+
+AddressBookParser -> EditStudentCommandParser : parse("1 p/92345678")
+activate EditStudentCommandParser
+
+create EditStudentCommand
+EditStudentCommandParser -> EditStudentCommand : EditStudentCommand(index, descriptor)
+activate EditStudentCommand
+EditStudentCommand --> EditStudentCommandParser : e
+deactivate EditStudentCommand
+
+EditStudentCommandParser --> AddressBookParser : e
+deactivate EditStudentCommandParser
+EditStudentCommandParser -[hidden]-> AddressBookParser
+destroy EditStudentCommandParser
+
+AddressBookParser --> LogicManager : e
+deactivate AddressBookParser
+
+LogicManager -> EditStudentCommand : execute(m)
+activate EditStudentCommand
+
+EditStudentCommand -> ModelManager : getFilteredStudentList()
+activate ModelManager
+ModelManager --> EditStudentCommand : filteredStudents
+deactivate ModelManager
+
+EditStudentCommand -> EditStudentCommand : createEditedStudent(target, descriptor)
+note right of EditStudentCommand
+  The replacement retains the target UUID
+  and values for fields that were not supplied.
+end note
+
+EditStudentCommand -> ModelManager : getAddressBook()
+activate ModelManager
+ModelManager --> EditStudentCommand : ab
+deactivate ModelManager
+EditStudentCommand -> AddressBook : getStudentList()
+activate AddressBook
+AddressBook --> EditStudentCommand : allStudents
+deactivate AddressBook
+EditStudentCommand -> EditStudentCommand : check for a duplicate student
+
+EditStudentCommand -> ModelManager : setStudent(target, editedStudent)
+activate ModelManager
+ModelManager -> AddressBook : setStudent(target, editedStudent)
+activate AddressBook
+AddressBook -> AddressBook : findStudentIndex(target.id)
+note right of AddressBook
+  Reject a changed UUID or a duplicate student,
+  then replace the source-list item.
+end note
+AddressBook -> AddressBook : students.set(index, editedStudent)
+AddressBook --> ModelManager
+deactivate AddressBook
+ModelManager --> EditStudentCommand
+deactivate ModelManager
+
+create CommandResult
+EditStudentCommand -> CommandResult : CommandResult(successMessage)
+activate CommandResult
+CommandResult --> EditStudentCommand : r
+deactivate CommandResult
+
+EditStudentCommand --> LogicManager : r
+deactivate EditStudentCommand
+
+[<-- LogicManager : r
+deactivate LogicManager
+@enduml
