@@ -30,7 +30,7 @@ import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
 import seedu.address.model.student.Guardian;
 import seedu.address.model.student.Student;
-import seedu.address.model.student.StudentNameContainsKeywordsPredicate;
+import seedu.address.model.student.StudentContainsKeywordsPredicate;
 
 public class AddressBookParserTest {
 
@@ -125,11 +125,15 @@ public class AddressBookParserTest {
         FindStudentCommand command = (FindStudentCommand) parser.parseCommand(
                 FindStudentCommand.COMMAND_WORD + " n/Aiden Chloe gn/Tan");
         assertEquals(new FindStudentCommand(
-                new StudentNameContainsKeywordsPredicate(List.of("Aiden", "Chloe"), List.of("Tan"))), command);
+                new StudentContainsKeywordsPredicate(List.of("Aiden", "Chloe"), List.of("Tan"))), command);
 
         command = (FindStudentCommand) parser.parseCommand(FindStudentCommand.COMMAND_WORD + " gn/Tan");
-        assertEquals(new FindStudentCommand(new StudentNameContainsKeywordsPredicate(List.of(), List.of("Tan"))),
+        assertEquals(new FindStudentCommand(new StudentContainsKeywordsPredicate(List.of(), List.of("Tan"))),
                 command);
+
+        command = (FindStudentCommand) parser.parseCommand(FindStudentCommand.COMMAND_WORD + " n/Aiden p/9123");
+        assertEquals(new FindStudentCommand(
+                new StudentContainsKeywordsPredicate(List.of("Aiden"), List.of(), List.of("9123"))), command);
     }
 
     @Test

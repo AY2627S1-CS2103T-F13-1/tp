@@ -84,6 +84,26 @@ Examples:
 * `liststudents` shows all students.
 * `liststudents l/2` shows students enrolled in the second displayed lesson.
 
+### Finding students: `findstudent`
+
+Finds students by their name, their guardian's name, or part of a phone number.
+
+Format: `findstudent [n/NAME_KEYWORDS...] [gn/GUARDIAN_NAME_KEYWORDS...] [p/PHONE_DIGITS...]`
+
+* At least one of `n/`, `gn/` and `p/` must be given, and each can be given at most once.
+* `n/` searches students' own names, and `gn/` searches their guardians' names.
+* `p/` searches both the student's own phone number and their guardian's phone number. Its keywords must contain only digits.
+* The search is case-insensitive, and a keyword can match any part of a name or number; for example, `aid` matches `Aiden` and `4567` matches `91234567`.
+* Within one prefix, a student needs to match only one of the keywords; for example, `n/aid chl` finds both `Aiden Tan` and `Chloe Lim`.
+* If more than one prefix is given, a student must match all of them.
+* Each search replaces the current student filter.
+
+Examples:
+* `findstudent n/aid chl` shows students whose names contain `aid` or `chl`.
+* `findstudent gn/tan` shows students whose guardian's name contains `tan`.
+* `findstudent p/4567` shows students whose own or guardian's phone number contains `4567`, such as a guardian who just called from an unsaved number.
+* `findstudent n/aiden p/9123` shows students whose names contain `aiden` and whose own or guardian's phone number contains `9123`.
+
 ### Listing lessons: `listlessons`
 
 Shows all lessons, or only lessons that start on a specified day.
@@ -97,6 +117,46 @@ Format: `listlessons [d/DAY]`
 Examples:
 * `listlessons` shows all lessons.
 * `listlessons d/mon` shows lessons that start on Monday.
+
+### Adding a lesson: `addlesson`
+
+Adds a weekly lesson to the address book.
+
+Format: `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`
+
+* `DAY` must be `mon`, `tue`, `wed`, `thu`, `fri`, `sat` or `sun`, in any letter case.
+* `START_TIME` and `END_TIME` must use four digits in 24-hour time, such as `1600`.
+* If the end time is earlier than the start time, the lesson is treated as ending on the next day.
+* The start and end times must be different.
+
+Examples:
+* `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800` adds a Monday lesson from 4:00 PM to 6:00 PM.
+* `addlesson n/Late Physics d/fri st/2300 et/0100` adds a Friday lesson that ends on Saturday.
+
+### Enrolling a student: `enrol`
+
+Enrols a student in a lesson using the indices shown in the student and lesson panels.
+
+Format: `enrol s/STUDENT_INDEX l/LESSON_INDEX`
+
+* Both indices must be positive integers.
+* `STUDENT_INDEX` refers to the current displayed student list.
+* `LESSON_INDEX` refers to the current displayed lesson list.
+* A student cannot be enrolled in the same lesson more than once.
+
+Example:
+* `enrol s/1 l/2` enrols the first displayed student in the second displayed lesson.
+
+### Deleting a lesson: `deletelesson`
+
+Deletes a lesson using its displayed index. Students are kept, but their enrolment in the deleted lesson is removed.
+
+Format: `deletelesson INDEX`
+
+* `INDEX` refers to the current displayed lesson list and must be a positive integer.
+
+Example:
+* `deletelesson 2` deletes the second displayed lesson.
 
 
 ### Adding a person: `add`
@@ -237,7 +297,11 @@ Action | Format, Examples
 **Delete lesson** | `deletelesson INDEX`<br> e.g., `deletelesson 2`
 **Edit** | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
 **Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
+**Find students** | `findstudent [n/NAME_KEYWORDS...] [gn/GUARDIAN_NAME_KEYWORDS...] [p/PHONE_DIGITS...]`<br> e.g., `findstudent p/4567`
 **List** | `list`
 **List students** | `liststudents [l/LESSON_INDEX]`<br> e.g., `liststudents l/1`
 **List lessons** | `listlessons [d/DAY]`<br> e.g., `listlessons d/mon`
+**Add lesson** | `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`<br> e.g., `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800`
+**Enrol student** | `enrol s/STUDENT_INDEX l/LESSON_INDEX`<br> e.g., `enrol s/1 l/2`
+**Delete lesson** | `deletelesson INDEX`<br> e.g., `deletelesson 2`
 **Help** | `help`

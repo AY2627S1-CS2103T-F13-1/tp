@@ -6,6 +6,9 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_END_TIME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_START_TIME;
 
+import java.util.logging.Logger;
+
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
@@ -36,6 +39,8 @@ public class AddLessonCommand extends Command {
     public static final String MESSAGE_SUCCESS = "New lesson added: %1$s";
     public static final String MESSAGE_DUPLICATE_LESSON = "This lesson already exists.";
 
+    private static final Logger logger = LogsCenter.getLogger(AddLessonCommand.class);
+
     private final Lesson toAdd;
 
     /**
@@ -50,10 +55,13 @@ public class AddLessonCommand extends Command {
         requireNonNull(model);
 
         if (model.hasLesson(toAdd)) {
+            logger.fine("Rejected duplicate lesson: " + toAdd);
             throw new CommandException(MESSAGE_DUPLICATE_LESSON);
         }
 
         model.addLesson(toAdd);
+        assert model.getFilteredLessonList().contains(toAdd) : "Adding a lesson should clear the lesson filter";
+        logger.info("Added lesson: " + toAdd);
         return new CommandResult(String.format(MESSAGE_SUCCESS, Messages.format(toAdd)));
     }
 
