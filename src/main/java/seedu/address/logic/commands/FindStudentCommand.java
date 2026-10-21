@@ -5,6 +5,9 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_GUARDIAN_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
 
+import java.util.logging.Logger;
+
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.Messages;
 import seedu.address.model.Model;
@@ -27,7 +30,9 @@ public class FindStudentCommand extends Command {
             + "Example: " + COMMAND_WORD + " " + PREFIX_NAME + "aid " + PREFIX_GUARDIAN_NAME + "tan "
             + PREFIX_PHONE + "4567";
 
-    private final StudentContainsKeywordsPredicate predicate;
+    private static final Logger logger = LogsCenter.getLogger(FindStudentCommand.class);
+
+    private final StudentNameContainsKeywordsPredicate predicate;
 
     /**
      * Creates a command that filters the student list with {@code predicate}.
@@ -41,8 +46,9 @@ public class FindStudentCommand extends Command {
     public CommandResult execute(Model model) {
         requireNonNull(model);
         model.updateFilteredStudentList(predicate);
-        return new CommandResult(
-                String.format(Messages.MESSAGE_STUDENTS_LISTED_OVERVIEW, model.getFilteredStudentList().size()));
+        int matchCount = model.getFilteredStudentList().size();
+        logger.fine("Found " + matchCount + " student(s) matching " + predicate);
+        return new CommandResult(String.format(Messages.MESSAGE_STUDENTS_LISTED_OVERVIEW, matchCount));
     }
 
     @Override
