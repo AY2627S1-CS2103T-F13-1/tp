@@ -3,6 +3,7 @@ package seedu.address.logic.parser;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_GUARDIAN_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
 
@@ -12,7 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.FindStudentCommand;
-import seedu.address.model.student.StudentNameContainsKeywordsPredicate;
+import seedu.address.model.student.StudentContainsKeywordsPredicate;
 
 public class FindStudentCommandParserTest {
     private static final String MESSAGE_INVALID_FORMAT =
@@ -41,11 +42,13 @@ public class FindStudentCommandParserTest {
         // prefixes are case-sensitive, so these are read as preamble text
         assertParseFailure(parser, " N/Aiden", MESSAGE_INVALID_FORMAT);
         assertParseFailure(parser, " GN/Tan", MESSAGE_INVALID_FORMAT);
+        assertParseFailure(parser, " P/9123", MESSAGE_INVALID_FORMAT);
     }
 
     @Test
     public void parse_unrelatedPrefixOnly_throwsParseException() {
-        assertParseFailure(parser, " p/91234567", MESSAGE_INVALID_FORMAT);
+        assertParseFailure(parser, " gp/91234567", MESSAGE_INVALID_FORMAT);
+        assertParseFailure(parser, " l/1", MESSAGE_INVALID_FORMAT);
     }
 
     @Test
@@ -55,12 +58,14 @@ public class FindStudentCommandParserTest {
         assertParseFailure(parser, " n/Aiden gn/", FindStudentCommandParser.MESSAGE_EMPTY_KEYWORDS);
         assertParseFailure(parser, " n/ gn/Tan", FindStudentCommandParser.MESSAGE_EMPTY_KEYWORDS);
         assertParseFailure(parser, " n/ \t\n gn/ ", FindStudentCommandParser.MESSAGE_EMPTY_KEYWORDS);
+        assertParseFailure(parser, " p/", FindStudentCommandParser.MESSAGE_EMPTY_KEYWORDS);
+        assertParseFailure(parser, " n/Aiden p/  ", FindStudentCommandParser.MESSAGE_EMPTY_KEYWORDS);
     }
 
     @Test
     public void parse_nonAlphanumericKeyword_throwsParseException() {
         // unrelated prefix after a valid one is read as a keyword, which cannot match any name
-        assertParseFailure(parser, " n/Aiden p/91234567", invalidKeyword("p/91234567"));
+        assertParseFailure(parser, " n/Aiden gp/91234567", invalidKeyword("gp/91234567"));
         assertParseFailure(parser, " n/Tan!", invalidKeyword("Tan!"));
         assertParseFailure(parser, " gn/Mei-Ling", invalidKeyword("Mei-Ling"));
         assertParseFailure(parser, " n/Aiden gn/O'Neil", invalidKeyword("O'Neil"));
@@ -68,16 +73,36 @@ public class FindStudentCommandParserTest {
     }
 
     @Test
+    public void parse_nonDigitPhoneKeyword_throwsParseException() {
+        assertParseFailure(parser, " p/+6591234567", invalidPhoneKeyword("+6591234567"));
+        assertParseFailure(parser, " p/9123-4567", invalidPhoneKeyword("9123-4567"));
+        assertParseFailure(parser, " p/91a", invalidPhoneKeyword("91a"));
+        assertParseFailure(parser, " p/Tan", invalidPhoneKeyword("Tan"));
+        assertParseFailure(parser, " n/Aiden p/9123 x", invalidPhoneKeyword("x"));
+
+        // unrelated prefix after p/ is read as a phone keyword
+        assertParseFailure(parser, " p/9123 l/1", invalidPhoneKeyword("l/1"));
+    }
+
+    @Test
+    public void parse_digitsAsNameKeyword_searchesNamesOnly() {
+        // digits after n/ are a name keyword, not a phone search
+        assertParseSuccess(parser, " n/9123",
+                new FindStudentCommand(new StudentContainsKeywordsPredicate(List.of("9123"), List.of())));
+    }
+
+    @Test
     public void parse_duplicatePrefixes_throwsParseException() {
         assertParseFailure(parser, " n/Aiden n/Chloe", Messages.getErrorMessageForDuplicatePrefixes(PREFIX_NAME));
         assertParseFailure(parser, " gn/Tan gn/Lim",
                 Messages.getErrorMessageForDuplicatePrefixes(PREFIX_GUARDIAN_NAME));
+        assertParseFailure(parser, " p/9123 p/4567", Messages.getErrorMessageForDuplicatePrefixes(PREFIX_PHONE));
     }
 
     @Test
     public void parse_studentNameKeywords_returnsFindStudentCommand() {
         FindStudentCommand expectedCommand = new FindStudentCommand(
-                new StudentNameContainsKeywordsPredicate(List.of("Aiden", "Chloe"), List.of()));
+                new StudentContainsKeywordsPredicate(List.of("Aiden", "Chloe"), List.of()));
         assertParseSuccess(parser, " n/Aiden Chloe", expectedCommand);
 
         // multiple whitespaces between keywords
@@ -87,27 +112,27 @@ public class FindStudentCommandParserTest {
     @Test
     public void parse_singleKeyword_returnsFindStudentCommand() {
         assertParseSuccess(parser, " n/Aiden",
-                new FindStudentCommand(new StudentNameContainsKeywordsPredicate(List.of("Aiden"), List.of())));
+                new FindStudentCommand(new StudentContainsKeywordsPredicate(List.of("Aiden"), List.of())));
         assertParseSuccess(parser, " gn/Tan",
-                new FindStudentCommand(new StudentNameContainsKeywordsPredicate(List.of(), List.of("Tan"))));
+                new FindStudentCommand(new StudentContainsKeywordsPredicate(List.of(), List.of("Tan"))));
     }
 
     @Test
     public void parse_mixedCaseKeywords_keywordsKeptAsTyped() {
         assertParseSuccess(parser, " n/aIDEN gn/tAN", new FindStudentCommand(
-                new StudentNameContainsKeywordsPredicate(List.of("aIDEN"), List.of("tAN"))));
+                new StudentContainsKeywordsPredicate(List.of("aIDEN"), List.of("tAN"))));
     }
 
     @Test
     public void parse_numericKeyword_returnsFindStudentCommand() {
         assertParseSuccess(parser, " n/Aiden 2",
-                new FindStudentCommand(new StudentNameContainsKeywordsPredicate(List.of("Aiden", "2"), List.of())));
+                new FindStudentCommand(new StudentContainsKeywordsPredicate(List.of("Aiden", "2"), List.of())));
     }
 
     @Test
     public void parse_guardianNameKeywords_returnsFindStudentCommand() {
         FindStudentCommand expectedCommand = new FindStudentCommand(
-                new StudentNameContainsKeywordsPredicate(List.of(), List.of("Tan", "Lim")));
+                new StudentContainsKeywordsPredicate(List.of(), List.of("Tan", "Lim")));
         assertParseSuccess(parser, " gn/Tan Lim", expectedCommand);
 
         // multiple whitespaces between keywords
@@ -117,11 +142,48 @@ public class FindStudentCommandParserTest {
     @Test
     public void parse_studentAndGuardianNameKeywords_returnsFindStudentCommand() {
         FindStudentCommand expectedCommand = new FindStudentCommand(
-                new StudentNameContainsKeywordsPredicate(List.of("Aiden"), List.of("Mei", "Ling")));
+                new StudentContainsKeywordsPredicate(List.of("Aiden"), List.of("Mei", "Ling")));
         assertParseSuccess(parser, " n/Aiden gn/Mei Ling", expectedCommand);
 
         // prefixes in either order
         assertParseSuccess(parser, " gn/Mei Ling n/Aiden", expectedCommand);
+    }
+
+    @Test
+    public void parse_phoneKeywords_returnsFindStudentCommand() {
+        FindStudentCommand expectedCommand = new FindStudentCommand(
+                new StudentContainsKeywordsPredicate(List.of(), List.of(), List.of("9123", "4567")));
+        assertParseSuccess(parser, " p/9123 4567", expectedCommand);
+
+        // multiple whitespaces between keywords
+        assertParseSuccess(parser, " \t p/ 9123 \n 4567 ", expectedCommand);
+
+        // single digit and leading zeros are kept as typed
+        assertParseSuccess(parser, " p/0 0283", new FindStudentCommand(
+                new StudentContainsKeywordsPredicate(List.of(), List.of(), List.of("0", "0283"))));
+    }
+
+    @Test
+    public void parse_allPrefixes_returnsFindStudentCommand() {
+        FindStudentCommand expectedCommand = new FindStudentCommand(
+                new StudentContainsKeywordsPredicate(List.of("Aiden"), List.of("Tan"), List.of("9123")));
+        assertParseSuccess(parser, " n/Aiden gn/Tan p/9123", expectedCommand);
+
+        // prefixes in any order
+        assertParseSuccess(parser, " p/9123 n/Aiden gn/Tan", expectedCommand);
+        assertParseSuccess(parser, " gn/Tan p/9123 n/Aiden", expectedCommand);
+    }
+
+    @Test
+    public void parse_nameAndPhoneKeywords_returnsFindStudentCommand() {
+        assertParseSuccess(parser, " n/Ryan p/0283", new FindStudentCommand(
+                new StudentContainsKeywordsPredicate(List.of("Ryan"), List.of(), List.of("0283"))));
+        assertParseSuccess(parser, " gn/Tan p/9123", new FindStudentCommand(
+                new StudentContainsKeywordsPredicate(List.of(), List.of("Tan"), List.of("9123"))));
+    }
+
+    private static String invalidPhoneKeyword(String keyword) {
+        return String.format(FindStudentCommandParser.MESSAGE_INVALID_PHONE_KEYWORD, keyword);
     }
 
     private static String invalidKeyword(String keyword) {

@@ -13,14 +13,18 @@ Class HelpWindow
 Class ResultDisplay
 Class StudentListPanel
 Class StudentCard
+Class StudentCardDetails
 Class LessonListPanel
 Class LessonCard
+Class LessonCardDetails
+Class LessonUiFormatter
 Class StatusBarFooter
 Class CommandBox
 }
 
 package Model <<Rectangle>> {
 Class HiddenModel #FFFFFF
+Class ReadOnlyAddressBook
 }
 
 package Logic <<Rectangle>> {
@@ -41,6 +45,14 @@ MainWindow --> "0..1" HelpWindow
 
 StudentListPanel -down-> "*" StudentCard
 LessonListPanel -down-> "*" LessonCard
+StudentCard ..> StudentCardDetails : formats student view
+LessonCard ..> LessonCardDetails : formats lesson view
+StudentCardDetails ..> LessonUiFormatter : formats memberships
+LessonCardDetails ..> LessonUiFormatter : formats schedules
+StudentListPanel ..> ReadOnlyAddressBook : reads memberships
+LessonListPanel ..> ReadOnlyAddressBook : reads memberships
+StudentListPanel ..> ReadOnlyAddressBook : listens for changes
+LessonListPanel ..> ReadOnlyAddressBook : listens for changes
 
 MainWindow -left-|> UiPart
 
@@ -48,8 +60,11 @@ ResultDisplay --|> UiPart
 CommandBox --|> UiPart
 StudentListPanel --|> UiPart
 StudentCard --|> UiPart
+StudentCardDetails ..> HiddenModel
 LessonListPanel --|> UiPart
 LessonCard --|> UiPart
+LessonCardDetails ..> HiddenModel
+LessonUiFormatter ..> HiddenModel
 StatusBarFooter --|> UiPart
 HelpWindow --|> UiPart
 

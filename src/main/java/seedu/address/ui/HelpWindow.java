@@ -23,7 +23,7 @@ public class HelpWindow extends UiPart<Stage> {
             "Students",
             "  addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]",
             "  deletestudent INDEX",
-            "  findstudent [n/NAME_KEYWORDS...] [gn/GUARDIAN_NAME_KEYWORDS...]",
+            "  findstudent [n/NAME_KEYWORDS...] [gn/GUARDIAN_NAME_KEYWORDS...] [p/PHONE_DIGITS...]",
             "  liststudents [l/LESSON_INDEX]",
             "",
             "Lessons",
