@@ -27,7 +27,7 @@ import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
 import seedu.address.model.student.Guardian;
 import seedu.address.model.student.Student;
-import seedu.address.model.student.StudentNameContainsKeywordsPredicate;
+import seedu.address.model.student.StudentContainsKeywordsPredicate;
 
 /**
  * Contains integration tests (interaction with the Model) and unit tests for {@code ListStudentsCommand}.
@@ -65,7 +65,7 @@ public class ListStudentsCommandTest {
 
     @Test
     public void execute_listIsFiltered_showsAllStudents() {
-        model.updateFilteredStudentList(new StudentNameContainsKeywordsPredicate(List.of("Ryan"), List.of()));
+        model.updateFilteredStudentList(new StudentContainsKeywordsPredicate(List.of("Ryan"), List.of()));
         assertEquals(List.of(RYAN), model.getFilteredStudentList());
 
         assertCommandSuccess(new ListStudentsCommand(), model, ListStudentsCommand.MESSAGE_SUCCESS, expectedModel);
