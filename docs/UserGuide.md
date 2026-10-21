@@ -264,7 +264,17 @@ If saving fails, the data change is undone and the previous display filters are 
 AddressBook data is saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. Advanced users are welcome to update data directly by editing that data file.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-If your changes make the data file invalid, AddressBook starts with an empty address book at the next run and disables saving to protect the original file. Commands that attempt to change data will report a save error and undo their changes. Back up and repair the file, or move it aside to start fresh, then restart the app. We recommend backing up the file before editing it.<br>
+If individual records are invalid or duplicated, the app loads the valid records and skips the invalid ones.
+Enrolments referencing missing students or lessons are also skipped. The first valid duplicate is kept.
+A warning in the message box reports how many records were skipped and where the original file was backed up.
+Backups are saved beside the data file as `addressbook.json.recovery-<unique number>.bak`; older backups are preserved.
+These files remain on disk after closing the app and are not automatically deleted. Open a backup in a text editor
+to review the original data, including skipped records.
+The source file is unchanged until a successful command saves the recovered data.<br>
+If the JSON cannot be read, its lists have an invalid structure, or a backup cannot be created, the app starts empty
+with a warning and **disables saving** to protect the source file. Fix the file or restore a backup while the app
+is closed, then restart. Commands that change data will report a save error and undo their changes.<br>
+Only edit the file while the app is closed, and keep a backup before editing it.<br>
 Furthermore, certain edits can cause the AddressBook to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Therefore, edit the data file only if you are confident that you can update it correctly.
 </div>
 

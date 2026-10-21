@@ -1,7 +1,6 @@
 package seedu.address.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 
@@ -11,7 +10,6 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
@@ -48,7 +46,7 @@ public class StudentStorageTest {
     }
 
     @Test
-    public void read_invalidStudent_rejectsFile() throws Exception {
+    public void read_invalidStudent_skipsRecord() throws Exception {
         String[] invalidRecords = {
             "null",
             "{\"name\":\"Aiden\"}",
@@ -64,12 +62,14 @@ public class StudentStorageTest {
         Path file = testFolder.resolve("invalid.json");
         for (String record : invalidRecords) {
             Files.writeString(file, "{\"students\":[" + record + "]}");
-            assertThrows(DataLoadingException.class, () -> new JsonAddressBookStorage(file).readAddressBook());
+            JsonAddressBookStorage storage = new JsonAddressBookStorage(file);
+            assertTrue(storage.readAddressBook().isPresent());
+            assertTrue(storage.getLoadWarning().contains("skipped"));
         }
     }
 
     @Test
-    public void read_duplicateStudents_rejectsFile() throws Exception {
+    public void read_duplicateStudents_keepsFirst() throws Exception {
         Path file = testFolder.resolve("duplicates.json");
         Files.writeString(file, """
                 {"students": [
@@ -77,6 +77,8 @@ public class StudentStorageTest {
                   {"name": "aiden  tan", "guardianName": "Mei", "guardianPhone": "91234567"}
                 ]}
                 """);
-        assertThrows(DataLoadingException.class, () -> new JsonAddressBookStorage(file).readAddressBook());
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(file);
+        assertEquals(1, storage.readAddressBook().orElseThrow().getStudentList().size());
+        assertTrue(storage.getLoadWarning().contains("skipped 1"));
     }
 }

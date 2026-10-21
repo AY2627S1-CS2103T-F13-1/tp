@@ -81,6 +81,6 @@ or new dependency is required. The file now contains both legacy `persons` and n
 
 Old files without `students` still load with an empty student list. Existing AB3 contacts are
 preserved as persons; they are not automatically converted to students. Student records are
-validated on load, including duplicate detection. The existing startup error handling applies
-to invalid files. Existing AB3 commands and screens still operate on persons until the team
+validated on load, including duplicate detection. Invalid records are skipped with a startup warning
+and a backup of the original file. Unreadable files or backup failures disable saving to protect the source. Existing AB3 commands and screens still operate on persons until the team
 implements the student commands and UI; the existing `clear` clears the entire address book.
