@@ -7,9 +7,8 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_START_TIME;
 
 import java.util.List;
-import java.util.stream.Collectors;
-
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.util.ToStringBuilder;
@@ -64,6 +63,8 @@ public class AddLessonCommand extends Command {
 
         List<Lesson> clashingLessons = model.getAddressBook().getClashingLessons(toAdd);
         model.addLesson(toAdd);
+        assert model.getFilteredLessonList().contains(toAdd) : "Adding a lesson should clear the lesson filter";
+        logger.info("Added lesson: " + toAdd);
         return new CommandResult(String.format(MESSAGE_SUCCESS, toAdd) + getClashWarning(clashingLessons));
     }
 
@@ -77,9 +78,6 @@ public class AddLessonCommand extends Command {
         }
         String clashes = clashingLessons.stream().map(Lesson::toString).collect(Collectors.joining("; "));
         return "\n" + String.format(MESSAGE_CLASH_WARNING, clashes);
-        assert model.getFilteredLessonList().contains(toAdd) : "Adding a lesson should clear the lesson filter";
-        logger.info("Added lesson: " + toAdd);
-        return new CommandResult(String.format(MESSAGE_SUCCESS, toAdd));
     }
 
     @Override
