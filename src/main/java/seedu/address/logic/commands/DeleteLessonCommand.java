@@ -3,7 +3,9 @@ package seedu.address.logic.commands;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
+import java.util.logging.Logger;
 
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.Messages;
@@ -26,6 +28,8 @@ public class DeleteLessonCommand extends Command {
 
     public static final String MESSAGE_DELETE_LESSON_SUCCESS = "Deleted Lesson: %1$s";
 
+    private static final Logger logger = LogsCenter.getLogger(DeleteLessonCommand.class);
+
     private final Index targetIndex;
 
     /**
@@ -46,7 +50,10 @@ public class DeleteLessonCommand extends Command {
         }
 
         Lesson lessonToDelete = lastShownList.get(targetIndex.getZeroBased());
+        int enrolledCount = model.getAddressBook().getStudentsInLesson(lessonToDelete).size();
         model.deleteLesson(lessonToDelete);
+        assert !model.getAddressBook().getLessonList().contains(lessonToDelete) : "Deleted lesson should be gone";
+        logger.info("Deleted lesson: " + lessonToDelete + ", unenrolling " + enrolledCount + " student(s)");
         return new CommandResult(String.format(MESSAGE_DELETE_LESSON_SUCCESS, lessonToDelete));
     }
 
