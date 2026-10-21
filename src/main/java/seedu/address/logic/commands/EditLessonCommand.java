@@ -87,10 +87,11 @@ public class EditLessonCommand extends Command {
         }
 
         model.setLesson(lessonToEdit, editedLesson);
-        assert model.getAddressBook().getLessonList().stream()
-                .anyMatch(lesson -> lesson.getId().equals(editedLesson.getId())
-                        && lesson.equals(editedLesson))
-                : "Editing a lesson should update the address book";
+        Lesson storedLesson = model.getAddressBook().getLessonList().stream()
+                .filter(lesson -> lesson.getId().equals(editedLesson.getId()))
+                .findFirst()
+                .orElse(null);
+        assert editedLesson.equals(storedLesson) : "Editing a lesson should update the address book";
         logger.info("Edited lesson with ID: " + editedLesson.getId());
         return new CommandResult(String.format(MESSAGE_EDIT_LESSON_SUCCESS, editedLesson));
     }
@@ -99,7 +100,7 @@ public class EditLessonCommand extends Command {
      * Creates a lesson with the edited details while retaining the original lesson ID.
      */
     private static Lesson createEditedLesson(Lesson lessonToEdit, EditLessonDescriptor editLessonDescriptor) {
-        assert lessonToEdit != null;
+        requireNonNull(lessonToEdit);
 
         String updatedName = editLessonDescriptor.getName().orElse(lessonToEdit.getName());
         DayOfWeek updatedDay = editLessonDescriptor.getDay().orElse(lessonToEdit.getDay());

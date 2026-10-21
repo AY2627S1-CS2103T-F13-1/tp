@@ -71,6 +71,20 @@ public class EditStudentCommandTest {
     }
 
     @Test
+    public void execute_modelDoesNotApplyEdit_throwsAssertionError() {
+        Model modelThatDoesNotApplyEdits = new ModelManager(getStudentAddressBook(), new UserPrefs()) {
+            @Override
+            public void setStudent(Student target, Student editedStudent) {
+                // Simulates a broken Model implementation so the command's postcondition is exercised.
+            }
+        };
+        EditStudentDescriptor descriptor = createDescriptor(new Name("Aiden Lee"), null, null);
+        EditStudentCommand command = new EditStudentCommand(INDEX_FIRST_PERSON, descriptor);
+
+        assertThrows(AssertionError.class, () -> command.execute(modelThatDoesNotApplyEdits));
+    }
+
+    @Test
     public void execute_allFieldsSpecified_success() {
         Name name = new Name("Aiden Lee");
         Phone phone = new Phone("92345678");
@@ -191,6 +205,22 @@ public class EditStudentCommandTest {
         assertFalse(standardCommand.equals(new EditStudentCommand(INDEX_FIRST_PERSON, phoneDescriptor)));
         assertFalse(standardCommand.equals(new ClearCommand()));
         assertFalse(standardCommand.equals(null));
+    }
+
+    @Test
+    public void descriptorEquals() {
+        Name name = new Name("Aiden Lee");
+        Phone phone = new Phone("92345678");
+        Guardian guardian = new Guardian(new Name("Lee Mei Ling"), new Phone("93456789"));
+        EditStudentDescriptor descriptor = createDescriptor(name, phone, guardian);
+
+        assertTrue(descriptor.equals(descriptor));
+        assertTrue(descriptor.equals(new EditStudentDescriptor(descriptor)));
+        assertFalse(descriptor.equals(createDescriptor(name, new Phone("87654321"), guardian)));
+        assertFalse(descriptor.equals(createDescriptor(name, phone,
+                new Guardian(new Name("Lee Mei Ling"), new Phone("87654321")))));
+        assertFalse(descriptor.equals(1));
+        assertFalse(descriptor.equals(null));
     }
 
     @Test

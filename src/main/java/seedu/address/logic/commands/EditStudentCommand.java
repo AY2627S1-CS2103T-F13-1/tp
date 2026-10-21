@@ -81,10 +81,11 @@ public class EditStudentCommand extends Command {
         }
 
         model.setStudent(studentToEdit, editedStudent);
-        assert model.getAddressBook().getStudentList().stream()
-                .anyMatch(student -> student.getId().equals(editedStudent.getId())
-                        && student.equals(editedStudent))
-                : "Editing a student should update the address book";
+        Student storedStudent = model.getAddressBook().getStudentList().stream()
+                .filter(student -> student.getId().equals(editedStudent.getId()))
+                .findFirst()
+                .orElse(null);
+        assert editedStudent.equals(storedStudent) : "Editing a student should update the address book";
         logger.info("Edited student with ID: " + editedStudent.getId());
         return new CommandResult(String.format(MESSAGE_EDIT_STUDENT_SUCCESS, Messages.format(editedStudent)));
     }
@@ -94,7 +95,7 @@ public class EditStudentCommand extends Command {
      */
     private static Student createEditedStudent(Student studentToEdit,
             EditStudentDescriptor editStudentDescriptor) {
-        assert studentToEdit != null;
+        requireNonNull(studentToEdit);
 
         Name updatedName = editStudentDescriptor.getName().orElse(studentToEdit.getName());
         Phone updatedPhone = editStudentDescriptor.getPhone().orElse(studentToEdit.getPhone().orElse(null));

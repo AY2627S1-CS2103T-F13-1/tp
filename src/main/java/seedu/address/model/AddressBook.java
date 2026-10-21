@@ -137,8 +137,7 @@ public class AddressBook implements ReadOnlyAddressBook {
         int targetIndex = findStudentIndex(target.getId());
         boolean hasDuplicate = students.stream()
                 .filter(student -> !student.getId().equals(target.getId()))
-                .anyMatch(student -> student.getId().equals(editedStudent.getId())
-                        || editedStudent.isSameStudent(student));
+                .anyMatch(editedStudent::isSameStudent);
         if (hasDuplicate) {
             throw new DuplicateStudentException();
         }
@@ -201,8 +200,7 @@ public class AddressBook implements ReadOnlyAddressBook {
         int targetIndex = findLessonIndex(target.getId());
         boolean hasDuplicate = lessons.stream()
                 .filter(lesson -> !lesson.getId().equals(target.getId()))
-                .anyMatch(lesson -> lesson.getId().equals(editedLesson.getId())
-                        || editedLesson.isSameLesson(lesson));
+                .anyMatch(editedLesson::isSameLesson);
         if (hasDuplicate) {
             throw new IllegalArgumentException("This lesson already exists.");
         }

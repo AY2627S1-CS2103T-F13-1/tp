@@ -65,6 +65,20 @@ public class EditLessonCommandTest {
     }
 
     @Test
+    public void execute_modelDoesNotApplyEdit_throwsAssertionError() {
+        Model modelThatDoesNotApplyEdits = new ModelManager(getLessonAddressBook(), new UserPrefs()) {
+            @Override
+            public void setLesson(Lesson target, Lesson editedLesson) {
+                // Simulates a broken Model implementation so the command's postcondition is exercised.
+            }
+        };
+        EditLessonCommand command = new EditLessonCommand(
+                INDEX_FIRST_LESSON, descriptorWithName("Mathematics"));
+
+        assertThrows(AssertionError.class, () -> command.execute(modelThatDoesNotApplyEdits));
+    }
+
+    @Test
     public void execute_allFieldsEdited_success() {
         EditLessonDescriptor descriptor = descriptor(
                 "Advanced Mathematics", DayOfWeek.TUESDAY, "17:00", "19:00");
@@ -202,6 +216,10 @@ public class EditLessonCommandTest {
         assertTrue(descriptor.equals(descriptor));
         assertTrue(descriptor.equals(new EditLessonDescriptor(descriptor)));
         assertFalse(descriptor.equals(descriptorWithName("Mathematics")));
+        assertFalse(descriptor.equals(descriptor(
+                "Mathematics", DayOfWeek.TUESDAY, "18:00", "19:00")));
+        assertFalse(descriptor.equals(descriptor(
+                "Mathematics", DayOfWeek.TUESDAY, "17:00", "20:00")));
         assertFalse(descriptor.equals(1));
         assertFalse(descriptor.equals(null));
     }
