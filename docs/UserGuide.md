@@ -120,21 +120,44 @@ Examples:
 
 ### Adding a lesson: `addlesson`
 
-Adds a weekly lesson.
+Adds a weekly lesson to the address book.
 
 Format: `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`
 
 * `DAY` must be `mon`, `tue`, `wed`, `thu`, `fri`, `sat` or `sun`, in any letter case.
-* `START_TIME` and `END_TIME` are 24-hour times written as four digits, from `0000` to `2359`.
-* An end time earlier than the start time means the lesson runs past midnight and ends on the next day. The lesson belongs to the day on which it starts.
-* The end time cannot be the same as the start time.
-* A lesson with the same name (ignoring letter case and extra spaces), day, start time and end time as an existing lesson is rejected as a duplicate.
-* A lesson whose time overlaps an existing lesson is still added, but TutorReach warns you which lessons it clashes with. Lessons that only touch, such as `1600`-`1800` and `1800`-`2000`, do not clash. A lesson that runs past midnight can clash with lessons early on the next day.
+* `START_TIME` and `END_TIME` must use four digits in 24-hour time, such as `1600`.
+* If the end time is earlier than the start time, the lesson is treated as ending on the next day.
+* The start and end times must be different.
 
 Examples:
-* `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800` adds a Monday lesson from 4pm to 6pm.
-* `addlesson n/Night Class d/fri st/2200 et/0100` adds a lesson that starts on Friday at 10pm and ends on Saturday at 1am.
-* `addlesson n/Sec 3 E-Math d/mon st/1700 et/1900`, after the first example, adds the lesson with a warning that it clashes with Sec 3 A-Math.
+* `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800` adds a Monday lesson from 4:00 PM to 6:00 PM.
+* `addlesson n/Late Physics d/fri st/2300 et/0100` adds a Friday lesson that ends on Saturday.
+
+### Enrolling a student: `enrol`
+
+Enrols a student in a lesson using the indices shown in the student and lesson panels.
+
+Format: `enrol s/STUDENT_INDEX l/LESSON_INDEX`
+
+* Both indices must be positive integers.
+* `STUDENT_INDEX` refers to the current displayed student list.
+* `LESSON_INDEX` refers to the current displayed lesson list.
+* A student cannot be enrolled in the same lesson more than once.
+
+Example:
+* `enrol s/1 l/2` enrols the first displayed student in the second displayed lesson.
+
+### Deleting a lesson: `deletelesson`
+
+Deletes a lesson using its displayed index. Students are kept, but their enrolment in the deleted lesson is removed.
+
+Format: `deletelesson INDEX`
+
+* `INDEX` refers to the current displayed lesson list and must be a positive integer.
+
+Example:
+* `deletelesson 2` deletes the second displayed lesson.
+
 
 ### Adding a person: `add`
 
@@ -262,4 +285,7 @@ Action | Format, Examples
 **List** | `list`
 **List students** | `liststudents [l/LESSON_INDEX]`<br> e.g., `liststudents l/1`
 **List lessons** | `listlessons [d/DAY]`<br> e.g., `listlessons d/mon`
+**Add lesson** | `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`<br> e.g., `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800`
+**Enrol student** | `enrol s/STUDENT_INDEX l/LESSON_INDEX`<br> e.g., `enrol s/1 l/2`
+**Delete lesson** | `deletelesson INDEX`<br> e.g., `deletelesson 2`
 **Help** | `help`
