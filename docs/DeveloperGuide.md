@@ -325,6 +325,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | `* * *`  | tutor                                     | view all my students with their contact details                  | see what information I have stored                                               |
 | `* * *`  | tutor                                     | find a student by name                                           | retrieve their contact details without browsing the entire list                  |
 | `* * *`  | tutor                                     | find students by their guardian's name                           | tell which student a guardian's message is about                                 |
+| `* * *`  | tutor                                     | find a student by part of a phone number                         | tell who is contacting me from a number I have not saved                         |
 | `* * *`  | tutor                                     | add a weekly lesson with its day and time                        | organise my students by the lessons they attend                                  |
 | `* * *`  | tutor                                     | delete a lesson                                                  | remove lessons that no longer run                                                |
 | `* * *`  | tutor                                     | view all my lessons and the students in each                     | see how my students are organised                                                |
@@ -494,9 +495,13 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
   Use case resumes at step 2, with TutorReach matching students against all the given keywords.
 
-* 1b. No keywords are given.
+* 1b. Tutor gives part of a phone number instead of, or as well as, names.
 
-    * 1b1. TutorReach shows an error message.
+  Use case resumes at step 2, with TutorReach matching students whose own or guardian's phone number contains it.
+
+* 1c. No keywords are given, or a phone keyword contains a character other than a digit.
+
+    * 1c1. TutorReach shows an error message.
 
       Use case resumes at step 1.
 
@@ -767,6 +772,12 @@ testers are expected to do more *exploratory* testing.
 
    1. Test case: `findstudent n/`<br>
       Expected: The list is unchanged. The status message states that the search text cannot be empty.
+
+   1. Test case: `findstudent p/9123`<br>
+      Expected: Only students whose own phone number or guardian's phone number contains "9123" are shown.
+
+   1. Test case: `findstudent p/91a`<br>
+      Expected: The list is unchanged. The status message states that phone search keywords should only contain digits.
 
 ### Saving data
 
