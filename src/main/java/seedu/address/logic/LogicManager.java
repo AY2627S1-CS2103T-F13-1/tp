@@ -49,26 +49,27 @@ public class LogicManager implements Logic {
     public CommandResult execute(String commandText) throws CommandException, ParseException {
         logger.info("----------------[USER COMMAND][" + commandText + "]");
 
-        CommandResult commandResult;
         Command command = addressBookParser.parseCommand(commandText);
-        AddressBook before = new AddressBook(model.getAddressBook());
-        Runnable restore = model.createRestorePoint();
-        commandResult = command.execute(model);
-
-        // Queries must not rewrite data, especially after a failed load at startup.
-        if (!before.equals(model.getAddressBook())) {
-            try {
-                storage.saveAddressBook(model.getAddressBook());
-            } catch (AccessDeniedException e) {
-                restore.run();
-                throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT, e.getMessage()), e);
-            } catch (IOException ioe) {
-                restore.run();
-                throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
-            }
+        if (!command.changesStoredData()) {
+            return command.execute(model);
         }
 
-        return commandResult;
+        AddressBook before = new AddressBook(model.getAddressBook());
+        Runnable restore = model.createRestorePoint();
+        try {
+            storage.checkAddressBookSaveAllowed();
+            CommandResult commandResult = command.execute(model);
+            if (!before.equals(model.getAddressBook())) {
+                storage.saveAddressBook(model.getAddressBook());
+            }
+            return commandResult;
+        } catch (AccessDeniedException e) {
+            restore.run();
+            throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT, e.getMessage()), e);
+        } catch (IOException ioe) {
+            restore.run();
+            throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
+        }
     }
 
     @Override

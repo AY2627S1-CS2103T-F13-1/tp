@@ -99,5 +99,9 @@ links require IDs. Invalid records, duplicates and links to missing records are 
 The first valid occurrence wins. Recovery creates a unique backup of the original bytes and reports a warning
 in the existing result display. Unreadable files or backup failures block saving to the affected path.
 The strict `JsonSerializableAddressBook.toModelType()` conversion remains available for validation; normal
-file loading uses `AddressBookRecovery` to isolate even records with invalid JSON field types. Existing successful commands already
+file loading uses `AddressBookRecovery` to isolate even records with invalid JSON field types. Successful commands that change stored records
 save the whole address book through LogicManager; do not add separate file writes to new commands.
+
+Commands that only change views override `changesStoredData()` to return false and do not save.
+Mutating commands default to true; LogicManager checks the storage save guard before execution.
+This prevents mutations during blocked-saving sessions. Unexpected disk-write failures restore the previous data and filters.

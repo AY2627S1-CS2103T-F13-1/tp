@@ -42,7 +42,7 @@ The last line only illustrates the filter API; implement the specified search ma
 Command parsers should report missing guardian prefixes and invalid input as `ParseException`;
 commands should translate model failures into appropriate `CommandException` messages.
 Do not write storage calls inside commands: the existing `LogicManager.execute` saves the whole
-address book after a successful command.
+address book after a successful command that changes stored records.
 
 ## UI work
 
@@ -84,3 +84,7 @@ preserved as persons; they are not automatically converted to students. Student 
 validated on load, including duplicate detection. Invalid records are skipped with a startup warning
 and a backup of the original file. Unreadable files or backup failures disable saving to protect the source. Existing AB3 commands and screens still operate on persons until the team
 implements the student commands and UI; the existing `clear` clears the entire address book.
+
+Commands that only change views override `changesStoredData()` to return false and do not save.
+Mutating commands default to true; LogicManager checks the storage save guard before execution.
+This prevents mutations during blocked-saving sessions. Unexpected disk-write failures restore the previous data and filters.

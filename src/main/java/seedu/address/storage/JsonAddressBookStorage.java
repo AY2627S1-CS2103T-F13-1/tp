@@ -119,11 +119,20 @@ public class JsonAddressBookStorage {
         requireNonNull(addressBook);
         requireNonNull(filePath);
 
+        checkSaveAllowed(filePath);
+        JsonUtil.saveJsonFile(new JsonSerializableAddressBook(addressBook), filePath);
+    }
+
+    /** Checks the configured file before a command changes any records. */
+    public void checkSaveAllowed() throws IOException {
+        checkSaveAllowed(filePath);
+    }
+
+    private void checkSaveAllowed(Path filePath) throws IOException {
         if (blockedSavePaths.contains(filePath.toAbsolutePath().normalize())) {
             throw new IOException("Saving is disabled because the original data could not be safely loaded. "
                     + "Fix the data file or restore a backup, then restart the app.");
         }
-        JsonUtil.saveJsonFile(new JsonSerializableAddressBook(addressBook), filePath);
     }
 
 }
