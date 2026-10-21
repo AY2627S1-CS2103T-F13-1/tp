@@ -30,7 +30,7 @@ import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
 import seedu.address.model.student.Guardian;
 import seedu.address.model.student.Student;
-import seedu.address.model.student.StudentNameContainsKeywordsPredicate;
+import seedu.address.model.student.StudentContainsKeywordsPredicate;
 
 /**
  * Contains integration tests and unit tests for {@code EditStudentCommand}.
@@ -142,7 +142,7 @@ public class EditStudentCommandTest {
     @Test
     public void execute_validIndexFilteredList_editsDisplayedStudentAndReevaluatesFilter() throws Exception {
         model.updateFilteredStudentList(
-                new StudentNameContainsKeywordsPredicate(List.of("Ryan"), List.of()));
+                new StudentContainsKeywordsPredicate(List.of("Ryan"), List.of()));
         EditStudentDescriptor descriptor = createDescriptor(new Name("Mason Lim"), null, null);
 
         new EditStudentCommand(INDEX_FIRST_PERSON, descriptor).execute(model);
