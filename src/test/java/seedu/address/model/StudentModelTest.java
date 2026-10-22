@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -11,6 +13,8 @@ import org.junit.jupiter.api.Test;
 
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import seedu.address.model.lesson.Enrolment;
+import seedu.address.model.lesson.Lesson;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
 import seedu.address.model.student.Student;
@@ -75,5 +79,34 @@ public class StudentModelTest {
         assertEquals(original, model.getAddressBook());
         model.setAddressBook(new AddressBook());
         assertTrue(displayed.isEmpty());
+    }
+
+    @Test
+    public void setStudent_preservesIdEnrolmentAndActiveFilter() {
+        Lesson lesson = new Lesson("Math", DayOfWeek.MONDAY,
+                LocalTime.of(16, 0), LocalTime.of(18, 0));
+        Model model = new ModelManager();
+        model.addStudent(aiden);
+        model.addLesson(lesson);
+        model.enrolStudent(aiden, lesson);
+        model.updateFilteredStudentList(student -> student.getName().equals(new Name("Aiden Lim")));
+        Student editedAiden = new Student(aiden.getId(), new Name("Aiden Lim"), new Phone("92345678"), null);
+
+        model.setStudent(aiden, editedAiden);
+
+        assertEquals(List.of(editedAiden), model.getFilteredStudentList());
+        assertEquals(List.of(new Enrolment(aiden.getId(), lesson.getId())), model.getEnrolmentList());
+        assertEquals(List.of(lesson), model.getAddressBook().getLessonsForStudent(editedAiden));
+    }
+
+    @Test
+    public void setStudent_duplicateResult_throwsDuplicateStudentException() {
+        Model model = new ModelManager();
+        model.addStudent(aiden);
+        model.addStudent(chloe);
+        Student duplicateChloe = new Student(aiden.getId(), chloe.getName(), new Phone("91234567"), null);
+
+        assertThrows(DuplicateStudentException.class, () -> model.setStudent(aiden, duplicateChloe));
+        assertEquals(List.of(aiden, chloe), model.getAddressBook().getStudentList());
     }
 }
