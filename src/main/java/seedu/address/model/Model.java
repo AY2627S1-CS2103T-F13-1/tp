@@ -28,6 +28,9 @@ public interface Model {
     /** Adds a student and clears the student filter. Rejects duplicates. */
     void addStudent(Student student);
 
+    /** Replaces a student while preserving the active filter and enrolments. */
+    void setStudent(Student target, Student editedStudent);
+
     /** Deletes an existing student, preserving the student filter. */
     void deleteStudent(Student student);
 
@@ -48,11 +51,17 @@ public interface Model {
     /** Adds a lesson and clears only the lesson filter. */
     void addLesson(Lesson lesson);
 
+    /** Replaces a lesson while preserving active filters and enrolments. */
+    void setLesson(Lesson target, Lesson editedLesson);
+
     /** Deletes a lesson and its links, preserving students. */
     void deleteLesson(Lesson lesson);
 
     /** Links existing records; rejects missing records and duplicate links. */
     void enrolStudent(Student student, Lesson lesson);
+
+    /** Removes an existing link, keeping both records; rejects a missing link. */
+    void unenrolStudent(Student student, Lesson lesson);
 
     /** Returns an unmodifiable observable lesson view. */
     ObservableList<Lesson> getFilteredLessonList();
@@ -82,6 +91,15 @@ public interface Model {
      * Replaces address book data with the data in {@code addressBook}.
      */
     void setAddressBook(ReadOnlyAddressBook addressBook);
+
+    /**
+     * Captures data for rollback after a failed save. Implementations with display filters
+     * should also restore those filters.
+     */
+    default Runnable createRestorePoint() {
+        AddressBook snapshot = new AddressBook(getAddressBook());
+        return () -> setAddressBook(snapshot);
+    }
 
     /** Returns the AddressBook */
     ReadOnlyAddressBook getAddressBook();

@@ -9,6 +9,14 @@ import seedu.address.model.Model;
 public abstract class Command {
 
     /**
+     * Whether this command may change persisted records. Defaults to true so new commands
+     * cannot accidentally bypass the save guard. Commands that only change views override this.
+     */
+    public boolean changesStoredData() {
+        return true;
+    }
+
+    /**
      * Executes the command and returns the result message.
      *
      * @param model {@code Model} which the command should operate on.

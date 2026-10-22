@@ -8,6 +8,7 @@ import static seedu.address.logic.Messages.MESSAGE_INVALID_STUDENT_DISPLAYED_IND
 import static seedu.address.logic.Messages.MESSAGE_STUDENTS_LISTED_OVERVIEW;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.testutil.Assert.assertThrows;
+import static seedu.address.testutil.StudentTestUtil.assertStudentDetailsEqual;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
@@ -15,6 +16,7 @@ import java.nio.file.Path;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,10 +28,13 @@ import seedu.address.logic.commands.AddStudentCommand;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.DeleteLessonCommand;
 import seedu.address.logic.commands.DeleteStudentCommand;
+import seedu.address.logic.commands.EditLessonCommand;
+import seedu.address.logic.commands.EditStudentCommand;
 import seedu.address.logic.commands.EnrolCommand;
 import seedu.address.logic.commands.FindStudentCommand;
 import seedu.address.logic.commands.ListLessonsCommand;
 import seedu.address.logic.commands.ListStudentsCommand;
+import seedu.address.logic.commands.UnenrolCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.FindStudentCommandParser;
 import seedu.address.logic.parser.ParserUtil;
@@ -38,6 +43,7 @@ import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.lesson.Enrolment;
 import seedu.address.model.lesson.Lesson;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
@@ -93,11 +99,14 @@ public class LogicManagerTest {
         CommandResult addResult = logic.execute(
                 AddStudentCommand.COMMAND_WORD + " n/Aiden Tan gn/Tan Mei Ling gp/91234567");
         assertEquals(String.format(AddStudentCommand.MESSAGE_SUCCESS, aiden), addResult.getFeedbackToUser());
-        assertEquals(List.of(aiden), logic.getFilteredStudentList());
+        assertEquals(1, logic.getFilteredStudentList().size());
+        assertStudentDetailsEqual(aiden, logic.getFilteredStudentList().getFirst());
+
+        Student added = logic.getFilteredStudentList().getFirst();
 
         CommandResult findResult = logic.execute(FindStudentCommand.COMMAND_WORD + " gn/ling");
         assertEquals(String.format(MESSAGE_STUDENTS_LISTED_OVERVIEW, 1), findResult.getFeedbackToUser());
-        assertEquals(List.of(aiden), logic.getFilteredStudentList());
+        assertEquals(List.of(added), logic.getFilteredStudentList());
     }
 
     @Test
@@ -146,6 +155,34 @@ public class LogicManagerTest {
                 String.format(FindStudentCommandParser.MESSAGE_INVALID_KEYWORD, "gp/91234567"));
         assertParseException(FindStudentCommand.COMMAND_WORD + " p/91a",
                 String.format(FindStudentCommandParser.MESSAGE_INVALID_PHONE_KEYWORD, "91a"));
+    }
+
+    @Test
+    public void execute_editStudent_preservesIdentityEnrolmentAndSaves() throws Exception {
+        logic.execute(AddStudentCommand.COMMAND_WORD + " n/Aiden Tan p/91234567");
+        logic.execute(AddLessonCommand.COMMAND_WORD + " n/Math d/mon st/1600 et/1800");
+        logic.execute(EnrolCommand.COMMAND_WORD + " s/1 l/1");
+        UUID originalStudentId = logic.getFilteredStudentList().getFirst().getId();
+        UUID lessonId = logic.getFilteredLessonList().getFirst().getId();
+
+        CommandResult result = logic.execute(EditStudentCommand.COMMAND_WORD
+                + " 1 n/Aiden Lim p/92345678 gn/Lim Mei Ling gp/93456789");
+
+        Student editedStudent = logic.getFilteredStudentList().getFirst();
+        assertEquals("Edited student: Aiden Lim; Phone: 92345678; Guardian: Lim Mei Ling (93456789)",
+                result.getFeedbackToUser());
+        assertEquals(originalStudentId, editedStudent.getId());
+        assertEquals(new Name("Aiden Lim"), editedStudent.getName());
+        assertEquals(new Phone("92345678"), editedStudent.getPhone().orElseThrow());
+        assertEquals(new Guardian(new Name("Lim Mei Ling"), new Phone("93456789")),
+                editedStudent.getGuardian().orElseThrow());
+        assertEquals(List.of(new Enrolment(originalStudentId, lessonId)), logic.getEnrolmentList());
+
+        ReadOnlyAddressBook saved = readSavedAddressBook();
+        Student savedStudent = saved.getStudentList().getFirst();
+        assertEquals(originalStudentId, savedStudent.getId());
+        assertEquals(editedStudent, savedStudent);
+        assertEquals(List.of(new Enrolment(originalStudentId, lessonId)), saved.getEnrolmentList());
     }
 
     @Test
@@ -209,6 +246,33 @@ public class LogicManagerTest {
         assertParseException(AddLessonCommand.COMMAND_WORD + " n/Sec 3 A-Math d/monday st/1600 et/1800",
                 ParserUtil.MESSAGE_INVALID_DAY);
         assertTrue(logic.getFilteredLessonList().isEmpty());
+    }
+
+    @Test
+    public void execute_editLesson_preservesIdentityEnrolmentAndSaves() throws Exception {
+        logic.execute(AddStudentCommand.COMMAND_WORD + " n/Aiden Tan p/91234567");
+        logic.execute(AddLessonCommand.COMMAND_WORD + " n/Math d/mon st/1600 et/1800");
+        logic.execute(EnrolCommand.COMMAND_WORD + " s/1 l/1");
+        UUID studentId = logic.getFilteredStudentList().getFirst().getId();
+        UUID originalLessonId = logic.getFilteredLessonList().getFirst().getId();
+
+        CommandResult result = logic.execute(EditLessonCommand.COMMAND_WORD
+                + " 1 n/Advanced Math d/tue st/2200 et/0100");
+
+        Lesson editedLesson = logic.getFilteredLessonList().getFirst();
+        assertEquals("Edited lesson: Advanced Math (Tue 2200-0100)", result.getFeedbackToUser());
+        assertEquals(originalLessonId, editedLesson.getId());
+        assertEquals("Advanced Math", editedLesson.getName());
+        assertEquals(DayOfWeek.TUESDAY, editedLesson.getDay());
+        assertEquals(LocalTime.of(22, 0), editedLesson.getStartTime());
+        assertEquals(LocalTime.of(1, 0), editedLesson.getEndTime());
+        assertEquals(List.of(new Enrolment(studentId, originalLessonId)), logic.getEnrolmentList());
+
+        ReadOnlyAddressBook saved = readSavedAddressBook();
+        Lesson savedLesson = saved.getLessonList().getFirst();
+        assertEquals(originalLessonId, savedLesson.getId());
+        assertEquals(editedLesson, savedLesson);
+        assertEquals(List.of(new Enrolment(studentId, originalLessonId)), saved.getEnrolmentList());
     }
 
     @Test
@@ -297,6 +361,24 @@ public class LogicManagerTest {
         ReadOnlyAddressBook saved = readSavedAddressBook();
         assertTrue(saved.getStudentList().isEmpty());
         assertTrue(saved.getEnrolmentList().isEmpty());
+        assertEquals(List.of(math), saved.getLessonList());
+    }
+
+    @Test
+    public void execute_unenrol_removesEnrolmentAndSaves() throws Exception {
+        Student aiden = new Student(new Name("Aiden Tan"), new Phone("91234567"), null);
+        Lesson math = new Lesson("Sec 3 A-Math", DayOfWeek.MONDAY, LocalTime.of(16, 0), LocalTime.of(18, 0));
+        model.addStudent(aiden);
+        model.addLesson(math);
+        model.enrolStudent(aiden, math);
+
+        CommandResult result = logic.execute(UnenrolCommand.COMMAND_WORD + " s/1 l/1");
+
+        assertEquals("Unenrolled Aiden Tan from Sec 3 A-Math (Mon 1600-1800)", result.getFeedbackToUser());
+        assertTrue(logic.getEnrolmentList().isEmpty());
+        ReadOnlyAddressBook saved = readSavedAddressBook();
+        assertTrue(saved.getEnrolmentList().isEmpty());
+        assertEquals(List.of(aiden), saved.getStudentList());
         assertEquals(List.of(math), saved.getLessonList());
     }
 
@@ -403,9 +485,7 @@ public class LogicManagerTest {
 
         // Triggers the saveAddressBook method by executing an add student command
         String addCommand = AddStudentCommand.COMMAND_WORD + " n/Aiden Tan p/91234567";
-        Student expectedStudent = new Student(new Name("Aiden Tan"), new Phone("91234567"), null);
         ModelManager expectedModel = new ModelManager();
-        expectedModel.addStudent(expectedStudent);
         assertCommandFailure(addCommand, CommandException.class, expectedMessage, expectedModel);
     }
 }

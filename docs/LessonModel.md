@@ -23,7 +23,8 @@ past midnight also covers the start of the next day. `equals` includes the ID an
 
 `Student.getId()` now returns a permanent UUID. Existing constructors still work and generate
 new IDs. The extra constructor taking a UUID is for restoring records from storage. Student
-`equals` retains its existing contact-value semantics for compatibility; use `getId()` for links.
+`equals` and `hashCode` include the ID and all contact details, consistently with Lesson.
+Copies of the same record must preserve its ID; use `getId()` for identity-only comparisons and links.
 Do not create a new Student just to enrol someone: take the existing record from the model.
 
 `Enrolment(UUID studentId, UUID lessonId)` is an immutable record linking those IDs. Never store
@@ -97,6 +98,13 @@ The JSON root retains `persons` and `students` and adds `lessons` and `enrolment
 
 Missing lesson/enrolment lists default to empty. Older students without IDs receive one on load;
 it becomes persistent at the next normal save. Existing person data remains intact. Lessons and
-links require IDs. Duplicate lessons, duplicate links, invalid fields and missing references are
-rejected on load using the existing data-loading error path. Existing successful commands already
+links require IDs. Invalid records, duplicates and links to missing records are skipped independently during file loading.
+The first valid occurrence wins. Recovery creates a unique backup of the original bytes and reports a warning
+in the existing result display. Unreadable files or backup failures block saving to the affected path.
+The strict `JsonSerializableAddressBook.toModelType()` conversion remains available for validation; normal
+file loading uses `AddressBookRecovery` to isolate even records with invalid JSON field types. Successful commands that change stored records
 save the whole address book through LogicManager; do not add separate file writes to new commands.
+
+Commands that only change views override `changesStoredData()` to return false and do not save.
+Mutating commands default to true; LogicManager checks the storage save guard before execution.
+This prevents mutations during blocked-saving sessions. Unexpected disk-write failures restore the previous data and filters.

@@ -1,0 +1,89 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+
+box Logic LOGIC_COLOR_T1
+participant ":LogicManager" as LogicManager LOGIC_COLOR
+participant ":TutorBookParser" as TutorBookParser LOGIC_COLOR
+participant ":UnenrolCommandParser" as UnenrolCommandParser LOGIC_COLOR
+participant "u:UnenrolCommand" as UnenrolCommand LOGIC_COLOR
+participant "r:CommandResult" as CommandResult LOGIC_COLOR
+end box
+
+box Model MODEL_COLOR_T1
+participant "m:Model" as Model MODEL_COLOR
+participant "tb:TutorBook" as TutorBook MODEL_COLOR
+end box
+
+[-> LogicManager : execute("unenrol s/1 l/2")
+activate LogicManager
+
+LogicManager -> TutorBookParser : parseCommand("unenrol s/1 l/2")
+activate TutorBookParser
+
+create UnenrolCommandParser
+TutorBookParser -> UnenrolCommandParser
+activate UnenrolCommandParser
+
+UnenrolCommandParser --> TutorBookParser
+deactivate UnenrolCommandParser
+
+TutorBookParser -> UnenrolCommandParser : parse(" s/1 l/2")
+activate UnenrolCommandParser
+
+create UnenrolCommand
+UnenrolCommandParser -> UnenrolCommand
+activate UnenrolCommand
+
+UnenrolCommand --> UnenrolCommandParser :
+deactivate UnenrolCommand
+
+UnenrolCommandParser --> TutorBookParser : u
+deactivate UnenrolCommandParser
+'Hidden arrow to position the destroy marker below the end of the activation bar.
+UnenrolCommandParser -[hidden]-> TutorBookParser
+destroy UnenrolCommandParser
+
+TutorBookParser --> LogicManager : u
+deactivate TutorBookParser
+
+LogicManager -> UnenrolCommand : execute(m)
+activate UnenrolCommand
+
+UnenrolCommand -> Model : getAddressBook()
+activate Model
+
+Model --> UnenrolCommand : tb
+deactivate Model
+
+UnenrolCommand -> TutorBook : isEnrolled(s, l)
+activate TutorBook
+
+TutorBook --> UnenrolCommand : true
+deactivate TutorBook
+
+UnenrolCommand -> Model : unenrolStudent(s, l)
+activate Model
+
+Model -> TutorBook : removeEnrolment(e)
+activate TutorBook
+
+TutorBook --> Model
+deactivate TutorBook
+
+Model --> UnenrolCommand
+deactivate Model
+
+create CommandResult
+UnenrolCommand -> CommandResult
+activate CommandResult
+
+CommandResult --> UnenrolCommand
+deactivate CommandResult
+
+UnenrolCommand --> LogicManager : r
+deactivate UnenrolCommand
+
+[<--LogicManager
+deactivate LogicManager
+@enduml

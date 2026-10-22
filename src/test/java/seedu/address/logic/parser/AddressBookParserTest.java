@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.testutil.Assert.assertThrows;
+import static seedu.address.testutil.StudentTestUtil.assertStudentDetailsEqual;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_LESSON;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 
@@ -19,12 +20,17 @@ import seedu.address.logic.commands.AddStudentCommand;
 import seedu.address.logic.commands.ClearCommand;
 import seedu.address.logic.commands.DeleteLessonCommand;
 import seedu.address.logic.commands.DeleteStudentCommand;
+import seedu.address.logic.commands.EditLessonCommand;
+import seedu.address.logic.commands.EditLessonCommand.EditLessonDescriptor;
+import seedu.address.logic.commands.EditStudentCommand;
+import seedu.address.logic.commands.EditStudentCommand.EditStudentDescriptor;
 import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.FindStudentCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListLessonsCommand;
 import seedu.address.logic.commands.ListStudentsCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.ModelManager;
 import seedu.address.model.lesson.Lesson;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
@@ -42,7 +48,10 @@ public class AddressBookParserTest {
                 new Guardian(new Name("Tan Mei Ling"), new Phone("91234567")));
         AddStudentCommand command = (AddStudentCommand) parser.parseCommand(
                 AddStudentCommand.COMMAND_WORD + " n/Aiden Tan gn/Tan Mei Ling gp/91234567");
-        assertEquals(new AddStudentCommand(student), command);
+        ModelManager model = new ModelManager();
+        command.execute(model);
+        assertEquals(1, model.getFilteredStudentList().size());
+        assertStudentDetailsEqual(student, model.getFilteredStudentList().getFirst());
     }
 
     @Test
@@ -112,6 +121,28 @@ public class AddressBookParserTest {
         assertThrows(ParseException.class,
                 String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteStudentCommand.MESSAGE_USAGE), () ->
                         parser.parseCommand(DeleteStudentCommand.COMMAND_WORD));
+    }
+
+    @Test
+    public void parseCommand_editStudent() throws Exception {
+        EditStudentDescriptor descriptor = new EditStudentDescriptor();
+        descriptor.setName(new Name("Aiden Lim"));
+
+        EditStudentCommand command = (EditStudentCommand) parser.parseCommand(
+                EditStudentCommand.COMMAND_WORD + " 1 n/Aiden Lim");
+
+        assertEquals(new EditStudentCommand(INDEX_FIRST_PERSON, descriptor), command);
+    }
+
+    @Test
+    public void parseCommand_editLesson() throws Exception {
+        EditLessonDescriptor descriptor = new EditLessonDescriptor();
+        descriptor.setDay(DayOfWeek.TUESDAY);
+
+        EditLessonCommand command = (EditLessonCommand) parser.parseCommand(
+                EditLessonCommand.COMMAND_WORD + " 1 d/tue");
+
+        assertEquals(new EditLessonCommand(INDEX_FIRST_LESSON, descriptor), command);
     }
 
     @Test

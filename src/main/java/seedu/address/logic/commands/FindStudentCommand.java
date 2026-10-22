@@ -43,6 +43,11 @@ public class FindStudentCommand extends Command {
     }
 
     @Override
+    public boolean changesStoredData() {
+        return false;
+    }
+
+    @Override
     public CommandResult execute(Model model) {
         requireNonNull(model);
         model.updateFilteredStudentList(predicate);

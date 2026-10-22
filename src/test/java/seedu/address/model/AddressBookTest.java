@@ -9,6 +9,8 @@ import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -18,9 +20,12 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import seedu.address.model.lesson.Enrolment;
 import seedu.address.model.lesson.Lesson;
+import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.Phone;
 import seedu.address.model.person.exceptions.DuplicatePersonException;
 import seedu.address.model.student.Student;
+import seedu.address.model.student.exceptions.StudentNotFoundException;
 import seedu.address.testutil.PersonBuilder;
 
 public class AddressBookTest {
@@ -85,11 +90,63 @@ public class AddressBookTest {
     }
 
     @Test
+    public void setStudent_differentId_throwsIllegalArgumentException() {
+        Student target = student("Aiden Tan", "91234567");
+        Student editedStudent = student("Aiden Lee", "92345678");
+        addressBook.addStudent(target);
+
+        assertThrows(IllegalArgumentException.class, () -> addressBook.setStudent(target, editedStudent));
+        assertEquals(List.of(target), addressBook.getStudentList());
+    }
+
+    @Test
+    public void setStudent_targetNotFound_throwsStudentNotFoundException() {
+        Student existingStudent = student("Chloe Tan", "93456789");
+        Student missingStudent = student("Aiden Tan", "91234567");
+        Student editedStudent = new Student(missingStudent.getId(), new Name("Aiden Lee"),
+                new Phone("92345678"), null);
+        addressBook.addStudent(existingStudent);
+
+        assertThrows(StudentNotFoundException.class, () -> addressBook.setStudent(missingStudent, editedStudent));
+        assertEquals(List.of(existingStudent), addressBook.getStudentList());
+    }
+
+    @Test
+    public void setLesson_differentId_throwsIllegalArgumentException() {
+        Lesson target = lesson("Mathematics", DayOfWeek.MONDAY, "16:00", "18:00");
+        Lesson editedLesson = lesson("Advanced Mathematics", DayOfWeek.TUESDAY, "17:00", "19:00");
+        addressBook.addLesson(target);
+
+        assertThrows(IllegalArgumentException.class, () -> addressBook.setLesson(target, editedLesson));
+        assertEquals(List.of(target), addressBook.getLessonList());
+    }
+
+    @Test
+    public void setLesson_targetNotFound_throwsIllegalArgumentException() {
+        Lesson existingLesson = lesson("Science", DayOfWeek.WEDNESDAY, "14:00", "16:00");
+        Lesson missingLesson = lesson("Mathematics", DayOfWeek.MONDAY, "16:00", "18:00");
+        Lesson editedLesson = new Lesson(missingLesson.getId(), "Advanced Mathematics", DayOfWeek.TUESDAY,
+                LocalTime.parse("17:00"), LocalTime.parse("19:00"));
+        addressBook.addLesson(existingLesson);
+
+        assertThrows(IllegalArgumentException.class, () -> addressBook.setLesson(missingLesson, editedLesson));
+        assertEquals(List.of(existingLesson), addressBook.getLessonList());
+    }
+
+    @Test
     public void toStringMethod() {
         String expected = AddressBook.class.getCanonicalName() + "{persons=" + addressBook.getPersonList()
                 + ", students=" + addressBook.getStudentList()
                 + ", lessons=" + addressBook.getLessonList() + ", enrolments=" + addressBook.getEnrolmentList() + "}";
         assertEquals(expected, addressBook.toString());
+    }
+
+    private static Student student(String name, String phone) {
+        return new Student(new Name(name), new Phone(phone), null);
+    }
+
+    private static Lesson lesson(String name, DayOfWeek day, String startTime, String endTime) {
+        return new Lesson(name, day, LocalTime.parse(startTime), LocalTime.parse(endTime));
     }
 
     /**

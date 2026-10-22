@@ -35,6 +35,11 @@ public class ListStudentsCommand extends Command {
     }
 
     @Override
+    public boolean changesStoredData() {
+        return false;
+    }
+
+    @Override
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
         if (lessonIndex == null) {

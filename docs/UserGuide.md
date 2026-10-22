@@ -81,9 +81,28 @@ Format: `liststudents [l/LESSON_INDEX]`
 * If the lesson used by the student filter is deleted, all remaining students are shown again.
 
 Examples:
+
 * `liststudents` shows all students.
 * `liststudents l/2` shows students enrolled in the second displayed lesson.
 
+### Editing a student: `editstudent`
+
+Edits the student at the specified index in the displayed student list.
+
+Format: `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`
+
+* `INDEX` must be a positive integer and refers to the index shown in the current student list.
+* At least one optional field must be provided. Fields that are not provided remain unchanged.
+* `gn/GUARDIAN_NAME` and `gp/GUARDIAN_PHONE` must be provided together. They replace the student's existing guardian details.
+* Names must contain only alphanumeric characters and spaces and must not be blank. Phone numbers must contain only digits and be at least three digits long.
+* The edited student must not duplicate another student.
+* The student's identity and lesson enrolments are preserved.
+* The active student filter remains in effect and is re-evaluated after the edit. For example, a renamed student may disappear from a name search that they no longer match.
+
+Examples:
+
+* `editstudent 1 p/92345678` changes only the phone number of the first displayed student.
+* `editstudent 2 gn/Lim Mei gp/91234567` replaces only the guardian details of the second displayed student.
 ### Finding students: `findstudent`
 
 Finds students by their name, their guardian's name, or part of a phone number.
@@ -115,8 +134,30 @@ Format: `listlessons [d/DAY]`
 * Running `listlessons` without `d/` clears the lesson filter.
 
 Examples:
+
 * `listlessons` shows all lessons.
 * `listlessons d/mon` shows lessons that start on Monday.
+
+### Editing a lesson: `editlesson`
+
+Edits the lesson at the specified index in the displayed lesson list.
+
+Format: `editlesson INDEX [n/NAME] [d/DAY] [st/START_TIME] [et/END_TIME]`
+
+* `INDEX` must be a positive integer and refers to the index shown in the current lesson list.
+* At least one optional field must be provided. Fields that are not provided remain unchanged.
+* `NAME` must be 1 to 50 characters long, start with a letter or digit, and contain only English letters, digits, spaces and `- ' . , & ( ) +`.
+* `DAY` must be `mon`, `tue`, `wed`, `thu`, `fri`, `sat` or `sun`, in any letter case.
+* Times must use four-digit 24-hour format from `0000` to `2359`. The start and end times cannot be equal. An end time earlier than the start time means that the lesson ends on the next day.
+* The edited lesson must not duplicate another lesson.
+* The lesson's identity and student enrolments are preserved. A student list filtered by this lesson remains valid.
+* The active lesson filter remains in effect and is re-evaluated after the edit. For example, changing the day may remove the lesson from the displayed day filter.
+
+Examples:
+
+* `editlesson 1 d/tue st/1700 et/1900` changes only the day and times of the first displayed lesson.
+* `editlesson 2 n/Sec 3 Mathematics` changes only the name of the second displayed lesson.
+
 
 ### Adding a lesson: `addlesson`
 
@@ -146,6 +187,21 @@ Format: `enrol s/STUDENT_INDEX l/LESSON_INDEX`
 
 Example:
 * `enrol s/1 l/2` enrols the first displayed student in the second displayed lesson.
+
+### Unenrolling a student: `unenrol`
+
+Removes a student from a lesson using the indices shown in the student and lesson panels. The student and lesson are both kept.
+
+Format: `unenrol s/STUDENT_INDEX l/LESSON_INDEX`
+
+* Both indices must be positive integers.
+* `STUDENT_INDEX` refers to the current displayed student list.
+* `LESSON_INDEX` refers to the current displayed lesson list.
+* The student must be enrolled in the lesson.
+* Both panel filters stay active. If the student list shows only that lesson's students, the unenrolled student disappears from it.
+
+Example:
+* `unenrol s/1 l/2` removes the first displayed student from the second displayed lesson.
 
 ### Deleting a lesson: `deletelesson`
 
@@ -240,14 +296,27 @@ Format: `exit`
 
 ### Saving the data
 
-AddressBook automatically saves data after every command. You do not need to save manually.
+AddressBook automatically saves after commands that change data. Viewing, searching, help and exit commands do not rewrite the data file. You do not need to save manually.
+
+If saving fails, the data change is undone and the previous display filters are restored. Fix the reported storage problem before retrying the command. Saves use atomic file replacement; a filesystem that does not support this will report a save error instead of overwriting the existing file unsafely.
 
 ### Editing the data file
 
 AddressBook data is saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. Advanced users are welcome to update data directly by editing that data file.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-If your changes make the data file invalid, AddressBook starts with an empty address book at the next run. The invalid file remains on disk until you run a command (AddressBook saves after every command). Still, we recommend backing up the file before editing it.<br>
+If individual records are invalid or duplicated, the app loads the valid records and skips the invalid ones.
+Enrolments referencing missing students or lessons are also skipped. The first valid duplicate is kept.
+A warning in the message box reports how many records were skipped and where the original file was backed up.
+Backups are saved beside the data file as `addressbook.json.recovery-<unique number>.bak`; older backups are preserved.
+These files remain on disk after closing the app and are not automatically deleted. Open a backup in a text editor
+to review the original data, including skipped records.
+The source file is unchanged until a successful command that changes records saves the recovered data.<br>
+If the JSON cannot be read, its lists have an invalid structure, or a backup cannot be created, the app starts empty
+with a warning and **disables saving** to protect the source file. Fix the file or restore a backup while the app
+is closed, then restart. While saving is disabled, commands that change records are rejected before changing the data.
+Listing, searching, help, and exit remain available.<br>
+Only edit the file while the app is closed, and keep a backup before editing it.<br>
 Furthermore, certain edits can cause the AddressBook to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Therefore, edit the data file only if you are confident that you can update it correctly.
 </div>
 
@@ -280,6 +349,8 @@ Action | Format, Examples
 **Clear** | `clear`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **Edit** | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
+**Edit student** | `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `editstudent 1 p/92345678`
+**Edit lesson** | `editlesson INDEX [n/NAME] [d/DAY] [st/START_TIME] [et/END_TIME]`<br> e.g., `editlesson 1 d/tue st/1700 et/1900`
 **Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **Find students** | `findstudent [n/NAME_KEYWORDS...] [gn/GUARDIAN_NAME_KEYWORDS...] [p/PHONE_DIGITS...]`<br> e.g., `findstudent p/4567`
 **List** | `list`
@@ -287,5 +358,6 @@ Action | Format, Examples
 **List lessons** | `listlessons [d/DAY]`<br> e.g., `listlessons d/mon`
 **Add lesson** | `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`<br> e.g., `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800`
 **Enrol student** | `enrol s/STUDENT_INDEX l/LESSON_INDEX`<br> e.g., `enrol s/1 l/2`
+**Unenrol student** | `unenrol s/STUDENT_INDEX l/LESSON_INDEX`<br> e.g., `unenrol s/1 l/2`
 **Delete lesson** | `deletelesson INDEX`<br> e.g., `deletelesson 2`
 **Help** | `help`

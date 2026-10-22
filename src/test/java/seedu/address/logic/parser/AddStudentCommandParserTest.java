@@ -1,17 +1,19 @@
 package seedu.address.logic.parser;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_GUARDIAN_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_GUARDIAN_PHONE;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
-import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
+import static seedu.address.testutil.StudentTestUtil.assertStudentDetailsEqual;
 
 import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.AddStudentCommand;
+import seedu.address.model.ModelManager;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
 import seedu.address.model.student.Guardian;
@@ -71,23 +73,34 @@ public class AddStudentCommandParserTest {
     @Test
     public void parse_studentPhoneOnly_returnsAddStudentCommand() {
         Student student = new Student(new Name("Ryan Lim"), new Phone("93210283"), null);
-        assertParseSuccess(parser, " n/Ryan Lim p/93210283", new AddStudentCommand(student));
-        assertParseSuccess(parser, "  p/ 93210283  n/ Ryan Lim  ", new AddStudentCommand(student));
+        assertParsedStudent(" n/Ryan Lim p/93210283", student);
+        assertParsedStudent("  p/ 93210283  n/ Ryan Lim  ", student);
     }
 
     @Test
     public void parse_guardianOnly_returnsAddStudentCommand() {
         Guardian guardian = new Guardian(new Name("Tan Mei Ling"), new Phone("91234567"));
         Student student = new Student(new Name("Aiden Tan"), null, guardian);
-        assertParseSuccess(parser, " n/Aiden Tan gn/Tan Mei Ling gp/91234567",
-                new AddStudentCommand(student));
+        assertParsedStudent(" n/Aiden Tan gn/Tan Mei Ling gp/91234567",
+                student);
     }
 
     @Test
     public void parse_studentAndGuardianPhones_returnsAddStudentCommand() {
         Guardian guardian = new Guardian(new Name("Tan Mei Ling"), new Phone("91234567"));
         Student student = new Student(new Name("Aiden Tan"), new Phone("92345678"), guardian);
-        assertParseSuccess(parser, " gp/91234567 p/92345678 n/Aiden Tan gn/Tan Mei Ling",
-                new AddStudentCommand(student));
+        assertParsedStudent(" gp/91234567 p/92345678 n/Aiden Tan gn/Tan Mei Ling",
+                student);
     }
+    private void assertParsedStudent(String input, Student expected) {
+        try {
+            ModelManager model = new ModelManager();
+            parser.parse(input).execute(model);
+            assertEquals(1, model.getFilteredStudentList().size());
+            assertStudentDetailsEqual(expected, model.getFilteredStudentList().getFirst());
+        } catch (Exception e) {
+            throw new AssertionError("Expected a valid add student command", e);
+        }
+    }
+
 }

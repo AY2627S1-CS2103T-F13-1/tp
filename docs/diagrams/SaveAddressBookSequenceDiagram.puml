@@ -1,0 +1,42 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+title Saving tutor data after a successful edit
+
+participant ":LogicManager" as LogicManager LOGIC_COLOR
+box Storage STORAGE_COLOR_T1
+participant ":StorageManager" as StorageManager STORAGE_COLOR
+participant ":JsonAddressBookStorage" as JsonStorage STORAGE_COLOR
+end box
+participant "JsonUtil" as JsonUtil
+
+note over LogicManager, JsonStorage
+  Successful save path: saving is allowed and the command
+  has updated the model. Read-only commands skip this flow.
+end note
+
+LogicManager -> StorageManager : saveAddressBook(addressBook)
+activate StorageManager
+StorageManager -> JsonStorage : saveAddressBook(addressBook)
+activate JsonStorage
+JsonStorage -> JsonStorage : saveAddressBook(addressBook, filePath)
+JsonStorage -> JsonStorage : checkSaveAllowed(filePath)
+
+note right of JsonStorage
+  Wrap the model in
+  JsonSerializableAddressBook.
+end note
+
+JsonStorage -> JsonUtil : saveJsonFile(serializableAddressBook, filePath)
+activate JsonUtil
+note right of JsonUtil
+  Serialize the records to JSON
+  and atomically replace the local file.
+end note
+JsonUtil --> JsonStorage
+deactivate JsonUtil
+JsonStorage --> StorageManager
+deactivate JsonStorage
+StorageManager --> LogicManager
+deactivate StorageManager
+@enduml

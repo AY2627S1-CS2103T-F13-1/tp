@@ -3,6 +3,7 @@ package seedu.address.model.util;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static seedu.address.testutil.StudentTestUtil.assertStudentDetailsEqual;
 
 import java.util.List;
 
@@ -23,6 +24,10 @@ public class SampleDataUtilTest {
         assertTrue(students.stream().anyMatch(student -> student.getGuardian().isEmpty()));
         assertTrue(students.stream().anyMatch(student -> student.getPhone().isPresent()
                 && student.getGuardian().isPresent()));
-        assertEquals(List.of(SampleDataUtil.getSampleStudents()), students);
+        Student[] expected = SampleDataUtil.getSampleStudents();
+        assertEquals(expected.length, students.size());
+        for (int i = 0; i < expected.length; i++) {
+            assertStudentDetailsEqual(expected[i], students.get(i));
+        }
     }
 }
