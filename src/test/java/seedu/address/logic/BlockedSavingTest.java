@@ -90,6 +90,19 @@ public class BlockedSavingTest {
         assertEquals(model.getAddressBook(), new AddressBook(storage.readAddressBook().orElseThrow()));
     }
 
+    @Test
+    public void clearEmptyBook_doesNotAttemptUnnecessaryWrite() throws Exception {
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(folder.resolve("data.json")) {
+            @Override
+            public void saveAddressBook(ReadOnlyAddressBook data) throws IOException {
+                throw new AssertionError("Unchanged data must not be saved");
+            }
+        };
+        ModelManager model = new ModelManager();
+        logic(model, storage).execute("clear");
+        assertEquals(new AddressBook(), model.getAddressBook());
+    }
+
     private LogicManager logic(ModelManager model, JsonAddressBookStorage storage) {
         return new LogicManager(model,
                 new StorageManager(storage, new JsonUserPrefsStorage(folder.resolve("prefs.json"))));

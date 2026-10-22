@@ -123,6 +123,63 @@ public class AddressBookRecoveryTest {
         assertTrue(backups().isEmpty());
     }
 
+    @Test
+    public void recover_emptyInput_rejectedRatherThanTreatedAsEmptyBook() {
+        for (String input : List.of("", "   ", "\n\t")) {
+            assertThrows(IOException.class, () -> AddressBookRecovery.read(input));
+        }
+    }
+
+    @Test
+    public void recover_nullLists_acceptsLegacyDataWithoutSkippedRecords() throws Exception {
+        var recovered = AddressBookRecovery.read(
+                "{\"persons\":null,\"students\":null,\"lessons\":null,\"enrolments\":null}");
+        assertEquals(new AddressBook(), recovered.getAddressBook());
+        assertTrue(recovered.getSkippedRecords().isEmpty());
+    }
+
+    @Test
+    public void recover_legacyPersons_keepsFirstDuplicateAndContinuesAfterInvalidRecord() throws Exception {
+        String person = """
+                {"name":"Alice","phone":"91234567","email":"alice@example.com","address":"Home"}
+                """;
+        String invalid = person.replace("\"Home\"", "\"Home\",\"tags\":[null]");
+        String bob = person.replace("Alice", "Bob");
+        var recovered = AddressBookRecovery.read(
+                "{\"persons\":[" + person + "," + person + "," + invalid + "," + bob + "]}");
+        assertEquals(List.of("Alice", "Bob"), recovered.getAddressBook().getPersonList().stream()
+                .map(value -> value.getName().fullName).toList());
+        assertEquals(List.of("persons[2]", "persons[3]"), recovered.getSkippedRecords());
+        assertThrows(UnsupportedOperationException.class, () -> recovered.getSkippedRecords().clear());
+    }
+
+    @Test
+    public void missingFileAfterFailedLoad_clearsWarningAndAllowsFreshSave() throws Exception {
+        Path file = folder.resolve("addressbook.json");
+        Files.writeString(file, "{");
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(file);
+        assertThrows(DataLoadingException.class, storage::readAddressBook);
+        Files.delete(file);
+        assertTrue(storage.readAddressBook().isEmpty());
+        assertEquals("", storage.getLoadWarning());
+        storage.checkSaveAllowed();
+        storage.saveAddressBook(new AddressBook());
+        assertEquals(new AddressBook(), storage.readAddressBook().orElseThrow());
+    }
+
+    @Test
+    public void blockedPath_doesNotPreventSavingToAnotherFile() throws Exception {
+        Path original = folder.resolve("addressbook.json");
+        Path other = folder.resolve("other.json");
+        Files.writeString(original, "{");
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(original);
+        assertThrows(DataLoadingException.class, storage::readAddressBook);
+        storage.saveAddressBook(new AddressBook(), other);
+        assertEquals(new AddressBook(), storage.readAddressBook(other).orElseThrow());
+        assertThrows(IOException.class, storage::checkSaveAllowed);
+        assertEquals("{", Files.readString(original));
+    }
+
     private List<Path> backups() throws IOException {
         try (var paths = Files.list(folder)) {
             return paths.filter(path -> path.toString().endsWith(".bak")).toList();
