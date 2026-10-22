@@ -1,5 +1,7 @@
 package seedu.address.model;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.List;
 
 import javafx.collections.ObservableList;
@@ -41,6 +43,18 @@ public interface ReadOnlyAddressBook {
     /** Returns a snapshot in lesson insertion order, independent of display filters. */
     default List<Lesson> getLessonsForStudent(Student student) {
         return getLessonList().stream().filter(l -> isEnrolled(student, l)).toList();
+    }
+
+    /**
+     * Returns a snapshot, in lesson insertion order and independent of display filters, of the lessons whose times
+     * overlap {@code lesson}'s. The lesson with {@code lesson}'s ID is left out, so an edited lesson does not clash
+     * with its own old times.
+     */
+    default List<Lesson> getClashingLessons(Lesson lesson) {
+        requireNonNull(lesson);
+        return getLessonList().stream()
+                .filter(other -> !other.getId().equals(lesson.getId()) && other.overlaps(lesson))
+                .toList();
     }
 
 }

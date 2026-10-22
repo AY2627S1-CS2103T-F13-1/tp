@@ -125,18 +125,16 @@ How the parsing works:
 
 The `Model` component,
 
-* stores the tutor book data i.e., all `Student` objects (which are contained in a `UniqueStudentList` object) and all `Lesson` objects (which are contained in a `UniqueLessonList` object).
+* stores all `Student`, `Lesson` and `Enrolment` objects in observable source lists owned by `AddressBook`.
 * stores each student's guardian, if any, as a `Guardian` object inside that `Student`, rather than as a separate contact.
-* records an enrolment by having the `Student` hold references to the `Lesson` objects they attend. The students in a lesson are found by checking which students hold that lesson.
+* gives every student and lesson a stable UUID. Each `Enrolment` links one student UUID to one lesson UUID, keeping `Student` and `Lesson` independent of each other.
 * stores the `Student` objects selected by the current filter, such as search results or the students in one lesson, in a separate _filtered_ list. It exposes this list as an unmodifiable `ObservableList<Student>` that the UI can observe and bind to, so the UI updates when the list changes. The `Lesson` objects selected by the current filter, such as the lessons on one day, are exposed in the same way as an `ObservableList<Lesson>`.
 * stores a `UserPrefs` object that represents the user’s preferences (currently, just the GUI settings). This is exposed to the outside as a `ReadOnlyUserPrefs` object.
 * does not depend on any of the other three components (as the `Model` represents data entities of the domain, they should make sense on their own without depending on other components)
 
-<div markdown="span" class="alert alert-info">:information_source: **Note:** An alternative design, shown below, keeps enrolments in a separate `EnrolmentList` in `TutorBook`, where each `Enrolment` links one `Student` to one `Lesson`. This keeps `Student` and `Lesson` independent of each other, but every operation on a student's lessons must then search the enrolment list. See [Enrolling a student in a lesson](#proposed-enrolling-a-student-in-a-lesson) for the comparison.<br>
+The diagram below shows the separate enrolment links used by the current model.
 
 <img src="images/BetterModelClassDiagram.png" width="450" />
-
-</div>
 
 
 ### Storage component
@@ -148,7 +146,7 @@ The `Model` component,
 The `Storage` component,
 * can save both tutor book data and user preference data in JSON format, and read them back into corresponding objects.
 * is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonTutorBookStorage` and `JsonUserPrefsStorage` (one class per data file).
-* saves each student's enrolled lessons by their name, day, start time and end time. When the data is read back, each of these must match a lesson in the saved lesson list; otherwise the data file is treated as invalid.
+* saves stable UUIDs with students and lessons, and saves each enrolment as a student UUID and lesson UUID pair. An enrolment that refers to a missing record makes the data file invalid.
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
 
 ### Common classes
@@ -161,14 +159,67 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 This section describes some noteworthy details on how certain features are implemented.
 
-### \[Proposed\] Enrolling a student in a lesson
+### Warning about clashing lessons
 
-#### Proposed Implementation
+`addlesson` adds a lesson even if its time overlaps an existing lesson, since a tutor may teach overlapping lessons on purpose. It then warns which lessons clash, so that an accidental double-booking is noticed.
 
-The proposed `enrol` command links a student to a lesson. It is facilitated by `EnrolCommand`, `EnrolCommandParser` and the following `Model` operations:
+The sequence diagram below shows how `AddLessonCommand` finds the clashes before adding the lesson.
 
-* `Model#hasEnrolment(Student, Lesson)` — Checks whether the student is already enrolled in the lesson.
-* `Model#enrolStudent(Student, Lesson)` — Replaces the student with a copy that also holds the lesson.
+![Interactions inside the Logic and Model components when adding a lesson](images/AddLessonSequenceDiagram.png)
+
+1. `AddLessonCommand#execute()` first calls `Model#hasLesson()`. A duplicate lesson is rejected with a `CommandException`, so it never gets a warning instead.
+1. It calls `ReadOnlyAddressBook#getClashingLessons()`, which checks the full lesson list, so lessons hidden by `listlessons d/DAY` still count. A lesson with the same ID as the new lesson is skipped, so that a future `editlesson` does not report a lesson as clashing with its own old times.
+1. `getClashingLessons()` compares each lesson with the new one using `Lesson#overlaps()`.
+1. The command adds the lesson, and returns a `CommandResult` whose second line names the clashing lessons, if any.
+
+`Lesson#overlaps()` places each lesson on a weekly cycle of 7 × 24 × 60 minutes. A lesson starts at minute `(day - 1) × 1440 + start time` and lasts `(end time - start time) mod 1440` minutes, which also gives the right length for a lesson that runs past midnight. Two lessons overlap if either one starts before the other has ended, counting forward around the week. Counting around the week lets a Sunday lesson that runs past midnight clash with an early Monday lesson. A lesson that starts exactly when another ends does not clash with it.
+
+#### Design considerations:
+
+**Aspect: What to do with a clashing lesson:**
+
+* **Alternative 1 (current choice):** Add the lesson and warn.
+  * Pros: Tutors who teach overlapping groups on purpose are not blocked.
+  * Cons: A warning can be overlooked.
+
+* **Alternative 2:** Reject the lesson.
+  * Pros: A double-booking cannot happen by accident.
+  * Cons: Overlapping lessons cannot be recorded at all, even when they are intended.
+
+**Aspect: How to compare lessons that run past midnight:**
+
+* **Alternative 1 (current choice):** Compare time ranges on a weekly cycle.
+  * Pros: One comparison covers every case, including Sunday into Monday.
+  * Cons: The modular arithmetic is less obvious than comparing two times.
+
+* **Alternative 2:** Split a lesson that runs past midnight into one range on each day, and compare ranges on the same day.
+  * Pros: Each comparison is simple.
+  * Cons: A lesson may become two ranges, and Sunday into Monday still needs special handling.
+
+### Editing students and lessons
+
+The `editstudent` and `editlesson` commands replace immutable domain objects without changing their stable UUIDs.
+
+1. The command parser reads a positive displayed-list index and one or more optional fields. It rejects repeated prefixes, missing edit fields and invalid values. For `editstudent`, `gn/` and `gp/` must be given together because a guardian is replaced as one value.
+1. The command resolves the index against the corresponding filtered list, so it edits the item the user can see rather than the same position in the complete list.
+1. The command creates a replacement object using the supplied values, the target's values for unspecified fields and the target's UUID.
+1. The model rejects a replacement that would duplicate another student or lesson, then replaces the target in the source list.
+1. The filtered list re-evaluates its predicate when the source item is replaced. An edited item therefore remains visible only if it still matches the active filter.
+
+The following sequence diagram shows the successful execution of `editstudent 1 p/92345678`. The `editlesson` command follows the same sequence using its lesson-specific parser, command, filtered list and model operation.
+
+![Interactions for editing a student](images/EditStudentSequenceDiagram.png)
+
+Enrolments link the stable student and lesson UUIDs. Because an edit retains the target UUID, existing enrolments continue to refer to the edited record without being recreated. This also keeps a student list filtered by lesson valid when that lesson is edited.
+
+### Enrolling a student in a lesson
+
+#### Implementation
+
+The `enrol` command links a student to a lesson. It is facilitated by `EnrolCommand`, `EnrolCommandParser` and the following operations:
+
+* `ReadOnlyAddressBook#isEnrolled(Student, Lesson)` — Checks whether the UUID pair already exists.
+* `Model#enrolStudent(Student, Lesson)` — Adds an `Enrolment` containing the selected student and lesson UUIDs.
 
 Given below is an example usage scenario and how the enrolment mechanism behaves at each step.
 
@@ -178,27 +229,49 @@ Step 2. The user executes `enrol s/1 l/2`. `EnrolCommandParser` checks that both
 
 Step 3. `EnrolCommand#execute()` looks up the 1st student in the filtered student list and the 2nd lesson in the filtered lesson list. If either index is out of range, it throws a `CommandException`, checking the student index first.
 
-Step 4. The command calls `Model#hasEnrolment()`. If the student already holds the lesson, it throws a `CommandException` naming both the student and the lesson.
+Step 4. The command calls `ReadOnlyAddressBook#isEnrolled()`. If the UUID pair already exists, it throws a `CommandException` naming both the student and the lesson.
 
-Step 5. Otherwise, the command calls `Model#enrolStudent()`. Since `Student` is immutable, this creates a new `Student` with the same details and the lesson added to its lesson set, and replaces the old one in the `UniqueStudentList`. Both panels update, because the `StudentCard` lists the student's lessons and the `LessonCard` lists the students holding that lesson.
+Step 5. Otherwise, the command calls `Model#enrolStudent()`, which adds a new `Enrolment` to the source list. Both panels update because they derive each student's lessons and each lesson's students from that list.
 
-Deleting a student needs no extra work, since their enrolments are removed along with them. Deleting a lesson (`deletelesson`) must also replace every student holding that lesson with a copy that no longer holds it.
+Deleting a student or lesson also removes every enrolment containing that record's UUID.
 
 #### Design considerations:
 
 **Aspect: Where enrolments are stored:**
 
-* **Alternative 1 (current choice):** Each `Student` holds the set of `Lesson` objects they are enrolled in.
+* **Alternative 1:** Each `Student` holds the set of `Lesson` objects they are enrolled in.
   * Pros: Showing a student's lessons is direct, and saving follows the same pattern as other fields of `Student`.
   * Cons: Showing a lesson's students requires checking every student. Deleting a lesson requires updating every student enrolled in it.
 
 * **Alternative 2:** Each `Lesson` holds the set of `Student` objects enrolled in it.
   * Pros: Showing a lesson's students is direct.
-  * Cons: Students have no unique identifier (two students may share a name), so a saved lesson cannot refer to its students reliably. Editing or deleting a student requires updating every lesson they are in.
+  * Cons: Editing or deleting a student requires updating every lesson they are in, and the relationship is owned asymmetrically.
 
-* **Alternative 3:** A separate `EnrolmentList` of `Enrolment` objects, each linking one student to one lesson.
-  * Pros: `Student` and `Lesson` stay independent of each other.
-  * Cons: More classes to maintain, and the same identifier problem as Alternative 2 when saving.
+* **Alternative 3 (current choice):** A separate list of `Enrolment` objects, each linking one student UUID to one lesson UUID.
+  * Pros: `Student` and `Lesson` stay independent, edits preserve links through stable UUIDs, and enrolments have one authoritative representation.
+  * Cons: Looking up either side of the relationship requires searching the enrolment list.
+
+### Unenrolling a student from a lesson
+
+The `unenrol` command removes a student from a lesson, keeping both the student and the lesson. It is facilitated by `UnenrolCommand`, `UnenrolCommandParser` and the following operations:
+
+* `TutorBook#isEnrolled(Student, Lesson)` — Checks whether the student is enrolled in the lesson.
+* `Model#unenrolStudent(Student, Lesson)` — Removes the enrolment linking the student to the lesson.
+
+The sequence diagram below shows how `unenrol s/1 l/2` is executed.
+
+![Interactions for the `unenrol s/1 l/2` Command](images/UnenrolSequenceDiagram.png)
+
+<div markdown="span" class="alert alert-info">:information_source: **Note:** The lifeline for `UnenrolCommandParser` should end at the destroy marker (X), but due to a limitation of PlantUML, it continues to the end of the diagram.
+</div>
+
+Step 1. `UnenrolCommandParser` checks that `s/` and `l/` are each present exactly once, that there is no other text before them, and that each value is a positive integer. It then creates an `UnenrolCommand` with the two indices.
+
+Step 2. `UnenrolCommand#execute()` looks up the student in the filtered student list and the lesson in the filtered lesson list. If either index is out of range, it throws a `CommandException`, checking the student index first.
+
+Step 3. The command calls `TutorBook#isEnrolled()`. If the student is not enrolled in the lesson, it throws a `CommandException` naming both the student and the lesson.
+
+Step 4. Otherwise, the command calls `Model#unenrolStudent()`, which removes the enrolment from the `TutorBook`. If the student list is currently showing only one lesson's students, the filter is reapplied, so a student unenrolled from that lesson disappears from the list. Both panels stay filtered as before.
 
 ### \[Proposed\] Undo/redo feature
 
@@ -439,6 +512,12 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
+* 1d. The lesson's time overlaps an existing lesson.
+
+    * 1d1. TutorReach adds the lesson and warns which lessons it clashes with.
+
+      Use case ends.
+
 **Use case: UC04 - Enrol a student in a lesson**
 
 **MSS**
@@ -566,6 +645,84 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case resumes at step 2.
 
+**Use case: UC08 - Edit a student**
+
+**MSS**
+
+1.  Tutor requests to list or find students.
+1.  TutorReach shows the matching students.
+1.  Tutor requests to edit one or more details of a specific student in the displayed list.
+1.  TutorReach updates the student, preserves the student's enrolments and shows the edited student's details.
+
+    Use case ends.
+
+**Extensions**
+
+* 2a. The list is empty.
+
+  Use case ends.
+
+* 3a. The given index is invalid, no edit field is given or a given detail is invalid.
+
+    * 3a1. TutorReach shows an error message.
+
+      Use case resumes at step 3.
+
+* 3b. Only one of the guardian's name and phone number is given.
+
+    * 3b1. TutorReach shows an error message.
+
+      Use case resumes at step 3.
+
+* 3c. The edited details would duplicate another student.
+
+    * 3c1. TutorReach shows an error message.
+
+      Use case ends.
+
+* 4a. The edited student no longer matches the active student filter.
+
+  TutorReach removes the student from the displayed list after completing the edit.
+
+**Use case: UC09 - Edit a lesson**
+
+**MSS**
+
+1.  Tutor requests to list lessons.
+1.  TutorReach shows the matching lessons.
+1.  Tutor requests to edit one or more details of a specific lesson in the displayed list.
+1.  TutorReach updates the lesson, preserves its student enrolments and shows the edited lesson's details.
+
+    Use case ends.
+
+**Extensions**
+
+* 2a. The list is empty.
+
+  Use case ends.
+
+* 3a. The given index is invalid, no edit field is given or a given detail is invalid.
+
+    * 3a1. TutorReach shows an error message.
+
+      Use case resumes at step 3.
+
+* 3b. The edited start and end times are the same.
+
+    * 3b1. TutorReach shows an error message.
+
+      Use case resumes at step 3.
+
+* 3c. The edited details would duplicate another lesson.
+
+    * 3c1. TutorReach shows an error message.
+
+      Use case ends.
+
+* 4a. The edited lesson no longer matches the active lesson filter.
+
+  TutorReach removes the lesson from the displayed list after completing the edit.
+
 ### Non-Functional Requirements
 
 1.  Should work on any _mainstream OS_ as long as it has Java `25` or above installed.
@@ -652,6 +809,36 @@ testers are expected to do more *exploratory* testing.
    1. Test case: `addstudent n/Aiden Tan p/88887777`<br>
       Expected: The student is added, since no phone number is shared.
 
+### Editing a student
+
+1. Editing a student while all students are shown
+
+   1. Prerequisites: List all students using `liststudents`. The first student has a guardian and is enrolled in at least one lesson.
+
+   1. Test case: `editstudent 1 p/92345678`<br>
+      Expected: Only the first student's phone number changes. Their name, guardian and lesson enrolments remain unchanged, and the status message shows the edited student's details.
+
+   1. Test case: `editstudent 1 gn/Lim Mei gp/91234567`<br>
+      Expected: Only the first student's guardian details are replaced. Their own details and lesson enrolments remain unchanged.
+
+   1. Test case: `editstudent 1 gn/Lim Mei`<br>
+      Expected: No student is edited. The status message states that guardian name and guardian phone must be given together.
+
+   1. Other incorrect commands to try: `editstudent 1`, `editstudent 0 n/Aiden`, `editstudent 1 p/12`, `editstudent 1 n/Aiden n/Ryan`<br>
+      Expected: No student is edited. The status message shows the relevant missing field, invalid index, invalid phone or duplicate-prefix error.
+
+1. Editing a student while the students panel is filtered
+
+   1. Prerequisites: Execute `findstudent n/aiden`, with Aiden shown as the first result.
+
+   1. Test case: `editstudent 1 n/Zoe Tan`<br>
+      Expected: The student is edited and disappears from the displayed list because the active search filter is re-evaluated.
+
+   1. Prerequisites: List the students in a lesson using `liststudents l/1`, with at least one student shown.
+
+   1. Test case: `editstudent 1 p/93456789`<br>
+      Expected: The first displayed student is edited and remains in the list because the lesson enrolment is preserved.
+
 ### Deleting a student
 
 1. Deleting a student while all students are being shown
@@ -696,6 +883,16 @@ testers are expected to do more *exploratory* testing.
    1. Other incorrect commands to try: `addlesson n/Math d/tues st/1600 et/1800`, `addlesson n/Math d/monday st/1600 et/1800`, `addlesson n/Math d/mon st/4pm et/1800`, `addlesson n/Math d/mon st/2400 et/2430`<br>
       Expected: No lesson is added. The status message shows the error for the invalid value: a day must be one of `mon`, `tue`, `wed`, `thu`, `fri`, `sat` and `sun`, and a time must be exactly four digits from `0000` to `2359`.
 
+1. Adding a lesson that clashes with another
+
+   1. Prerequisites: The lesson Sec 3 A-Math (Mon 1600-1800) exists, and no other lesson is on Monday evening.
+
+   1. Test case: `addlesson n/Sec 3 E-Math d/mon st/1700 et/1900`<br>
+      Expected: The lesson is added. The status message shows the added lesson and, on the next line, a warning that it clashes with Sec 3 A-Math (Mon 1600-1800).
+
+   1. Test case: `addlesson n/Sec 2 Math d/mon st/1900 et/2000`<br>
+      Expected: The lesson is added with no warning, since it starts exactly when Sec 3 E-Math ends.
+
 1. Filtering lessons by day
 
    1. Prerequisites: Add lessons on at least two different days, including Monday.
@@ -724,6 +921,36 @@ testers are expected to do more *exploratory* testing.
 
    1. Test case: `deletelesson x` (where x is larger than the number of lessons shown)<br>
       Expected: No lesson is deleted. The status message shows `The lesson index provided is invalid.`
+
+### Editing a lesson
+
+1. Editing a lesson while all lessons are shown
+
+   1. Prerequisites: List all lessons using `listlessons`. The first lesson has at least one enrolled student.
+
+   1. Test case: `editlesson 1 d/tue`<br>
+      Expected: Only the first lesson's day changes. Its name, times and student enrolments remain unchanged, and the status message shows the edited lesson's details.
+
+   1. Test case: `editlesson 1 st/2200 et/0100`<br>
+      Expected: The lesson is edited to run past midnight and retains its student enrolments.
+
+   1. Test case: `editlesson 1 st/1700 et/1700`<br>
+      Expected: No lesson is edited. The status message states that the end time must not be the same as the start time.
+
+   1. Other incorrect commands to try: `editlesson 1`, `editlesson 0 n/Math`, `editlesson 1 d/monday`, `editlesson 1 st/4pm`, `editlesson 1 d/mon d/tue`<br>
+      Expected: No lesson is edited. The status message shows the relevant missing field, invalid index, invalid value or duplicate-prefix error.
+
+1. Editing a lesson while a filter is active
+
+   1. Prerequisites: Show Monday lessons using `listlessons d/mon`, with at least one lesson shown.
+
+   1. Test case: `editlesson 1 d/tue`<br>
+      Expected: The lesson is edited and disappears from the displayed lesson list because the active day filter is re-evaluated.
+
+   1. Prerequisites: Run `listlessons` to show all lessons, then list students in the first lesson using `liststudents l/1`, with at least one student shown.
+
+   1. Test case: `editlesson 1 n/Updated Mathematics`<br>
+      Expected: The lesson is edited, and the filtered student list remains unchanged because the lesson's identity and enrolments are preserved.
 
 ### Enrolling a student in a lesson
 

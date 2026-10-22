@@ -87,6 +87,25 @@ public class ModelManager implements Model {
     }
 
     @Override
+    public Runnable createRestorePoint() {
+        AddressBook snapshot = new AddressBook(addressBook);
+        Predicate<? super Person> personPredicate = filteredPersons.getPredicate();
+        Predicate<? super Student> studentPredicate = filteredStudents.getPredicate();
+        Predicate<? super Lesson> lessonPredicate = filteredLessons.getPredicate();
+        UUID lessonFilter = studentLessonFilter;
+        return () -> {
+            addressBook.resetData(snapshot);
+            studentLessonFilter = lessonFilter;
+            filteredPersons.setPredicate(personPredicate);
+            // Force reevaluation even when the predicate object has not changed.
+            filteredStudents.setPredicate(null);
+            filteredStudents.setPredicate(studentPredicate);
+            filteredLessons.setPredicate(lessonPredicate);
+            refreshStudentLessonFilter();
+        };
+    }
+
+    @Override
     public ReadOnlyAddressBook getAddressBook() {
         return addressBook;
     }
@@ -127,6 +146,11 @@ public class ModelManager implements Model {
     }
 
     @Override
+    public void setStudent(Student target, Student editedStudent) {
+        addressBook.setStudent(target, editedStudent);
+    }
+
+    @Override
     public void deleteStudent(Student student) {
         addressBook.removeStudent(student);
     }
@@ -155,6 +179,11 @@ public class ModelManager implements Model {
     }
 
     @Override
+    public void setLesson(Lesson target, Lesson editedLesson) {
+        addressBook.setLesson(target, editedLesson);
+    }
+
+    @Override
     public void deleteLesson(Lesson lesson) {
         addressBook.removeLesson(lesson);
         if (lesson.getId().equals(studentLessonFilter)) {
@@ -166,6 +195,13 @@ public class ModelManager implements Model {
     public void enrolStudent(Student student, Lesson lesson) {
         requireAllNonNull(student, lesson);
         addressBook.addEnrolment(new Enrolment(student.getId(), lesson.getId()));
+        refreshStudentLessonFilter();
+    }
+
+    @Override
+    public void unenrolStudent(Student student, Lesson lesson) {
+        requireAllNonNull(student, lesson);
+        addressBook.removeEnrolment(new Enrolment(student.getId(), lesson.getId()));
         refreshStudentLessonFilter();
     }
 

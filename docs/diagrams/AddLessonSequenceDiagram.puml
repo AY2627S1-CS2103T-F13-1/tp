@@ -1,0 +1,61 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+
+box Logic LOGIC_COLOR_T1
+participant ":LogicManager" as LogicManager LOGIC_COLOR
+participant "a:AddLessonCommand" as AddLessonCommand LOGIC_COLOR
+participant "r:CommandResult" as CommandResult LOGIC_COLOR
+end box
+
+box Model MODEL_COLOR_T1
+participant "m:Model" as Model MODEL_COLOR
+participant ":AddressBook" as AddressBook MODEL_COLOR
+participant "other:Lesson" as Lesson MODEL_COLOR
+end box
+
+LogicManager -> AddLessonCommand : execute(m)
+activate AddLessonCommand
+
+AddLessonCommand -> Model : hasLesson(newLesson)
+activate Model
+Model --> AddLessonCommand : false
+deactivate Model
+
+note right of AddLessonCommand
+  A duplicate lesson is rejected
+  here with a CommandException.
+end note
+
+AddLessonCommand -> Model : getAddressBook()
+activate Model
+Model --> AddLessonCommand
+deactivate Model
+
+AddLessonCommand -> AddressBook : getClashingLessons(newLesson)
+activate AddressBook
+
+loop each lesson with a different ID
+    AddressBook -> Lesson : overlaps(newLesson)
+    activate Lesson
+    Lesson --> AddressBook
+    deactivate Lesson
+end
+
+AddressBook --> AddLessonCommand : clashing lessons
+deactivate AddressBook
+
+AddLessonCommand -> Model : addLesson(newLesson)
+activate Model
+Model --> AddLessonCommand
+deactivate Model
+
+create CommandResult
+AddLessonCommand -> CommandResult : message with a warning\nif any lessons clash
+activate CommandResult
+CommandResult --> AddLessonCommand
+deactivate CommandResult
+
+AddLessonCommand --> LogicManager : r
+deactivate AddLessonCommand
+@enduml

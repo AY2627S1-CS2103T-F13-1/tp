@@ -54,4 +54,10 @@ public interface Storage {
      */
     void saveAddressBook(ReadOnlyAddressBook addressBook) throws IOException;
 
+    /**
+     * Rejects mutations when saving is disabled following a load failure.
+     * This does not guarantee that a subsequent disk write will succeed.
+     */
+    void checkAddressBookSaveAllowed() throws IOException;
+
 }

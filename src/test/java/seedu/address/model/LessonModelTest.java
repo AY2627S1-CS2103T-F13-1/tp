@@ -44,6 +44,22 @@ public class LessonModelTest {
     }
 
     @Test
+    public void unenrolment_removesOnlyLink_rejectsMissingLink() {
+        Model model = new ModelManager();
+        model.addStudent(student);
+        model.addLesson(lesson);
+        model.filterStudentsByLesson(lesson);
+        model.enrolStudent(student, lesson);
+        assertEquals(List.of(student), model.getFilteredStudentList());
+        model.unenrolStudent(student, lesson);
+        assertTrue(model.getEnrolmentList().isEmpty());
+        assertTrue(model.getFilteredStudentList().isEmpty());
+        assertEquals(List.of(student), model.getAddressBook().getStudentList());
+        assertEquals(List.of(lesson), model.getAddressBook().getLessonList());
+        assertThrows(IllegalArgumentException.class, () -> model.unenrolStudent(student, lesson));
+    }
+
+    @Test
     public void filteringAndDeletion_keepReferencesConsistent() {
         Model model = new ModelManager();
         model.addStudent(student);
@@ -97,6 +113,42 @@ public class LessonModelTest {
     }
 
     @Test
+    public void getClashingLessons_listsOverlappingLessonsInOrder() {
+        Lesson physics = new Lesson("Physics", DayOfWeek.MONDAY, LocalTime.of(17, 0), LocalTime.of(19, 0));
+        Lesson english = new Lesson("English", DayOfWeek.MONDAY, LocalTime.of(18, 0), LocalTime.of(19, 0));
+        Lesson wednesday = new Lesson("Math", DayOfWeek.WEDNESDAY, LocalTime.of(16, 0), LocalTime.of(18, 0));
+        Lesson chemistry = new Lesson("Chemistry", DayOfWeek.MONDAY, LocalTime.of(15, 0), LocalTime.of(16, 30));
+        Model model = new ModelManager();
+        for (Lesson each : List.of(physics, english, wednesday, chemistry)) {
+            model.addLesson(each);
+        }
+        model.updateFilteredLessonList(l -> false);
+
+        // hidden lessons still clash; English starts exactly when Math ends
+        assertEquals(List.of(physics, chemistry), model.getAddressBook().getClashingLessons(lesson));
+    }
+
+    @Test
+    public void getClashingLessons_lessonWithSameId_excluded() {
+        Lesson physics = new Lesson("Physics", DayOfWeek.MONDAY, LocalTime.of(17, 0), LocalTime.of(19, 0));
+        Model model = new ModelManager();
+        model.addLesson(lesson);
+        model.addLesson(physics);
+
+        // a lesson does not clash with itself, nor with its own record when its times change
+        assertEquals(List.of(physics), model.getAddressBook().getClashingLessons(lesson));
+        Lesson moved = new Lesson(lesson.getId(), "Math", DayOfWeek.MONDAY, LocalTime.of(17, 30), LocalTime.of(18, 30));
+        assertEquals(List.of(physics), model.getAddressBook().getClashingLessons(moved));
+        assertTrue(new AddressBook().getClashingLessons(lesson).isEmpty());
+    }
+
+    @Test
+    public void getClashingLessons_nullLesson_throwsNullPointerException() {
+        // checked even when there are no lessons to compare against
+        assertThrows(NullPointerException.class, () -> new AddressBook().getClashingLessons(null));
+    }
+
+    @Test
     public void reset_preservesLinksAndExistingObservableViews() {
         Model model = new ModelManager();
         var view = model.getFilteredLessonList();
@@ -113,5 +165,38 @@ public class LessonModelTest {
         assertTrue(model.getEnrolmentList().isEmpty());
         model.addStudent(student);
         assertEquals(List.of(student), model.getFilteredStudentList());
+    }
+
+    @Test
+    public void setLesson_preservesIdEnrolmentAndActiveFilters() {
+        Model model = new ModelManager();
+        model.addStudent(student);
+        model.addLesson(lesson);
+        model.enrolStudent(student, lesson);
+        model.updateFilteredLessonList(candidate -> candidate.getDay() == DayOfWeek.TUESDAY);
+        model.filterStudentsByLesson(lesson);
+        Lesson editedLesson = new Lesson(lesson.getId(), "Advanced Math", DayOfWeek.TUESDAY,
+                LocalTime.of(17, 0), LocalTime.of(19, 0));
+
+        model.setLesson(lesson, editedLesson);
+
+        assertEquals(List.of(editedLesson), model.getFilteredLessonList());
+        assertEquals(List.of(student), model.getFilteredStudentList());
+        assertEquals(List.of(new Enrolment(student.getId(), lesson.getId())), model.getEnrolmentList());
+        assertEquals(List.of(editedLesson), model.getAddressBook().getLessonsForStudent(student));
+    }
+
+    @Test
+    public void setLesson_duplicateResult_throwsIllegalArgumentException() {
+        Lesson science = new Lesson("Science", DayOfWeek.TUESDAY,
+                LocalTime.of(14, 0), LocalTime.of(16, 0));
+        Model model = new ModelManager();
+        model.addLesson(lesson);
+        model.addLesson(science);
+        Lesson duplicateScience = new Lesson(lesson.getId(), science.getName(), science.getDay(),
+                science.getStartTime(), science.getEndTime());
+
+        assertThrows(IllegalArgumentException.class, () -> model.setLesson(lesson, duplicateScience));
+        assertEquals(List.of(lesson, science), model.getAddressBook().getLessonList());
     }
 }

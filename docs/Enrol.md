@@ -17,5 +17,7 @@ a panel filter.
 Missing or invalid values show command usage; repeated prefixes report the
 repeated field. Out-of-range indices report the student error first, then the
 lesson error. Check the names in the success message to catch swapped indices.
-There is no `unenrol` command in this iteration; removing and re-adding either
-record removes its memberships.
+Use `unenrol s/STUDENT_INDEX l/LESSON_INDEX` to remove a student from a lesson.
+It takes the same indices and reports the same index errors as `enrol`, and
+keeps both records. Unenrolling a student who is not in the lesson reports that
+they are not enrolled.

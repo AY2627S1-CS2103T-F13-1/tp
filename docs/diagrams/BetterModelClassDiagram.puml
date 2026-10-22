@@ -3,16 +3,27 @@
 skinparam arrowThickness 1.1
 skinparam arrowColor MODEL_COLOR
 skinparam classBackgroundColor MODEL_COLOR
+skinparam classAttributeFontColor #FFFFFF
 
-TutorBook *-right-> "1" UniqueStudentList
-TutorBook *-right-> "1" EnrolmentList
-TutorBook *-right-> "1" UniqueLessonList
-UniqueStudentList -[hidden]down- EnrolmentList
-EnrolmentList -[hidden]down- UniqueLessonList
+Class Student {
+id : UUID
+}
+Class Enrolment {
+studentId : UUID
+lessonId : UUID
+}
+Class Lesson {
+id : UUID
+}
+show Student fields
+show Enrolment fields
+show Lesson fields
 
-UniqueStudentList -right-> "*" Student
-UniqueLessonList -right-> "*" Lesson
-EnrolmentList -right-> "*" Enrolment
+AddressBook *-right-> "*" Student
+AddressBook *-right-> "*" Enrolment
+AddressBook *-right-> "*" Lesson
+Student -[hidden]down- Enrolment
+Enrolment -[hidden]down- Lesson
 
 Enrolment -up-> "1" Student
 Enrolment -down-> "1" Lesson
