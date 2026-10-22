@@ -1,7 +1,6 @@
 package seedu.address.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
@@ -13,7 +12,6 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.lesson.Enrolment;
 import seedu.address.model.lesson.Lesson;
@@ -63,7 +61,7 @@ public class LessonStorageTest {
     }
 
     @Test
-    public void invalidData_rejectsFile() throws Exception {
+    public void invalidData_recoversWithWarning() throws Exception {
         String lesson = """
                 {"id":"00000000-0000-0000-0000-000000000001","name":"Math",
                  "day":"MONDAY","startTime":"1600","endTime":"1800"}
@@ -89,7 +87,9 @@ public class LessonStorageTest {
         Path file = folder.resolve("invalid.json");
         for (String json : invalid) {
             Files.writeString(file, json);
-            assertThrows(DataLoadingException.class, () -> new JsonAddressBookStorage(file).readAddressBook());
+            JsonAddressBookStorage storage = new JsonAddressBookStorage(file);
+            assertTrue(storage.readAddressBook().isPresent());
+            assertTrue(storage.getLoadWarning().contains("skipped"));
         }
     }
 }

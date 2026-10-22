@@ -133,6 +133,13 @@ public class MainWindow extends UiPart<Stage> {
         commandBoxPlaceholder.getChildren().add(commandBox.getRoot());
     }
 
+    /** Displays a storage warning without changing the UI layout. */
+    void showStartupMessage(String message) {
+        if (!message.isEmpty()) {
+            resultDisplay.setFeedbackToUser(message);
+        }
+    }
+
     /**
      * Sets the default size based on {@code guiSettings}.
      */

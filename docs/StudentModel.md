@@ -21,7 +21,7 @@ Student studentWithPhone = new Student(new Name("Chloe Tan"), new Phone("8888888
 - `student.getGuardian()` returns `Optional<Guardian>`.
 - `guardian.getName()` and `guardian.getPhone()` return required values.
 - Empty strings are invalid values; use absence instead.
-- `equals` compares all stored details. `isSameStudent` checks for duplicates: same name
+- `equals` and `hashCode` include the record ID and all contact details. Preserve the ID when copying a record. `isSameStudent` checks for duplicates: same name
   ignoring case and extra spaces, plus any shared student/guardian phone number.
 
 ## Command work
@@ -42,7 +42,7 @@ The last line only illustrates the filter API; implement the specified search ma
 Command parsers should report missing guardian prefixes and invalid input as `ParseException`;
 commands should translate model failures into appropriate `CommandException` messages.
 Do not write storage calls inside commands: the existing `LogicManager.execute` saves the whole
-address book after a successful command.
+address book after a successful command that changes stored records.
 
 ## UI work
 
@@ -81,6 +81,10 @@ or new dependency is required. The file now contains both legacy `persons` and n
 
 Old files without `students` still load with an empty student list. Existing AB3 contacts are
 preserved as persons; they are not automatically converted to students. Student records are
-validated on load, including duplicate detection. The existing startup error handling applies
-to invalid files. Existing AB3 commands and screens still operate on persons until the team
+validated on load, including duplicate detection. Invalid records are skipped with a startup warning
+and a backup of the original file. Unreadable files or backup failures disable saving to protect the source. Existing AB3 commands and screens still operate on persons until the team
 implements the student commands and UI; the existing `clear` clears the entire address book.
+
+Commands that only change views override `changesStoredData()` to return false and do not save.
+Mutating commands default to true; LogicManager checks the storage save guard before execution.
+This prevents mutations during blocked-saving sessions. Unexpected disk-write failures restore the previous data and filters.

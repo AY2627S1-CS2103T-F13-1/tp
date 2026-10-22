@@ -47,12 +47,18 @@ public class StudentTest {
     @Test
     public void equals_comparesAllFields() {
         Student student = new Student(name, phone, guardian);
-        Student copy = new Student(new Name("Aiden Tan"), new Phone("91234567"),
+        Student copy = new Student(student.getId(), new Name("Aiden Tan"), new Phone("91234567"),
                 new Guardian(new Name("Tan Mei Ling"), new Phone("91234567")));
+        assertEquals(student, student);
         assertEquals(student, copy);
+        assertNotEquals(student, null);
+        assertNotEquals(student, "Aiden Tan");
+        assertNotEquals(student, new Student(name, phone, guardian));
+        assertNotEquals(student, new Student(student.getId(), new Name("Chloe Tan"), phone, guardian));
         assertEquals(student.hashCode(), copy.hashCode());
-        assertNotEquals(student, new Student(name, phone, null));
-        assertNotEquals(student, new Student(name, null, guardian));
-        assertNotEquals(student, new Student(name, phone, new Guardian(new Name("Other Guardian"), phone)));
+        assertNotEquals(student, new Student(student.getId(), name, phone, null));
+        assertNotEquals(student, new Student(student.getId(), name, null, guardian));
+        assertNotEquals(student, new Student(student.getId(), name, phone,
+                new Guardian(new Name("Other Guardian"), phone)));
     }
 }
