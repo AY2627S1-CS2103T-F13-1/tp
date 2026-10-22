@@ -226,6 +226,18 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_addClashingLesson_warnsAndSavesLesson() throws Exception {
+        logic.execute(AddLessonCommand.COMMAND_WORD + " n/Sec 3 A-Math d/mon st/1600 et/1800");
+
+        CommandResult result = logic.execute(AddLessonCommand.COMMAND_WORD + " n/Sec 3 E-Math d/mon st/1700 et/1900");
+
+        assertEquals("New lesson added: Sec 3 E-Math (Mon 1700-1900)\n"
+                + "Warning: clashes with Sec 3 A-Math (Mon 1600-1800)", result.getFeedbackToUser());
+        assertEquals(2, logic.getFilteredLessonList().size());
+        assertEquals(logic.getFilteredLessonList(), readSavedAddressBook().getLessonList());
+    }
+
+    @Test
     public void execute_addLessonInvalidInput_throwsParseException() {
         assertParseException(AddLessonCommand.COMMAND_WORD,
                 String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddLessonCommand.MESSAGE_USAGE));

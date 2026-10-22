@@ -11,6 +11,8 @@ import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -133,16 +135,16 @@ public class AddLessonCommandTest {
     public void execute_sameNameDifferentSchedule_addSuccessful() {
         model.addLesson(A_MATH);
         expectedModel.addLesson(A_MATH);
-        List<Lesson> otherSchedules = List.of(
-                lesson("Sec 3 A-Math", DayOfWeek.TUESDAY, "16:00", "18:00"), // different day
-                lesson("Sec 3 A-Math", DayOfWeek.MONDAY, "16:01", "18:00"), // different start time
-                lesson("Sec 3 A-Math", DayOfWeek.MONDAY, "16:00", "17:59"), // different end time
-                lesson("Sec 3 A-Math", DayOfWeek.MONDAY, "18:00", "16:00")); // times swapped: ends the next day
+        Lesson otherDay = lesson("Sec 3 A-Math", DayOfWeek.TUESDAY, "16:00", "18:00");
+        Lesson otherStart = lesson("Sec 3 A-Math", DayOfWeek.MONDAY, "16:01", "18:00");
+        Lesson otherEnd = lesson("Sec 3 A-Math", DayOfWeek.MONDAY, "16:00", "17:59");
+        Lesson timesSwapped = lesson("Sec 3 A-Math", DayOfWeek.MONDAY, "18:00", "16:00"); // ends the next day
 
-        for (Lesson other : otherSchedules) {
-            expectedModel.addLesson(other);
-            assertCommandSuccess(new AddLessonCommand(other), model, getSuccessMessage(other), expectedModel);
-        }
+        assertAddSuccess(otherDay);
+        assertAddSuccess(otherStart, A_MATH);
+        assertAddSuccess(otherEnd, A_MATH, otherStart);
+        // starts once the Monday lessons have ended, and ends when the Tuesday lesson starts
+        assertAddSuccess(timesSwapped);
         assertEquals(5, model.getAddressBook().getLessonList().size());
     }
 
@@ -150,29 +152,88 @@ public class AddLessonCommandTest {
     public void execute_similarNameSameSchedule_addSuccessful() {
         model.addLesson(A_MATH);
         expectedModel.addLesson(A_MATH);
+        List<Lesson> sameSlot = new ArrayList<>(List.of(A_MATH));
 
         // only case and extra spaces are ignored; punctuation and spelling still tell lessons apart
         for (String name : List.of("Sec 3 A Math", "Sec 3 AMath", "Sec 3 A-Maths", "Sec3 A-Math")) {
             Lesson other = lesson(name, DayOfWeek.MONDAY, "16:00", "18:00");
-            expectedModel.addLesson(other);
-            assertCommandSuccess(new AddLessonCommand(other), model, getSuccessMessage(other), expectedModel);
+            // each lesson clashes with every earlier lesson in the same slot
+            assertAddSuccess(other, sameSlot.toArray(Lesson[]::new));
+            sameSlot.add(other);
         }
     }
 
     @Test
-    public void execute_clashingTimes_addSuccessful() {
+    public void execute_clashingLesson_addedWithWarning() {
         model.addLesson(A_MATH);
         expectedModel.addLesson(A_MATH);
-        List<Lesson> clashes = List.of(
-                lesson("Sec 4 Physics", DayOfWeek.MONDAY, "16:00", "18:00"), // same slot
-                lesson("Sec 2 Science", DayOfWeek.MONDAY, "17:00", "19:00"), // overlaps the end
-                lesson("Sec 1 Math", DayOfWeek.MONDAY, "16:30", "17:00")); // inside the slot
+        Lesson eMath = lesson("Sec 3 E-Math", DayOfWeek.MONDAY, "17:00", "19:00");
+        expectedModel.addLesson(eMath);
 
-        // clashes are not checked, so the tutor decides whether they are a mistake
-        for (Lesson clash : clashes) {
-            expectedModel.addLesson(clash);
-            assertCommandSuccess(new AddLessonCommand(clash), model, getSuccessMessage(clash), expectedModel);
-        }
+        // the full message is spelled out once to pin its exact wording
+        String expectedMessage = "New lesson added: Sec 3 E-Math (Mon 1700-1900)\n"
+                + "Warning: clashes with Sec 3 A-Math (Mon 1600-1800)";
+        assertCommandSuccess(new AddLessonCommand(eMath), model, expectedMessage, expectedModel);
+    }
+
+    @Test
+    public void execute_clashingTimes_addedWithWarningNamingEachClash() {
+        model.addLesson(A_MATH);
+        expectedModel.addLesson(A_MATH);
+        Lesson sameSlot = lesson("Sec 4 Physics", DayOfWeek.MONDAY, "16:00", "18:00");
+        Lesson overlapsEnd = lesson("Sec 2 Science", DayOfWeek.MONDAY, "17:00", "19:00");
+        Lesson insideSlot = lesson("Sec 1 Math", DayOfWeek.MONDAY, "16:30", "17:00");
+
+        // clashes are still added, so the tutor decides whether they are a mistake
+        assertAddSuccess(sameSlot, A_MATH);
+        // the full message is spelled out once to pin how several clashes are listed
+        expectedModel.addLesson(overlapsEnd);
+        assertCommandSuccess(new AddLessonCommand(overlapsEnd), model,
+                "New lesson added: Sec 2 Science (Mon 1700-1900)\n"
+                + "Warning: clashes with Sec 3 A-Math (Mon 1600-1800); Sec 4 Physics (Mon 1600-1800)",
+                expectedModel);
+        // ends exactly when Sec 2 Science starts, so it does not clash with it
+        assertAddSuccess(insideSlot, A_MATH, sameSlot);
+    }
+
+    @Test
+    public void execute_touchingLessons_addedWithoutWarning() {
+        model.addLesson(A_MATH);
+        expectedModel.addLesson(A_MATH);
+
+        assertAddSuccess(lesson("Sec 4 Physics", DayOfWeek.MONDAY, "18:00", "19:00"));
+        assertAddSuccess(lesson("Sec 2 Science", DayOfWeek.MONDAY, "14:00", "16:00"));
+    }
+
+    @Test
+    public void execute_lessonPastMidnight_clashesWithNextDay() {
+        Lesson earlyClass = lesson("Early Class", DayOfWeek.SATURDAY, "00:30", "02:00");
+        model.addLesson(earlyClass);
+        expectedModel.addLesson(earlyClass);
+
+        assertAddSuccess(lesson("Night Class", DayOfWeek.FRIDAY, "22:00", "01:00"), earlyClass);
+    }
+
+    @Test
+    public void execute_clashHiddenByLessonFilter_warningStillGiven() {
+        model.addLesson(A_MATH);
+        model.updateFilteredLessonList(lesson -> false);
+        expectedModel.addLesson(A_MATH);
+        Lesson eMath = lesson("Sec 3 E-Math", DayOfWeek.MONDAY, "17:00", "19:00");
+
+        // the tutor cannot see the clashing lesson, which is when the warning helps most
+        assertAddSuccess(eMath, A_MATH);
+        assertEquals(List.of(A_MATH, eMath), model.getFilteredLessonList());
+    }
+
+    @Test
+    public void execute_duplicateOfClashingLessons_throwsCommandException() {
+        model.addLesson(A_MATH);
+        model.addLesson(lesson("Sec 3 E-Math", DayOfWeek.MONDAY, "17:00", "19:00"));
+        Lesson typedAgain = lesson("Sec 3 A-Math", DayOfWeek.MONDAY, "16:00", "18:00");
+
+        // a duplicate is rejected rather than added with a warning
+        assertAddFailure(new AddLessonCommand(typedAgain), AddLessonCommand.MESSAGE_DUPLICATE_LESSON);
     }
 
     @Test
@@ -310,8 +371,23 @@ public class AddLessonCommandTest {
         assertEquals(expectedFilteredStudents, model.getFilteredStudentList());
     }
 
-    private static String getSuccessMessage(Lesson addedLesson) {
-        return String.format(AddLessonCommand.MESSAGE_SUCCESS, addedLesson);
+    /**
+     * Executes an {@code AddLessonCommand} for {@code toAdd}, and confirms that it succeeds with a warning
+     * naming {@code clashingLessons}, if any, and that the model matches {@code expectedModel} with the lesson added.
+     */
+    private void assertAddSuccess(Lesson toAdd, Lesson... clashingLessons) {
+        expectedModel.addLesson(toAdd);
+        assertCommandSuccess(new AddLessonCommand(toAdd), model, getSuccessMessage(toAdd, clashingLessons),
+                expectedModel);
+    }
+
+    private static String getSuccessMessage(Lesson addedLesson, Lesson... clashingLessons) {
+        String message = String.format(AddLessonCommand.MESSAGE_SUCCESS, addedLesson);
+        if (clashingLessons.length == 0) {
+            return message;
+        }
+        return message + "\n" + String.format(AddLessonCommand.MESSAGE_CLASH_WARNING,
+                Stream.of(clashingLessons).map(Lesson::toString).collect(Collectors.joining("; ")));
     }
 
     /** Creates a lesson with a newly generated ID; times are given as {@code HH:mm}. */

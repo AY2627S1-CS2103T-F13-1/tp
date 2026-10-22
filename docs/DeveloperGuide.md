@@ -159,6 +159,43 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 This section describes some noteworthy details on how certain features are implemented.
 
+### Warning about clashing lessons
+
+`addlesson` adds a lesson even if its time overlaps an existing lesson, since a tutor may teach overlapping lessons on purpose. It then warns which lessons clash, so that an accidental double-booking is noticed.
+
+The sequence diagram below shows how `AddLessonCommand` finds the clashes before adding the lesson.
+
+![Interactions inside the Logic and Model components when adding a lesson](images/AddLessonSequenceDiagram.png)
+
+1. `AddLessonCommand#execute()` first calls `Model#hasLesson()`. A duplicate lesson is rejected with a `CommandException`, so it never gets a warning instead.
+1. It calls `ReadOnlyAddressBook#getClashingLessons()`, which checks the full lesson list, so lessons hidden by `listlessons d/DAY` still count. A lesson with the same ID as the new lesson is skipped, so that a future `editlesson` does not report a lesson as clashing with its own old times.
+1. `getClashingLessons()` compares each lesson with the new one using `Lesson#overlaps()`.
+1. The command adds the lesson, and returns a `CommandResult` whose second line names the clashing lessons, if any.
+
+`Lesson#overlaps()` places each lesson on a weekly cycle of 7 × 24 × 60 minutes. A lesson starts at minute `(day - 1) × 1440 + start time` and lasts `(end time - start time) mod 1440` minutes, which also gives the right length for a lesson that runs past midnight. Two lessons overlap if either one starts before the other has ended, counting forward around the week. Counting around the week lets a Sunday lesson that runs past midnight clash with an early Monday lesson. A lesson that starts exactly when another ends does not clash with it.
+
+#### Design considerations:
+
+**Aspect: What to do with a clashing lesson:**
+
+* **Alternative 1 (current choice):** Add the lesson and warn.
+  * Pros: Tutors who teach overlapping groups on purpose are not blocked.
+  * Cons: A warning can be overlooked.
+
+* **Alternative 2:** Reject the lesson.
+  * Pros: A double-booking cannot happen by accident.
+  * Cons: Overlapping lessons cannot be recorded at all, even when they are intended.
+
+**Aspect: How to compare lessons that run past midnight:**
+
+* **Alternative 1 (current choice):** Compare time ranges on a weekly cycle.
+  * Pros: One comparison covers every case, including Sunday into Monday.
+  * Cons: The modular arithmetic is less obvious than comparing two times.
+
+* **Alternative 2:** Split a lesson that runs past midnight into one range on each day, and compare ranges on the same day.
+  * Pros: Each comparison is simple.
+  * Cons: A lesson may become two ranges, and Sunday into Monday still needs special handling.
+
 ### Editing students and lessons
 
 The `editstudent` and `editlesson` commands replace immutable domain objects without changing their stable UUIDs.
@@ -472,6 +509,12 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 * 1c. A lesson with the same name, day, start time and end time already exists.
 
     * 1c1. TutorReach shows an error message.
+
+      Use case ends.
+
+* 1d. The lesson's time overlaps an existing lesson.
+
+    * 1d1. TutorReach adds the lesson and warns which lessons it clashes with.
 
       Use case ends.
 
@@ -839,6 +882,16 @@ testers are expected to do more *exploratory* testing.
 
    1. Other incorrect commands to try: `addlesson n/Math d/tues st/1600 et/1800`, `addlesson n/Math d/monday st/1600 et/1800`, `addlesson n/Math d/mon st/4pm et/1800`, `addlesson n/Math d/mon st/2400 et/2430`<br>
       Expected: No lesson is added. The status message shows the error for the invalid value: a day must be one of `mon`, `tue`, `wed`, `thu`, `fri`, `sat` and `sun`, and a time must be exactly four digits from `0000` to `2359`.
+
+1. Adding a lesson that clashes with another
+
+   1. Prerequisites: The lesson Sec 3 A-Math (Mon 1600-1800) exists, and no other lesson is on Monday evening.
+
+   1. Test case: `addlesson n/Sec 3 E-Math d/mon st/1700 et/1900`<br>
+      Expected: The lesson is added. The status message shows the added lesson and, on the next line, a warning that it clashes with Sec 3 A-Math (Mon 1600-1800).
+
+   1. Test case: `addlesson n/Sec 2 Math d/mon st/1900 et/2000`<br>
+      Expected: The lesson is added with no warning, since it starts exactly when Sec 3 E-Math ends.
 
 1. Filtering lessons by day
 

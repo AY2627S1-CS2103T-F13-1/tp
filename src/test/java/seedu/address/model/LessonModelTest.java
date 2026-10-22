@@ -113,6 +113,42 @@ public class LessonModelTest {
     }
 
     @Test
+    public void getClashingLessons_listsOverlappingLessonsInOrder() {
+        Lesson physics = new Lesson("Physics", DayOfWeek.MONDAY, LocalTime.of(17, 0), LocalTime.of(19, 0));
+        Lesson english = new Lesson("English", DayOfWeek.MONDAY, LocalTime.of(18, 0), LocalTime.of(19, 0));
+        Lesson wednesday = new Lesson("Math", DayOfWeek.WEDNESDAY, LocalTime.of(16, 0), LocalTime.of(18, 0));
+        Lesson chemistry = new Lesson("Chemistry", DayOfWeek.MONDAY, LocalTime.of(15, 0), LocalTime.of(16, 30));
+        Model model = new ModelManager();
+        for (Lesson each : List.of(physics, english, wednesday, chemistry)) {
+            model.addLesson(each);
+        }
+        model.updateFilteredLessonList(l -> false);
+
+        // hidden lessons still clash; English starts exactly when Math ends
+        assertEquals(List.of(physics, chemistry), model.getAddressBook().getClashingLessons(lesson));
+    }
+
+    @Test
+    public void getClashingLessons_lessonWithSameId_excluded() {
+        Lesson physics = new Lesson("Physics", DayOfWeek.MONDAY, LocalTime.of(17, 0), LocalTime.of(19, 0));
+        Model model = new ModelManager();
+        model.addLesson(lesson);
+        model.addLesson(physics);
+
+        // a lesson does not clash with itself, nor with its own record when its times change
+        assertEquals(List.of(physics), model.getAddressBook().getClashingLessons(lesson));
+        Lesson moved = new Lesson(lesson.getId(), "Math", DayOfWeek.MONDAY, LocalTime.of(17, 30), LocalTime.of(18, 30));
+        assertEquals(List.of(physics), model.getAddressBook().getClashingLessons(moved));
+        assertTrue(new AddressBook().getClashingLessons(lesson).isEmpty());
+    }
+
+    @Test
+    public void getClashingLessons_nullLesson_throwsNullPointerException() {
+        // checked even when there are no lessons to compare against
+        assertThrows(NullPointerException.class, () -> new AddressBook().getClashingLessons(null));
+    }
+
+    @Test
     public void reset_preservesLinksAndExistingObservableViews() {
         Model model = new ModelManager();
         var view = model.getFilteredLessonList();

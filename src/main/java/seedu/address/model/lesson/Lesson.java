@@ -1,5 +1,6 @@
 package seedu.address.model.lesson;
 
+import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.AppUtil.checkArgument;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
@@ -7,13 +8,14 @@ import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
+import java.time.temporal.ChronoField;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Immutable weekly lesson. Overlapping lessons are allowed. An end time earlier than the start time
- * means the lesson runs past midnight and ends on the day after its day.
+ * Immutable weekly lesson. Overlapping lessons are allowed; {@link #overlaps(Lesson)} finds them. An end time
+ * earlier than the start time means the lesson runs past midnight and ends on the day after its day.
  */
 public final class Lesson {
     public static final String MESSAGE_NAME_CONSTRAINTS =
@@ -22,6 +24,8 @@ public final class Lesson {
     public static final String MESSAGE_TIME_CONSTRAINTS =
             "Times must have minute precision, and end time must not be the same as start time.";
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HHmm");
+    private static final int MINUTES_PER_DAY = 24 * 60;
+    private static final int MINUTES_PER_WEEK = 7 * MINUTES_PER_DAY;
 
     private final UUID id;
     private final String name;
@@ -73,6 +77,35 @@ public final class Lesson {
     public boolean isSameLesson(Lesson other) {
         return other != null && name.equalsIgnoreCase(other.name) && day == other.day
                 && startTime.equals(other.startTime) && endTime.equals(other.endTime);
+    }
+
+    /**
+     * Returns true if this lesson's weekly time range overlaps {@code other}'s. A lesson that starts exactly
+     * when the other ends does not overlap it. A lesson past midnight also covers the start of the next day,
+     * so a Sunday lesson past midnight can overlap a Monday lesson.
+     */
+    public boolean overlaps(Lesson other) {
+        requireNonNull(other);
+        int start = getStartMinuteOfWeek();
+        int otherStart = other.getStartMinuteOfWeek();
+        // on a weekly cycle, two lessons overlap if either starts before the other has ended
+        return Math.floorMod(otherStart - start, MINUTES_PER_WEEK) < getDurationInMinutes()
+                || Math.floorMod(start - otherStart, MINUTES_PER_WEEK) < other.getDurationInMinutes();
+    }
+
+    private int getStartMinuteOfWeek() {
+        return (day.getValue() - 1) * MINUTES_PER_DAY + toMinuteOfDay(startTime);
+    }
+
+    /** Includes the hours after midnight for a lesson that ends on the next day. */
+    private int getDurationInMinutes() {
+        int duration = Math.floorMod(toMinuteOfDay(endTime) - toMinuteOfDay(startTime), MINUTES_PER_DAY);
+        assert duration > 0 : "The constructor rejects an end time equal to the start time";
+        return duration;
+    }
+
+    private static int toMinuteOfDay(LocalTime time) {
+        return time.get(ChronoField.MINUTE_OF_DAY);
     }
 
     @Override
