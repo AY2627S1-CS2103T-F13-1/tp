@@ -36,14 +36,17 @@ public class UnenrolCommand extends Command {
     public CommandResult execute(Model model) throws CommandException {
         requireAllNonNull(model);
         if (studentIndex.getZeroBased() >= model.getFilteredStudentList().size()) {
+            logger.fine("Rejected unenrol: student index " + studentIndex.getOneBased() + " is out of range");
             throw new CommandException(Messages.MESSAGE_INVALID_STUDENT_DISPLAYED_INDEX);
         }
         if (lessonIndex.getZeroBased() >= model.getFilteredLessonList().size()) {
+            logger.fine("Rejected unenrol: lesson index " + lessonIndex.getOneBased() + " is out of range");
             throw new CommandException(Messages.MESSAGE_INVALID_LESSON_DISPLAYED_INDEX);
         }
         Student student = model.getFilteredStudentList().get(studentIndex.getZeroBased());
         Lesson lesson = model.getFilteredLessonList().get(lessonIndex.getZeroBased());
         if (!model.getAddressBook().isEnrolled(student, lesson)) {
+            logger.fine("Rejected unenrol: " + student.getName() + " is not enrolled in " + lesson);
             throw new CommandException(String.format(MESSAGE_NOT_ENROLLED, student.getName(), lesson));
         }
         model.unenrolStudent(student, lesson);

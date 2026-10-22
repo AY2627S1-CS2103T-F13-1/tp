@@ -200,6 +200,28 @@ Deleting a student needs no extra work, since their enrolments are removed along
   * Pros: `Student` and `Lesson` stay independent of each other.
   * Cons: More classes to maintain, and the same identifier problem as Alternative 2 when saving.
 
+### Unenrolling a student from a lesson
+
+The `unenrol` command removes a student from a lesson, keeping both the student and the lesson. It is facilitated by `UnenrolCommand`, `UnenrolCommandParser` and the following operations:
+
+* `TutorBook#isEnrolled(Student, Lesson)` — Checks whether the student is enrolled in the lesson.
+* `Model#unenrolStudent(Student, Lesson)` — Removes the enrolment linking the student to the lesson.
+
+The sequence diagram below shows how `unenrol s/1 l/2` is executed.
+
+![Interactions for the `unenrol s/1 l/2` Command](images/UnenrolSequenceDiagram.png)
+
+<div markdown="span" class="alert alert-info">:information_source: **Note:** The lifeline for `UnenrolCommandParser` should end at the destroy marker (X), but due to a limitation of PlantUML, it continues to the end of the diagram.
+</div>
+
+Step 1. `UnenrolCommandParser` checks that `s/` and `l/` are each present exactly once, that there is no other text before them, and that each value is a positive integer. It then creates an `UnenrolCommand` with the two indices.
+
+Step 2. `UnenrolCommand#execute()` looks up the student in the filtered student list and the lesson in the filtered lesson list. If either index is out of range, it throws a `CommandException`, checking the student index first.
+
+Step 3. The command calls `TutorBook#isEnrolled()`. If the student is not enrolled in the lesson, it throws a `CommandException` naming both the student and the lesson.
+
+Step 4. Otherwise, the command calls `Model#unenrolStudent()`, which removes the enrolment from the `TutorBook`. If the student list is currently showing only one lesson's students, the filter is reapplied, so a student unenrolled from that lesson disappears from the list. Both panels stay filtered as before.
+
 ### \[Proposed\] Undo/redo feature
 
 #### Proposed Implementation
