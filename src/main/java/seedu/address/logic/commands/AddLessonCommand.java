@@ -39,7 +39,7 @@ public class AddLessonCommand extends Command {
             + PREFIX_END_TIME + "1800";
 
     public static final String MESSAGE_SUCCESS = "New lesson added: %1$s";
-    public static final String MESSAGE_DUPLICATE_LESSON = "This lesson already exists";
+    public static final String MESSAGE_DUPLICATE_LESSON = "This lesson already exists.";
     public static final String MESSAGE_CLASH_WARNING = "Warning: clashes with %1$s";
 
     private static final Logger logger = LogsCenter.getLogger(AddLessonCommand.class);
@@ -66,7 +66,8 @@ public class AddLessonCommand extends Command {
         model.addLesson(toAdd);
         assert model.getFilteredLessonList().contains(toAdd) : "Adding a lesson should clear the lesson filter";
         logger.info("Added lesson: " + toAdd);
-        return new CommandResult(String.format(MESSAGE_SUCCESS, toAdd) + getClashWarning(clashingLessons));
+        return new CommandResult(String.format(MESSAGE_SUCCESS, Messages.format(toAdd))
+                + getClashWarning(clashingLessons));
     }
 
     /**
@@ -77,7 +78,7 @@ public class AddLessonCommand extends Command {
         if (clashingLessons.isEmpty()) {
             return "";
         }
-        String clashes = clashingLessons.stream().map(Lesson::toString).collect(Collectors.joining("; "));
+        String clashes = clashingLessons.stream().map(Messages::format).collect(Collectors.joining("; "));
         return "\n" + String.format(MESSAGE_CLASH_WARNING, clashes);
     }
 
