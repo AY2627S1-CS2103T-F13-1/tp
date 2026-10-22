@@ -44,6 +44,22 @@ public class LessonModelTest {
     }
 
     @Test
+    public void unenrolment_removesOnlyLink_rejectsMissingLink() {
+        Model model = new ModelManager();
+        model.addStudent(student);
+        model.addLesson(lesson);
+        model.filterStudentsByLesson(lesson);
+        model.enrolStudent(student, lesson);
+        assertEquals(List.of(student), model.getFilteredStudentList());
+        model.unenrolStudent(student, lesson);
+        assertTrue(model.getEnrolmentList().isEmpty());
+        assertTrue(model.getFilteredStudentList().isEmpty());
+        assertEquals(List.of(student), model.getAddressBook().getStudentList());
+        assertEquals(List.of(lesson), model.getAddressBook().getLessonList());
+        assertThrows(IllegalArgumentException.class, () -> model.unenrolStudent(student, lesson));
+    }
+
+    @Test
     public void filteringAndDeletion_keepReferencesConsistent() {
         Model model = new ModelManager();
         model.addStudent(student);

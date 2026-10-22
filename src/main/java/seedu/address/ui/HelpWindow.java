@@ -31,6 +31,7 @@ public class HelpWindow extends UiPart<Stage> {
             "  deletelesson INDEX",
             "  enrol s/STUDENT_INDEX l/LESSON_INDEX",
             "  listlessons [d/DAY]",
+            "  unenrol s/STUDENT_INDEX l/LESSON_INDEX",
             "",
             "General",
             "  clear",

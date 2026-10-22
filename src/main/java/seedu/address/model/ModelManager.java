@@ -170,6 +170,13 @@ public class ModelManager implements Model {
     }
 
     @Override
+    public void unenrolStudent(Student student, Lesson lesson) {
+        requireAllNonNull(student, lesson);
+        addressBook.removeEnrolment(new Enrolment(student.getId(), lesson.getId()));
+        refreshStudentLessonFilter();
+    }
+
+    @Override
     public ObservableList<Lesson> getFilteredLessonList() {
         return readOnlyFilteredLessons;
     }

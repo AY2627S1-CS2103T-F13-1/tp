@@ -54,6 +54,9 @@ public interface Model {
     /** Links existing records; rejects missing records and duplicate links. */
     void enrolStudent(Student student, Lesson lesson);
 
+    /** Removes an existing link, keeping both records; rejects a missing link. */
+    void unenrolStudent(Student student, Lesson lesson);
+
     /** Returns an unmodifiable observable lesson view. */
     ObservableList<Lesson> getFilteredLessonList();
 
