@@ -30,6 +30,7 @@ import seedu.address.logic.commands.EnrolCommand;
 import seedu.address.logic.commands.FindStudentCommand;
 import seedu.address.logic.commands.ListLessonsCommand;
 import seedu.address.logic.commands.ListStudentsCommand;
+import seedu.address.logic.commands.UnenrolCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.FindStudentCommandParser;
 import seedu.address.logic.parser.ParserUtil;
@@ -285,6 +286,24 @@ public class LogicManagerTest {
         ReadOnlyAddressBook saved = readSavedAddressBook();
         assertTrue(saved.getStudentList().isEmpty());
         assertTrue(saved.getEnrolmentList().isEmpty());
+        assertEquals(List.of(math), saved.getLessonList());
+    }
+
+    @Test
+    public void execute_unenrol_removesEnrolmentAndSaves() throws Exception {
+        Student aiden = new Student(new Name("Aiden Tan"), new Phone("91234567"), null);
+        Lesson math = new Lesson("Sec 3 A-Math", DayOfWeek.MONDAY, LocalTime.of(16, 0), LocalTime.of(18, 0));
+        model.addStudent(aiden);
+        model.addLesson(math);
+        model.enrolStudent(aiden, math);
+
+        CommandResult result = logic.execute(UnenrolCommand.COMMAND_WORD + " s/1 l/1");
+
+        assertEquals("Unenrolled Aiden Tan from Sec 3 A-Math (Mon 1600-1800)", result.getFeedbackToUser());
+        assertTrue(logic.getEnrolmentList().isEmpty());
+        ReadOnlyAddressBook saved = readSavedAddressBook();
+        assertTrue(saved.getEnrolmentList().isEmpty());
+        assertEquals(List.of(aiden), saved.getStudentList());
         assertEquals(List.of(math), saved.getLessonList());
     }
 

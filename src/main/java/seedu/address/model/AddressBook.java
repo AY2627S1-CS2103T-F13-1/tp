@@ -178,6 +178,14 @@ public class AddressBook implements ReadOnlyAddressBook {
         enrolments.add(enrolment);
     }
 
+    /** Removes a link; throws IllegalArgumentException if it does not exist. */
+    public void removeEnrolment(Enrolment enrolment) {
+        requireNonNull(enrolment);
+        if (!enrolments.remove(enrolment)) {
+            throw new IllegalArgumentException("Student is not enrolled in this lesson.");
+        }
+    }
+
     @Override
     public ObservableList<Lesson> getLessonList() {
         return readOnlyLessons;

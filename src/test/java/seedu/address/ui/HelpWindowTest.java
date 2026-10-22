@@ -31,6 +31,7 @@ public class HelpWindowTest {
                 assertTrue(helpMessage.getText().contains("addstudent"));
                 assertTrue(helpMessage.getText().contains("addlesson"));
                 assertTrue(helpMessage.getText().contains("listlessons"));
+                assertTrue(helpMessage.getText().contains("unenrol"));
                 assertTrue(helpMessage.getText().contains(HelpWindow.USERGUIDE_URL));
             } finally {
                 stage.close();

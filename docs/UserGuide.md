@@ -147,6 +147,21 @@ Format: `enrol s/STUDENT_INDEX l/LESSON_INDEX`
 Example:
 * `enrol s/1 l/2` enrols the first displayed student in the second displayed lesson.
 
+### Unenrolling a student: `unenrol`
+
+Removes a student from a lesson using the indices shown in the student and lesson panels. The student and lesson are both kept.
+
+Format: `unenrol s/STUDENT_INDEX l/LESSON_INDEX`
+
+* Both indices must be positive integers.
+* `STUDENT_INDEX` refers to the current displayed student list.
+* `LESSON_INDEX` refers to the current displayed lesson list.
+* The student must be enrolled in the lesson.
+* Both panel filters stay active. If the student list shows only that lesson's students, the unenrolled student disappears from it.
+
+Example:
+* `unenrol s/1 l/2` removes the first displayed student from the second displayed lesson.
+
 ### Deleting a lesson: `deletelesson`
 
 Deletes a lesson using its displayed index. Students are kept, but their enrolment in the deleted lesson is removed.
@@ -286,5 +301,6 @@ Action | Format, Examples
 **List lessons** | `listlessons [d/DAY]`<br> e.g., `listlessons d/mon`
 **Add lesson** | `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`<br> e.g., `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800`
 **Enrol student** | `enrol s/STUDENT_INDEX l/LESSON_INDEX`<br> e.g., `enrol s/1 l/2`
+**Unenrol student** | `unenrol s/STUDENT_INDEX l/LESSON_INDEX`<br> e.g., `unenrol s/1 l/2`
 **Delete lesson** | `deletelesson INDEX`<br> e.g., `deletelesson 2`
 **Help** | `help`
