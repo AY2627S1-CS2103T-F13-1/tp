@@ -216,6 +216,21 @@ public class AddLessonCommandTest {
     }
 
     @Test
+    public void execute_clashWithLessonPastMidnight_warningMarksNextDay() {
+        Lesson nightClass = lesson("Night Class", DayOfWeek.FRIDAY, "22:00", "01:00");
+        model.addLesson(nightClass);
+        expectedModel.addLesson(nightClass);
+        Lesson earlyClass = lesson("Early Class", DayOfWeek.SATURDAY, "00:30", "02:00");
+        expectedModel.addLesson(earlyClass);
+
+        // the full message is spelled out once to pin that clashing lessons are marked as in other lesson results
+        assertCommandSuccess(new AddLessonCommand(earlyClass), model,
+                "New lesson added: Early Class (Sat 0030-0200)\n"
+                + "Warning: clashes with Night Class (Fri 2200-0100) (next day)",
+                expectedModel);
+    }
+
+    @Test
     public void execute_clashHiddenByLessonFilter_warningStillGiven() {
         model.addLesson(A_MATH);
         model.updateFilteredLessonList(lesson -> false);
@@ -383,12 +398,12 @@ public class AddLessonCommandTest {
     }
 
     private static String getSuccessMessage(Lesson addedLesson, Lesson... clashingLessons) {
-        String message = String.format(AddLessonCommand.MESSAGE_SUCCESS, addedLesson);
+        String message = String.format(AddLessonCommand.MESSAGE_SUCCESS, Messages.format(addedLesson));
         if (clashingLessons.length == 0) {
             return message;
         }
         return message + "\n" + String.format(AddLessonCommand.MESSAGE_CLASH_WARNING,
-                Stream.of(clashingLessons).map(Lesson::toString).collect(Collectors.joining("; ")));
+                Stream.of(clashingLessons).map(Messages::format).collect(Collectors.joining("; ")));
     }
 
     /** Creates a lesson with a newly generated ID; times are given as {@code HH:mm}. */
