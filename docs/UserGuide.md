@@ -282,6 +282,22 @@ Examples:
 * `list` followed by `delete 2` deletes the 2nd person in the address book.
 * `find Betsy` followed by `delete 1` deletes the 1st person in the results of the `find` command.
 
+### Deleting a lesson: `deletelesson`
+
+Deletes the specified lesson. Students enrolled in it are kept, but are no longer enrolled in that lesson.
+
+Format: `deletelesson INDEX`
+
+* Deletes the lesson at the specified `INDEX`.
+* The index refers to the index number shown in the displayed lesson list.
+* The index **must be a positive integer** 1, 2, 3, …​
+* The result names the deleted lesson and lists the students who were unenrolled from it, if any.
+* If the students panel is showing only the students of that lesson (`liststudents l/INDEX`), all students are shown again.
+
+Examples:
+* `listlessons` followed by `deletelesson 2` deletes the 2nd lesson.
+* `listlessons d/mon` followed by `deletelesson 1` deletes the 1st lesson on Monday.
+
 ### Clearing all entries: `clear`
 
 Clears all entries from the address book.
@@ -348,6 +364,7 @@ Action | Format, Examples
 **Add lesson** | `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`<br> e.g., `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800`
 **Clear** | `clear`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
+**Delete lesson** | `deletelesson INDEX`<br> e.g., `deletelesson 2`
 **Edit** | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
 **Edit student** | `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `editstudent 1 p/92345678`
 **Edit lesson** | `editlesson INDEX [n/NAME] [d/DAY] [st/START_TIME] [et/END_TIME]`<br> e.g., `editlesson 1 d/tue st/1700 et/1900`

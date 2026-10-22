@@ -73,6 +73,11 @@ public final class Lesson {
         return endTime;
     }
 
+    /** Returns true if this lesson runs past midnight and ends on the day after its day. */
+    public boolean endsNextDay() {
+        return endTime.isBefore(startTime);
+    }
+
     /** Duplicate check: same name ignoring case, day and times, regardless of ID. */
     public boolean isSameLesson(Lesson other) {
         return other != null && name.equalsIgnoreCase(other.name) && day == other.day

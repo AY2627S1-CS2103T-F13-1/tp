@@ -205,7 +205,7 @@ public class LogicManagerTest {
     public void execute_addLessonPastMidnight_addsAndSavesLesson() throws Exception {
         CommandResult result = logic.execute(AddLessonCommand.COMMAND_WORD + " n/Night Class d/fri st/2200 et/0100");
 
-        assertEquals("New lesson added: Night Class (Fri 2200-0100)", result.getFeedbackToUser());
+        assertEquals("New lesson added: Night Class (Fri 2200-0100) (next day)", result.getFeedbackToUser());
         Lesson added = logic.getFilteredLessonList().getFirst();
         assertEquals(DayOfWeek.FRIDAY, added.getDay());
         assertEquals(LocalTime.of(22, 0), added.getStartTime());
@@ -282,7 +282,7 @@ public class LogicManagerTest {
 
         CommandResult result = logic.execute(DeleteLessonCommand.COMMAND_WORD + " 1");
 
-        assertEquals("Deleted Lesson: Sec 3 A-Math (Mon 1600-1800)", result.getFeedbackToUser());
+        assertEquals("Deleted lesson: Sec 3 A-Math (Mon 1600-1800)", result.getFeedbackToUser());
         assertEquals(1, logic.getFilteredLessonList().size());
         assertEquals("Sec 4 Physics (Wed 1900-2030)", logic.getFilteredLessonList().getFirst().toString());
         assertEquals(logic.getFilteredLessonList(), readSavedAddressBook().getLessonList());
@@ -296,8 +296,10 @@ public class LogicManagerTest {
         model.addLesson(math);
         model.enrolStudent(aiden, math);
 
-        logic.execute(DeleteLessonCommand.COMMAND_WORD + " 1");
+        CommandResult result = logic.execute(DeleteLessonCommand.COMMAND_WORD + " 1");
 
+        assertEquals("Deleted lesson: Sec 3 A-Math (Mon 1600-1800)\nUnenrolled 1 student(s): Aiden Tan",
+                result.getFeedbackToUser());
         assertTrue(logic.getFilteredLessonList().isEmpty());
         assertTrue(logic.getEnrolmentList().isEmpty());
         assertEquals(List.of(aiden), logic.getFilteredStudentList());

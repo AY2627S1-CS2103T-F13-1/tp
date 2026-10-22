@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import seedu.address.logic.parser.Prefix;
+import seedu.address.model.lesson.Lesson;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
 import seedu.address.model.student.Guardian;
@@ -60,6 +61,14 @@ public class Messages {
         return student.getName()
                 + "; Phone: " + student.getPhone().map(Phone::toString).orElse("-")
                 + "; Guardian: " + student.getGuardian().map(Guardian::toString).orElse("-");
+    }
+
+    /**
+     * Formats the {@code lesson} for display to the user, e.g. {@code Sec 3 A-Math (Mon 1600-1800)}.
+     * A lesson that ends the next day is marked {@code (next day)}, as on lesson cards.
+     */
+    public static String format(Lesson lesson) {
+        return lesson.endsNextDay() ? lesson + " (next day)" : lesson.toString();
     }
 
 }

@@ -629,7 +629,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 1.  Tutor requests to list lessons.
 2.  TutorReach shows a list of lessons.
 3.  Tutor requests to delete a specific lesson in the list.
-4.  TutorReach deletes the lesson, removes it from its students' records, and shows the deleted lesson's details.
+4.  TutorReach deletes the lesson, removes it from its students' records, and shows the deleted lesson's details and the students who were unenrolled.
 
     Use case ends.
 
@@ -869,13 +869,13 @@ testers are expected to do more *exploratory* testing.
       Expected: A lesson card for Sec 3 A-Math (Mon 1600-1800) with no students is added at the end of the lessons panel.
 
    1. Test case: the same command again<br>
-      Expected: No lesson is added. The status message shows `This lesson already exists`.
+      Expected: No lesson is added. The status message shows `This lesson already exists.`
 
    1. Test case: `addlesson n/sec 3  a-math d/MON st/1600 et/1800`<br>
-      Expected: No lesson is added. The day may be in any letter case, and the name matches the existing lesson's once case and extra spaces are ignored. The status message shows `This lesson already exists`.
+      Expected: No lesson is added. The day may be in any letter case, and the name matches the existing lesson's once case and extra spaces are ignored. The status message shows `This lesson already exists.`
 
    1. Test case: `addlesson n/Night Class d/fri st/2200 et/0100`<br>
-      Expected: A lesson card for Night Class (Fri 2200-0100) is added. An end time earlier than the start time means the lesson runs past midnight and ends on the next day.
+      Expected: A lesson card for Night Class (Fri 2200-0100) is added. An end time earlier than the start time means the lesson runs past midnight and ends on the next day, so the status message marks it `(next day)`.
 
    1. Test case: `addlesson n/Sec 3 A-Math d/mon st/1600 et/1600`<br>
       Expected: No lesson is added. The status message states that the end time must not be the same as the start time.
@@ -911,7 +911,7 @@ testers are expected to do more *exploratory* testing.
    1. Prerequisites: List all lessons using `listlessons`. The first lesson has at least one student enrolled.
 
    1. Test case: `deletelesson 1`<br>
-      Expected: The first lesson is deleted. Its enrolled students are kept, but the lesson is removed from their cards.
+      Expected: The first lesson is deleted. Its enrolled students are kept, but the lesson is removed from their cards. The status message lists the students who were unenrolled.
 
    1. Test case: `deletelesson 0`<br>
       Expected: No lesson is deleted. The status message shows the invalid command format error.
