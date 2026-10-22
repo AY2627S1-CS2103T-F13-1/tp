@@ -3,8 +3,14 @@ package seedu.address.commons.util;
 import static java.util.Objects.requireNonNull;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -32,7 +38,32 @@ public class JsonUtil {
             .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
 
     static <T> void serializeObjectToJsonFile(Path jsonFile, T objectToSerialize) throws IOException {
-        FileUtil.writeToFile(jsonFile, toJsonString(objectToSerialize));
+        // Serialize before touching disk, then replace only after the full write succeeds.
+        byte[] content = toJsonString(objectToSerialize).getBytes(StandardCharsets.UTF_8);
+        Path target = jsonFile.toAbsolutePath();
+        if (Files.exists(target) && !Files.isWritable(target)) {
+            throw new AccessDeniedException(target.toString());
+        }
+        Files.createDirectories(target.getParent());
+        Path temporary = Files.createTempFile(target.getParent(), ".tutorreach-", ".tmp");
+        try {
+            try (FileChannel channel = FileChannel.open(temporary, StandardOpenOption.WRITE)) {
+                ByteBuffer buffer = ByteBuffer.wrap(content);
+                while (buffer.hasRemaining()) {
+                    channel.write(buffer);
+                }
+                channel.force(true);
+            }
+            // Fail safely if the filesystem cannot provide atomic replacement.
+            Files.move(temporary, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException | RuntimeException e) {
+            try {
+                Files.deleteIfExists(temporary);
+            } catch (IOException cleanupError) {
+                e.addSuppressed(cleanupError);
+            }
+            throw e;
+        }
     }
 
     static <T> T deserializeObjectFromJsonFile(Path jsonFile, Class<T> classOfObjectToDeserialize)
@@ -66,6 +97,9 @@ public class JsonUtil {
             throw new DataLoadingException(e);
         }
 
+        if (jsonFile == null) {
+            throw new DataLoadingException(new IOException("JSON root must not be null."));
+        }
         return Optional.of(jsonFile);
     }
 

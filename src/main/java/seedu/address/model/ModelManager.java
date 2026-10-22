@@ -87,6 +87,25 @@ public class ModelManager implements Model {
     }
 
     @Override
+    public Runnable createRestorePoint() {
+        AddressBook snapshot = new AddressBook(addressBook);
+        Predicate<? super Person> personPredicate = filteredPersons.getPredicate();
+        Predicate<? super Student> studentPredicate = filteredStudents.getPredicate();
+        Predicate<? super Lesson> lessonPredicate = filteredLessons.getPredicate();
+        UUID lessonFilter = studentLessonFilter;
+        return () -> {
+            addressBook.resetData(snapshot);
+            studentLessonFilter = lessonFilter;
+            filteredPersons.setPredicate(personPredicate);
+            // Force reevaluation even when the predicate object has not changed.
+            filteredStudents.setPredicate(null);
+            filteredStudents.setPredicate(studentPredicate);
+            filteredLessons.setPredicate(lessonPredicate);
+            refreshStudentLessonFilter();
+        };
+    }
+
+    @Override
     public ReadOnlyAddressBook getAddressBook() {
         return addressBook;
     }

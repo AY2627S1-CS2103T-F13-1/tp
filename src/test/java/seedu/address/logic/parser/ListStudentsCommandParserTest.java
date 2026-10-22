@@ -26,6 +26,7 @@ public class ListStudentsCommandParserTest {
         // the tutor probably meant a lesson filter, so showing everyone would mislead
         assertParseFailure(parser, "2", MESSAGE_INVALID_FORMAT);
         assertParseFailure(parser, " all", MESSAGE_INVALID_FORMAT);
+        assertParseFailure(parser, "\u0000", MESSAGE_INVALID_FORMAT);
     }
 
     @Test
