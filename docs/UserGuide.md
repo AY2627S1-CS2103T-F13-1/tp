@@ -70,6 +70,34 @@ Shows a quick reference of TutorReach's commands and a link to the full User Gui
 
 Format: `help`
 
+### Adding a student: `addstudent`
+
+Adds a student, with an optional guardian.
+
+Format: `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`
+
+* At least one phone number is required: the student's own `p/`, or a guardian's `gp/`.
+* `gn/` and `gp/` must be given together.
+* Names may contain only letters, digits and spaces. Phone numbers may contain only digits and must be at least 3 digits long.
+* A student is a duplicate if another student has the same name, ignoring letter case and extra spaces, and shares at least one phone number with them (own or guardian's). Siblings with different names can share a guardian's number.
+* Adding a student clears the student filter, so all students are shown.
+
+Examples:
+* `addstudent n/Aiden Tan gn/Tan Mei Ling gp/91234567` adds a student whose guardian is the only contact.
+* `addstudent n/Chloe Lim p/98765432` adds a student with their own phone number and no guardian.
+
+### Deleting a student: `deletestudent`
+
+Deletes a student using their displayed index. The student is also removed from every lesson they are enrolled in. The lessons are kept, even if they become empty.
+
+Format: `deletestudent INDEX`
+
+* `INDEX` refers to the current displayed student list and must be a positive integer.
+* The student filter stays active after the deletion.
+
+Example:
+* `findstudent n/aiden` followed by `deletestudent 1` deletes the first student in the search results.
+
 ### Listing students: `liststudents`
 
 Shows all students, or only the students enrolled in a displayed lesson.
@@ -290,6 +318,8 @@ _Details coming soon ..._
 
 Action | Format, Examples
 --------|------------------
+**Add student** | `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `addstudent n/Aiden Tan gn/Tan Mei Ling gp/91234567`
+**Delete student** | `deletestudent INDEX`<br> e.g., `deletestudent 3`
 **Add** | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]…​` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague`
 **Clear** | `clear`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
