@@ -78,7 +78,7 @@ Format: `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`
 
 * At least one phone number is required: the student's own `p/`, or a guardian's `gp/`.
 * `gn/` and `gp/` must be given together.
-* Names may contain only letters, digits and spaces. Phone numbers may contain only digits and must be at least 3 digits long.
+* Names may contain only English letters, digits and spaces, so accented letters and symbols such as `-`, `'` and `/` (as in `s/o`) are not accepted. Phone numbers may contain only digits and must be at least 3 digits long.
 * A student is a duplicate if another student has the same name, ignoring letter case and extra spaces, and shares at least one phone number with them (own or guardian's). Siblings with different names can share a guardian's number.
 * Adding a student clears the student filter, so all students are shown.
 
@@ -122,7 +122,7 @@ Format: `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHON
 * `INDEX` must be a positive integer and refers to the index shown in the current student list.
 * At least one optional field must be provided. Fields that are not provided remain unchanged.
 * `gn/GUARDIAN_NAME` and `gp/GUARDIAN_PHONE` must be provided together. They replace the student's existing guardian details.
-* Names must contain only alphanumeric characters and spaces and must not be blank. Phone numbers must contain only digits and be at least three digits long.
+* Names must contain only English letters, digits and spaces, as for `addstudent`, and must not be blank. Phone numbers must contain only digits and be at least three digits long.
 * The edited student must not duplicate another student.
 * The student's identity and lesson enrolments are preserved.
 * The active student filter remains in effect and is re-evaluated after the edit. For example, a renamed student may disappear from a name search that they no longer match.
@@ -197,10 +197,18 @@ Format: `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`
 * `START_TIME` and `END_TIME` must use four digits in 24-hour time, such as `1600`.
 * If the end time is earlier than the start time, the lesson is treated as ending on the next day.
 * The start and end times must be different.
+* `NAME` must be 1 to 50 characters long, start with a letter or digit, and contain only English letters, digits, spaces and `- ' . , & ( ) +`.
+* A lesson is not added if another lesson has the same name, ignoring letter case and extra spaces, on the same day with the same start and end times.
+* If the new lesson's time overlaps other lessons, it is still added, since you may teach overlapping groups on purpose, and the result warns which lessons it clashes with. Lessons hidden by `listlessons d/DAY` count too. A lesson that starts exactly when another ends does not clash with it.
+* Adding a lesson clears the lesson filter, so all lessons are shown.
+* Results mark a lesson that ends on the next day with `(next day)`, for example `Late Physics (Fri 2300-0100) (next day)`.
 
 Examples:
 * `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800` adds a Monday lesson from 4:00 PM to 6:00 PM.
 * `addlesson n/Late Physics d/fri st/2300 et/0100` adds a Friday lesson that ends on Saturday.
+* `addlesson n/Sec 3 E-Math d/mon st/1700 et/1900`, after the first example, adds the lesson and warns that it clashes with `Sec 3 A-Math (Mon 1600-1800)`.
+
+![The result of addlesson with a clash warning, and the two lessons in the lessons panel](images/AddLessonClashWarning.png)
 
 ### Enrolling a student: `enrol`
 
@@ -238,9 +246,12 @@ Deletes a lesson using its displayed index. Students are kept, but their enrolme
 Format: `deletelesson INDEX`
 
 * `INDEX` refers to the current displayed lesson list and must be a positive integer.
+* The result names the deleted lesson and lists the students who were unenrolled from it, if any.
+* If the students panel is showing only the students of that lesson (`liststudents l/INDEX`), all students are shown again.
 
-Example:
+Examples:
 * `deletelesson 2` deletes the second displayed lesson.
+* `listlessons d/mon` followed by `deletelesson 1` deletes the first lesson on Monday.
 
 
 ### Adding a person: `add`
@@ -309,22 +320,6 @@ Format: `delete INDEX`
 Examples:
 * `list` followed by `delete 2` deletes the 2nd person in the address book.
 * `find Betsy` followed by `delete 1` deletes the 1st person in the results of the `find` command.
-
-### Deleting a lesson: `deletelesson`
-
-Deletes the specified lesson. Students enrolled in it are kept, but are no longer enrolled in that lesson.
-
-Format: `deletelesson INDEX`
-
-* Deletes the lesson at the specified `INDEX`.
-* The index refers to the index number shown in the displayed lesson list.
-* The index **must be a positive integer** 1, 2, 3, …​
-* The result names the deleted lesson and lists the students who were unenrolled from it, if any.
-* If the students panel is showing only the students of that lesson (`liststudents l/INDEX`), all students are shown again.
-
-Examples:
-* `listlessons` followed by `deletelesson 2` deletes the 2nd lesson.
-* `listlessons d/mon` followed by `deletelesson 1` deletes the 1st lesson on Monday.
 
 ### Clearing all entries: `clear`
 
@@ -405,8 +400,6 @@ Action | Format, Examples
 **List** | `list`
 **List students** | `liststudents [l/LESSON_INDEX]`<br> e.g., `liststudents l/1`
 **List lessons** | `listlessons [d/DAY]`<br> e.g., `listlessons d/mon`
-**Add lesson** | `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`<br> e.g., `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800`
 **Enrol student** | `enrol s/STUDENT_INDEX l/LESSON_INDEX`<br> e.g., `enrol s/1 l/2`
 **Unenrol student** | `unenrol s/STUDENT_INDEX l/LESSON_INDEX`<br> e.g., `unenrol s/1 l/2`
-**Delete lesson** | `deletelesson INDEX`<br> e.g., `deletelesson 2`
 **Help** | `help`
