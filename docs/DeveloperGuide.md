@@ -143,11 +143,14 @@ The diagram below shows the separate enrolment links used by the current model.
 
 <img src="images/StorageClassDiagram.png" width="550" />
 
-The `Storage` component,
-* can save both tutor book data and user preference data in JSON format, and read them back into corresponding objects.
-* is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonTutorBookStorage` and `JsonUserPrefsStorage` (one class per data file).
-* saves stable UUIDs with students and lessons, and saves each enrolment as a student UUID and lesson UUID pair. An enrolment that refers to a missing record makes the data file invalid.
-* depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
+The `Storage` component stores tutor data and user preferences in separate local JSON files.
+`StorageManager` delegates these operations to `JsonAddressBookStorage` and `JsonUserPrefsStorage`.
+`MainApp` supplies `data/addressbook.json` for tutor data and `preferences.json` for window preferences,
+both relative to the working directory from which the app is launched.
+
+Student and lesson records retain stable UUIDs. Each enrolment stores a student UUID and a lesson UUID,
+so editing contact details or lesson times does not break the relationship. Legacy `persons` records
+are retained separately; they are not converted into students.
 
 ### Common classes
 
@@ -158,6 +161,61 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 ## **Implementation**
 
 This section describes some noteworthy details on how certain features are implemented.
+
+### Saving and recovering tutor data
+
+#### Saving after a command
+
+Commands change the model; they do not write files directly. `LogicManager.execute()` controls saving:
+
+1. A command whose `changesStoredData()` returns `false` executes without checking or writing storage.
+   Listing, searching, help and exit follow this path. New commands default to `true`.
+1. For a potentially mutating command, the logic captures the data and display filters, then calls
+   `Storage.checkAddressBookSaveAllowed()` before executing the command. A blocked path prevents execution.
+1. After successful execution, the logic compares the data with the snapshot. It saves the whole address
+   book only if the stored records changed; a no-op such as clearing an empty book does not write a file.
+1. `StorageManager` delegates to `JsonAddressBookStorage`, which checks the path again and passes a
+   `JsonSerializableAddressBook` to `JsonUtil`. The second check also protects direct storage callers.
+1. `JsonUtil` serializes the data before writing, writes and flushes a temporary file in the destination
+   directory, then atomically replaces the destination. If atomic replacement is unsupported, saving fails
+   rather than falling back to a potentially partial overwrite. Failed writes attempt to remove the temporary file.
+
+If the save guard or write raises an `IOException`, `LogicManager` restores the captured data and filters
+and returns a `CommandException` for the existing message box. Permission failures receive a specific
+message. The guard only detects paths blocked by loading failures; it cannot predict later disk-write failures.
+
+The [save sequence diagram source](diagrams/SaveAddressBookSequenceDiagram.puml) shows the successful storage calls.
+
+#### Loading and partial recovery
+
+`JsonAddressBookStorage.readAddressBook()` reads the original bytes and passes the JSON to
+`AddressBookRecovery`. The root must be one JSON object. Missing or null record lists are treated as empty;
+a present, non-null list must be an array. Records are processed in the order `persons`, `students`,
+`lessons`, then `enrolments`, so enrolment references can be checked against the recovered records.
+
+Each record is validated independently through its JSON adapter and the model's duplicate checks.
+Invalid records, duplicates and enrolments referencing missing records are skipped. The first valid
+occurrence of a duplicate is retained. Skipped positions are recorded using one-based labels such as
+`students[2]`; the warning log includes these labels.
+
+| Load result | App behaviour | Protection of the original file |
+| --- | --- | --- |
+| File missing | Starts with sample data. | No file is written just by loading. |
+| Valid file | Loads the records. | No recovery backup is needed. |
+| Invalid individual records | Loads valid records and shows a skipped-record count and backup path. | Backs up the exact original bytes before returning recovered data. |
+| Malformed JSON, invalid list structure, read failure or backup failure | Starts empty with a warning. Read-only commands remain available. | Blocks saving to that normalized absolute path and rejects mutating commands before execution. |
+
+Recovery backups are stored beside the source as `<filename>.recovery-<unique suffix>.bak`. They are
+not overwritten or automatically deleted, and another recovery can create another backup. Loading does
+not rewrite the source: the next successful data-changing command saves the recovered records.
+A recovery backup may itself contain invalid data; it is a copy for inspection and repair, not necessarily
+an immediately usable restore point. Repair the file while the app is closed, then restart.
+
+Older students without IDs receive UUIDs in memory. These IDs are written on the next successful save;
+reopening an unchanged legacy file before that save generates new IDs. Lessons and enrolments require IDs.
+`JsonSerializableAddressBook.toModelType()` remains a strict conversion API; normal tutor-data loading
+uses `AddressBookRecovery` instead. Partial recovery applies to tutor data, not user preferences.
+
 
 ### Warning about clashing lessons
 
@@ -1008,16 +1066,21 @@ testers are expected to do more *exploratory* testing.
 
 ### Saving data
 
-1. Dealing with missing data files
+Use a disposable copy of the data file for these tests. The default path is `data/addressbook.json`
+relative to the app's working directory. Close the app before
+editing files, and retain a separate copy of the original data.
 
-   1. Close the app. Delete the `data/tutorreach.json` file in the folder containing the JAR file.
-
-   1. Launch the app.<br>
-      Expected: The app starts with the sample students and lessons.
-
-1. Dealing with corrupted data files
-
-   1. Close the app. Open `data/tutorreach.json` and make it invalid, e.g. delete a closing `}`, or change a student's enrolled lesson so that it matches no lesson in the lesson list.
-
-   1. Launch the app.<br>
-      Expected: The app starts with no students and no lessons, and does not crash.
+1. Missing file: move the data file aside and launch the app. Expect sample students and lessons.
+   Exit without changing data; no tutor data file should be created.
+1. Partial recovery: in a valid file containing at least two students, change one student's phone to
+   `invalid`, then restart. Expect that student and any enrolments referencing them to be skipped,
+   valid records to remain, and a warning containing the backup path. Check that the backup contains
+   the original invalid value. Listing and exiting must leave the source file unchanged.
+1. Saving recovered data: repeat the partial-recovery setup, then successfully add a new student.
+   Restart and verify that the recovered records and new student persist. The recovery backup must remain.
+1. Unrecoverable file: remove a closing `}` and restart. Expect an empty app and a warning that saving
+   is disabled. `liststudents`, `help` and `exit` must work. An `addstudent` command must report an error
+   without adding a student or changing the file. Restore the valid copy and restart to resume normal use.
+1. Save failure: with valid data loaded, make the destination unwritable using filesystem permissions
+   supported by your OS, then try adding a student. Expect a save error, unchanged stored data and
+   restoration of the previous displayed lists. Restore permissions before retrying.
