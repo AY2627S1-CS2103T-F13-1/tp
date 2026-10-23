@@ -331,6 +331,43 @@ Step 3. The command calls `TutorBook#isEnrolled()`. If the student is not enroll
 
 Step 4. Otherwise, the command calls `Model#unenrolStudent()`, which removes the enrolment from the `TutorBook`. If the student list is currently showing only one lesson's students, the filter is reapplied, so a student unenrolled from that lesson disappears from the list. Both panels stay filtered as before.
 
+### Finding students by name or phone number
+
+`findstudent` shows only the students who match a search, by setting a `StudentContainsKeywordsPredicate` as the filter of the student list.
+
+1. `AddressBookParser` first turns every Unicode space in the command, such as a no-break space pasted from a PDF or a messaging app, into a plain space, and drops zero-width characters (`StringUtil#normalizeSpaces()`).
+1. `FindStudentCommandParser` rejects a word that looks like a prefix but is not `n/`, `gn/` or `p/` (`ArgumentTokenizer#verifyNoUnknownPrefixes()`), so the error names it instead of blaming a valid value.
+1. It splits the `n/` and `gn/` values into keywords, each of which must be a valid name. It reads the `p/` value as one phone number: spaces, hyphens and a leading `+` are allowed, and only the digits are kept.
+1. `FindStudentCommand#execute()` passes the predicate to `Model#updateFilteredStudentList()`, which replaces any earlier search or lesson filter.
+
+The activity diagram below shows how the predicate decides whether a student matches. Name keywords ignore letter case and may match any part of a name.
+
+![How findstudent decides whether a student matches](images/FindStudentActivityDiagram.png)
+
+A searched number also matches a stored number of at least seven digits that it ends with, if no more than three digits come before it. This finds a number copied with its country code, such as `+65 9123 4567`, while a short stored number, such as `567`, is only found as part of a longer search.
+
+#### Design considerations:
+
+**Aspect: How to read the `p/` value:**
+
+* **Alternative 1 (current choice):** As one number, ignoring spaces, hyphens and a leading `+`.
+  * Pros: A number pasted as `9123 4567` or `+65 9123-4567` finds the right student.
+  * Cons: Several numbers cannot be searched at once.
+
+* **Alternative 2:** As separate keywords, any of which may match, like names.
+  * Pros: Several partial numbers can be searched at once.
+  * Cons: `9123 4567` finds every student whose number contains either half.
+
+**Aspect: How to match a number with a country code:**
+
+* **Alternative 1 (current choice):** Match a stored number that the search ends with, if at most three digits come before it.
+  * Pros: Works for any country code without a list of codes.
+  * Cons: A full number from another country with the same last digits would also match, which is unlikely for numbers of seven or more digits.
+
+* **Alternative 2:** Strip known country codes, such as `65`, before matching.
+  * Pros: Exact for the codes on the list.
+  * Cons: Needs a list of codes, and fails for codes not on it.
+
 ### \[Proposed\] Undo/redo feature
 
 #### Proposed Implementation
@@ -630,13 +667,13 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 1a. Tutor gives keywords for the guardian's name instead of, or as well as, the student's name.
 
-  Use case resumes at step 2, with TutorReach matching students against all the given keywords.
+  Use case resumes at step 2, with TutorReach showing the students who match at least one keyword for each name searched.
 
-* 1b. Tutor gives part of a phone number instead of, or as well as, names.
+* 1b. Tutor gives a phone number, or part of one, instead of, or as well as, names.
 
-  Use case resumes at step 2, with TutorReach matching students whose own or guardian's phone number contains it.
+  Use case resumes at step 2, with TutorReach matching students whose own or guardian's phone number contains it, ignoring spaces, hyphens and any country code in front of a full number.
 
-* 1c. No keywords are given, or a phone keyword contains a character other than a digit.
+* 1c. No keywords are given, or the phone number contains a character other than a digit, space, hyphen or leading `+`.
 
     * 1c1. TutorReach shows an error message.
 
@@ -1061,8 +1098,11 @@ testers are expected to do more *exploratory* testing.
    1. Test case: `findstudent p/9123`<br>
       Expected: Only students whose own phone number or guardian's phone number contains "9123" are shown.
 
+   1. Test case: `findstudent p/+65 9123 4567`<br>
+      Expected: Only students whose own phone number or guardian's phone number is 91234567 are shown. The spaces and the country code are ignored.
+
    1. Test case: `findstudent p/91a`<br>
-      Expected: The list is unchanged. The status message states that phone search keywords should only contain digits.
+      Expected: The list is unchanged. The status message states that a phone search should contain only digits, spaces, hyphens and a leading `+`.
 
 ### Saving data
 

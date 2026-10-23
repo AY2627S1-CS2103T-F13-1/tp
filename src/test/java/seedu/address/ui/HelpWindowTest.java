@@ -31,6 +31,10 @@ public class HelpWindowTest {
                 assertTrue(helpMessage.getText().contains("addstudent"));
                 assertTrue(helpMessage.getText().contains(
                         "editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]"));
+                assertTrue(helpMessage.getText().contains(
+                        "  findstudent [n/NAME_KEYWORDS...] [gn/GUARDIAN_NAME_KEYWORDS...] [p/PHONE]\n"));
+                assertEquals(1, helpMessage.getText().split("findstudent", -1).length - 1,
+                        "each command should be listed once");
                 assertTrue(helpMessage.getText().contains("addlesson"));
                 assertTrue(helpMessage.getText().contains(
                         "editlesson INDEX [n/NAME] [d/DAY] [st/START_TIME] [et/END_TIME]"));

@@ -1,6 +1,7 @@
 package seedu.address.logic.parser;
 
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
+import static seedu.address.logic.Messages.MESSAGE_INVALID_LESSON_DISPLAYED_INDEX;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_LESSON;
@@ -52,9 +53,11 @@ public class DeleteLessonCommandParserTest {
     }
 
     @Test
-    public void parse_integerOverflow_throwsParseException() {
-        assertParseFailure(parser, "2147483648", MESSAGE_INVALID_FORMAT);
-        assertParseFailure(parser, "99999999999999999999", MESSAGE_INVALID_FORMAT);
+    public void parse_indexTooLargeForAnyList_throwsInvalidIndex() {
+        // a well-formed index beyond what an int holds is out of range, not a format error
+        assertParseFailure(parser, "2147483648", MESSAGE_INVALID_LESSON_DISPLAYED_INDEX);
+        assertParseFailure(parser, " 99999999999999999999 ", MESSAGE_INVALID_LESSON_DISPLAYED_INDEX);
+        assertParseFailure(parser, "0099999999999", MESSAGE_INVALID_LESSON_DISPLAYED_INDEX);
     }
 
     @Test

@@ -26,6 +26,8 @@ public class AddLessonCommandParser implements Parser<AddLessonCommand> {
      * @throws ParseException if the user input does not conform to the expected format
      */
     public AddLessonCommand parse(String args) throws ParseException {
+        ArgumentTokenizer.verifyNoUnknownPrefixes(args, AddLessonCommand.COMMAND_WORD,
+                PREFIX_NAME, PREFIX_DAY, PREFIX_START_TIME, PREFIX_END_TIME);
         ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(
                 args, PREFIX_NAME, PREFIX_DAY, PREFIX_START_TIME, PREFIX_END_TIME);
 

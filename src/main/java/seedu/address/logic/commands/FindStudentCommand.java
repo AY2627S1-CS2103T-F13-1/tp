@@ -25,8 +25,8 @@ public class FindStudentCommand extends Command {
             + ": Finds students matching all given prefixes (case-insensitive, partial matches).\n"
             + "Parameters: [" + PREFIX_NAME + "NAME_KEYWORDS...] "
             + "[" + PREFIX_GUARDIAN_NAME + "GUARDIAN_NAME_KEYWORDS...] "
-            + "[" + PREFIX_PHONE + "PHONE_DIGITS...] (at least one)\n"
-            + PREFIX_PHONE + " searches the student's and the guardian's phone numbers.\n"
+            + "[" + PREFIX_PHONE + "PHONE] (at least one)\n"
+            + PREFIX_PHONE + " takes one number, or part of one, and searches student and guardian phones.\n"
             + "Example: " + COMMAND_WORD + " " + PREFIX_NAME + "aid " + PREFIX_GUARDIAN_NAME + "tan "
             + PREFIX_PHONE + "4567";
 

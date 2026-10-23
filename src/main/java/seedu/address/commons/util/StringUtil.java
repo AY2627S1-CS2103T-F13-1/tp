@@ -12,6 +12,21 @@ import java.util.Arrays;
  */
 public class StringUtil {
 
+    // Unicode space, line and paragraph separators (such as the no-break space U+00A0), tabs and next-line
+    private static final String UNICODE_SPACE_REGEX = "[\\p{Z}\\t\\u0085]";
+    // zero-width space, zero-width non-joiner and joiner, word joiner and byte order mark
+    private static final String INVISIBLE_CHARACTER_REGEX = "[\\u200B-\\u200D\\u2060\\uFEFF]";
+
+    /**
+     * Returns {@code text} with every Unicode space, such as a no-break or ideographic space, replaced by a plain
+     * space, and invisible zero-width characters removed. Text pasted from PDFs, web pages or messaging apps often
+     * contains them, though it looks the same as typed text.
+     */
+    public static String normalizeSpaces(String text) {
+        requireNonNull(text);
+        return text.replaceAll(INVISIBLE_CHARACTER_REGEX, "").replaceAll(UNICODE_SPACE_REGEX, " ");
+    }
+
     /**
      * Returns true if the {@code sentence} contains the {@code word}.
      *   Ignores case, but a full word match is required.

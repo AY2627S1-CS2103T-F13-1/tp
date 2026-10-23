@@ -7,6 +7,9 @@ import static seedu.address.logic.Messages.MESSAGE_INVALID_LESSON_DISPLAYED_INDE
 import static seedu.address.logic.Messages.MESSAGE_INVALID_STUDENT_DISPLAYED_INDEX;
 import static seedu.address.logic.Messages.MESSAGE_STUDENTS_LISTED_OVERVIEW;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_GUARDIAN_NAME;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.StudentTestUtil.assertStudentDetailsEqual;
 
@@ -137,12 +140,19 @@ public class LogicManagerTest {
                 String.format(MESSAGE_STUDENTS_LISTED_OVERVIEW, 1), expectedModel);
         assertEquals(List.of(aiden), logic.getFilteredStudentList());
 
-        // aiden is found through the guardian's phone, ryan through their own
+        // aiden is found through the guardian's phone, typed with a space as it is often written
         expectedModel.updateFilteredStudentList(
-                new StudentContainsKeywordsPredicate(List.of(), List.of(), List.of("4567", "0283")));
-        assertCommandSuccess(FindStudentCommand.COMMAND_WORD + " p/4567 0283",
-                String.format(MESSAGE_STUDENTS_LISTED_OVERVIEW, 2), expectedModel);
-        assertEquals(List.of(aiden, ryan), logic.getFilteredStudentList());
+                new StudentContainsKeywordsPredicate(List.of(), List.of(), List.of("91234567")));
+        assertCommandSuccess(FindStudentCommand.COMMAND_WORD + " p/9123 4567",
+                String.format(MESSAGE_STUDENTS_LISTED_OVERVIEW, 1), expectedModel);
+        assertEquals(List.of(aiden), logic.getFilteredStudentList());
+
+        // ryan is found through their own phone, typed as a caller ID shows it
+        expectedModel.updateFilteredStudentList(
+                new StudentContainsKeywordsPredicate(List.of(), List.of(), List.of("6593210283")));
+        assertCommandSuccess(FindStudentCommand.COMMAND_WORD + " p/+65 9321-0283",
+                String.format(MESSAGE_STUDENTS_LISTED_OVERVIEW, 1), expectedModel);
+        assertEquals(List.of(ryan), logic.getFilteredStudentList());
     }
 
     @Test
@@ -152,7 +162,8 @@ public class LogicManagerTest {
         assertParseException(FindStudentCommand.COMMAND_WORD + " n/",
                 FindStudentCommandParser.MESSAGE_EMPTY_KEYWORDS);
         assertParseException(FindStudentCommand.COMMAND_WORD + " n/Aiden gp/91234567",
-                String.format(FindStudentCommandParser.MESSAGE_INVALID_KEYWORD, "gp/91234567"));
+                Messages.getErrorMessageForUnknownPrefix(FindStudentCommand.COMMAND_WORD, "gp/",
+                        PREFIX_NAME, PREFIX_GUARDIAN_NAME, PREFIX_PHONE));
         assertParseException(FindStudentCommand.COMMAND_WORD + " p/91a",
                 String.format(FindStudentCommandParser.MESSAGE_INVALID_PHONE_KEYWORD, "91a"));
     }

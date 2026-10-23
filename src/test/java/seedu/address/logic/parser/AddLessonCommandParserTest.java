@@ -130,14 +130,16 @@ public class AddLessonCommandParserTest {
 
     @Test
     public void parse_wrongPrefix_throwsParseException() {
-        // prefixes are case-sensitive
-        assertParseFailure(parser, " N/Sec 3 A-Math d/mon st/1600 et/1800", MESSAGE_INVALID_FORMAT);
-        assertParseFailure(parser, " n/Sec 3 A-Math D/mon st/1600 et/1800", MESSAGE_INVALID_FORMAT);
-        assertParseFailure(parser, " n/Sec 3 A-Math d/mon ST/1600 et/1800", MESSAGE_INVALID_FORMAT);
-        assertParseFailure(parser, " n/Sec 3 A-Math d/mon st/1600 ET/1800", MESSAGE_INVALID_FORMAT);
+        // prefixes are case-sensitive, so the error names the prefix that was not recognised
+        assertParseFailure(parser, " N/Sec 3 A-Math d/mon st/1600 et/1800", unknownPrefix("N/"));
+        assertParseFailure(parser, " n/Sec 3 A-Math D/mon st/1600 et/1800", unknownPrefix("D/"));
+        assertParseFailure(parser, " n/Sec 3 A-Math d/mon ST/1600 et/1800", unknownPrefix("ST/"));
+        assertParseFailure(parser, " n/Sec 3 A-Math d/mon st/1600 ET/1800", unknownPrefix("ET/"));
 
-        // similar prefixes that are not the lesson ones
-        assertParseFailure(parser, " n/Sec 3 A-Math d/mon s/1600 e/1800", MESSAGE_INVALID_FORMAT);
+        // similar prefixes that are not the lesson ones; the first is named
+        assertParseFailure(parser, " n/Sec 3 A-Math d/mon s/1600 e/1800", unknownPrefix("s/"));
+
+        // longer words are not taken for prefixes, so the missing st/ and et/ are reported
         assertParseFailure(parser, " n/Sec 3 A-Math d/mon start/1600 end/1800", MESSAGE_INVALID_FORMAT);
 
         // a prefix must follow a space to be read as one
@@ -251,10 +253,32 @@ public class AddLessonCommandParserTest {
     @Test
     public void parse_unsupportedPrefixOrTrailingText_throwsParseException() {
         // text that is not a lesson field is never silently dropped; it makes the field before it invalid
-        assertThrows(ParseException.class, () -> parser.parse(" n/Math d/mon st/1600 et/1800 p/91234567"));
         assertThrows(ParseException.class, () -> parser.parse(" n/Math d/mon st/1600 et/1800 extra"));
-        assertThrows(ParseException.class, () -> parser.parse(" n/Math gn/Tan d/mon st/1600 et/1800"));
-        assertThrows(ParseException.class, () -> parser.parse(" n/Math d/mon l/1 st/1600 et/1800"));
+    }
+
+    @Test
+    public void parse_unsupportedPrefix_namesThatPrefix() {
+        // the error names the prefix, rather than the field whose value it ended up in
+        assertParseFailure(parser, " n/Math d/mon st/1600 et/1800 p/91234567", unknownPrefix("p/"));
+        assertParseFailure(parser, " n/Math gn/Tan d/mon st/1600 et/1800", unknownPrefix("gn/"));
+        assertParseFailure(parser, " n/Math d/mon l/1 st/1600 et/1800", unknownPrefix("l/"));
+
+        // a mistyped prefix is reported instead of the missing field it was meant to be
+        assertParseFailure(parser, " n/Math d/mon st/1600 e/1800", unknownPrefix("e/"));
+    }
+
+    @Test
+    public void parse_slashInLessonName_reportsNameRule() {
+        // a slash word inside a name is not a prefix, so the error is the lesson-name rule
+        for (String name : List.of("Sec 3 Physics/Chem", "Sec 3 A/E Math", "Math and/or Science", "Physics/Chem")) {
+            assertParseFailure(parser, " n/" + name + DAY_DESC + START_DESC + END_DESC,
+                    Lesson.MESSAGE_NAME_CONSTRAINTS);
+        }
+    }
+
+    private static String unknownPrefix(String prefix) {
+        return Messages.getErrorMessageForUnknownPrefix(AddLessonCommand.COMMAND_WORD, prefix,
+                PREFIX_NAME, PREFIX_DAY, PREFIX_START_TIME, PREFIX_END_TIME);
     }
 
     /** Creates the command expected for a lesson with these details; times are given as {@code HH:mm}. */

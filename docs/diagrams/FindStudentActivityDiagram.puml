@@ -1,0 +1,44 @@
+@startuml
+skin rose
+skinparam ActivityFontSize 15
+skinparam ArrowFontSize 12
+start
+:Test one student against the search;
+
+'Since the beta syntax does not support placing the condition outside the
+'diamond we place it as the true branch instead.
+
+if () then ([n/ given])
+    if () then ([no keyword is part of
+    the student's name])
+        :Not matched;
+        stop
+    else ([a keyword is])
+    endif
+else ([no n/])
+endif
+
+if () then ([gn/ given])
+    if () then ([no guardian, or no keyword is
+    part of the guardian's name])
+        :Not matched;
+        stop
+    else ([a keyword is])
+    endif
+else ([no gn/])
+endif
+
+if () then ([p/ given])
+    if () then ([neither phone contains the digits,
+    nor do they end with a full phone
+    after a country code])
+        :Not matched;
+        stop
+    else ([a phone matches])
+    endif
+else ([no p/])
+endif
+
+:Matched;
+stop
+@enduml
