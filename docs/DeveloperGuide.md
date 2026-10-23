@@ -826,7 +826,6 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 7.  Should run from a single JAR file without an installer, and the JAR file should not exceed 100MB.
 8.  Should be used by a single user on one computer; it does not need to support sharing data between users.
 9.  The GUI should work well (i.e., no resizing needed to use all features) for screen resolutions of 1920x1080 and higher at screen scales of 100% and 125%, and be usable (i.e., all features can be used, even if not optimally) at 1280x720 and higher at a screen scale of 150%.
-10. Should show an error message that states the problem and the correct command format when a command is invalid, instead of crashing.
 
 ### Glossary
 
