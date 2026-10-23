@@ -7,6 +7,9 @@ import static seedu.address.logic.Messages.MESSAGE_INVALID_LESSON_DISPLAYED_INDE
 import static seedu.address.logic.Messages.MESSAGE_INVALID_STUDENT_DISPLAYED_INDEX;
 import static seedu.address.logic.Messages.MESSAGE_STUDENTS_LISTED_OVERVIEW;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_GUARDIAN_NAME;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.StudentTestUtil.assertStudentDetailsEqual;
 
@@ -159,7 +162,8 @@ public class LogicManagerTest {
         assertParseException(FindStudentCommand.COMMAND_WORD + " n/",
                 FindStudentCommandParser.MESSAGE_EMPTY_KEYWORDS);
         assertParseException(FindStudentCommand.COMMAND_WORD + " n/Aiden gp/91234567",
-                String.format(FindStudentCommandParser.MESSAGE_INVALID_KEYWORD, "gp/91234567"));
+                Messages.getErrorMessageForUnknownPrefix(FindStudentCommand.COMMAND_WORD, "gp/",
+                        PREFIX_NAME, PREFIX_GUARDIAN_NAME, PREFIX_PHONE));
         assertParseException(FindStudentCommand.COMMAND_WORD + " p/91a",
                 String.format(FindStudentCommandParser.MESSAGE_INVALID_PHONE_KEYWORD, "91a"));
     }
