@@ -47,12 +47,12 @@ public class UnenrolCommand extends Command {
         Lesson lesson = model.getFilteredLessonList().get(lessonIndex.getZeroBased());
         if (!model.getAddressBook().isEnrolled(student, lesson)) {
             logger.fine("Rejected unenrol: " + student.getName() + " is not enrolled in " + lesson);
-            throw new CommandException(String.format(MESSAGE_NOT_ENROLLED, student.getName(), lesson));
+            throw new CommandException(String.format(MESSAGE_NOT_ENROLLED, student.getName(), Messages.format(lesson)));
         }
         model.unenrolStudent(student, lesson);
         assert !model.getAddressBook().isEnrolled(student, lesson) : "Unenrolled student should not be enrolled";
         logger.info("Unenrolled " + student.getName() + " from " + lesson);
-        return new CommandResult(String.format(MESSAGE_SUCCESS, student.getName(), lesson));
+        return new CommandResult(String.format(MESSAGE_SUCCESS, student.getName(), Messages.format(lesson)));
     }
 
     @Override

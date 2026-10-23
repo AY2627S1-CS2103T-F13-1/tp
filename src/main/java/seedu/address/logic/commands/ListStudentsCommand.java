@@ -51,7 +51,7 @@ public class ListStudentsCommand extends Command {
             model.filterStudentsByLesson(model.getFilteredLessonList().get(lessonIndex.getZeroBased()));
         }
         return new CommandResult(lessonIndex == null ? MESSAGE_SUCCESS : "Listed students enrolled in "
-                + model.getFilteredLessonList().get(lessonIndex.getZeroBased()));
+                + Messages.format(model.getFilteredLessonList().get(lessonIndex.getZeroBased())));
     }
 
     @Override

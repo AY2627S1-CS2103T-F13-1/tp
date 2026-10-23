@@ -39,10 +39,10 @@ public class EnrolCommand extends Command {
         Student student = model.getFilteredStudentList().get(studentIndex.getZeroBased());
         Lesson lesson = model.getFilteredLessonList().get(lessonIndex.getZeroBased());
         if (model.getAddressBook().isEnrolled(student, lesson)) {
-            throw new CommandException(String.format(MESSAGE_DUPLICATE, student.getName(), lesson));
+            throw new CommandException(String.format(MESSAGE_DUPLICATE, student.getName(), Messages.format(lesson)));
         }
         model.enrolStudent(student, lesson);
-        return new CommandResult(String.format(MESSAGE_SUCCESS, student.getName(), lesson));
+        return new CommandResult(String.format(MESSAGE_SUCCESS, student.getName(), Messages.format(lesson)));
     }
 
     @Override
