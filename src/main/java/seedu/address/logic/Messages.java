@@ -1,5 +1,6 @@
 package seedu.address.logic;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -24,6 +25,7 @@ public class Messages {
     public static final String MESSAGE_STUDENTS_LISTED_OVERVIEW = "%1$d student(s) listed!";
     public static final String MESSAGE_DUPLICATE_FIELDS =
                 "Multiple values specified for the following single-valued field(s): ";
+    public static final String MESSAGE_UNKNOWN_PREFIX = "%1$s takes only %2$s, not %3$s.";
 
     /**
      * Returns an error message indicating the duplicate prefixes.
@@ -35,6 +37,21 @@ public class Messages {
                 Stream.of(duplicatePrefixes).map(Prefix::toString).collect(Collectors.toSet());
 
         return MESSAGE_DUPLICATE_FIELDS + String.join(" ", duplicateFields);
+    }
+
+    /**
+     * Returns an error message saying that {@code commandWord} does not take {@code unknownPrefix}, and listing
+     * the {@code knownPrefixes} it takes, e.g. {@code findstudent takes only n/, gn/ and p/, not gp/.}
+     */
+    public static String getErrorMessageForUnknownPrefix(String commandWord, String unknownPrefix,
+            Prefix... knownPrefixes) {
+        assert knownPrefixes.length > 0;
+
+        List<String> prefixes = Stream.of(knownPrefixes).map(Prefix::toString).toList();
+        String knownPrefixList = prefixes.size() == 1
+                ? prefixes.getFirst()
+                : String.join(", ", prefixes.subList(0, prefixes.size() - 1)) + " and " + prefixes.getLast();
+        return String.format(MESSAGE_UNKNOWN_PREFIX, commandWord, knownPrefixList, unknownPrefix);
     }
 
     /**
