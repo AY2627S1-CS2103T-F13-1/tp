@@ -193,8 +193,8 @@ public class AddLessonCommandParserTest {
 
     @Test
     public void parse_invalidDay_throwsParseException() {
-        // "weds" is the Developer Guide's example of an invalid day, as it is not the start of "wednesday"
-        for (String day : List.of("", "weds", "mo", "m", "mon tue", "1")) {
+        // "funday" is the Developer Guide's example of an invalid day
+        for (String day : List.of("", "funday", "mo", "m", "mon tue", "1")) {
             assertParseFailure(parser, NAME_DESC + " d/" + day + START_DESC + END_DESC,
                     ParserUtil.MESSAGE_INVALID_DAY);
         }
@@ -241,11 +241,11 @@ public class AddLessonCommandParserTest {
     public void parse_severalProblemsAtOnce_throwsParseException() {
         // the Developer Guide does not say which problem is reported first, so only the rejection is checked
         List<String> inputs = List.of(
-                " n/-Math d/weds st/4pm et/5pm", // every value invalid
+                " n/-Math d/funday st/4pm et/5pm", // every value invalid
                 " n/-Math d/mon st/1600 et/1600", // invalid name, and end same as start
-                " n/Math d/weds st/1600 et/1600", // invalid day, and end same as start
+                " n/Math d/funday st/1600 et/1600", // invalid day, and end same as start
                 " n/Math d/mon st/1800 et/4pm", // invalid end time, so the times cannot be compared
-                " n/-Math d/weds st/4pm", // missing field and invalid values
+                " n/-Math d/funday st/4pm", // missing field and invalid values
                 " n/Math n/Science d/mon st/1600", // missing field and repeated field
                 " n/-Math n/Math d/mon st/1600 et/1800", // repeated field and invalid value
                 " n/Math d/mon st/4pm st/5pm et/1800"); // repeated field with invalid values

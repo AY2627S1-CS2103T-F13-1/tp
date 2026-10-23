@@ -255,6 +255,14 @@ public class ParserUtilTest {
     }
 
     @Test
+    public void parseDay_weds_returnsWednesday() throws Exception {
+        // "weds" is as common as "tues" and "thurs", but is not the start of "wednesday"
+        assertEquals(DayOfWeek.WEDNESDAY, ParserUtil.parseDay("weds"));
+        assertEquals(DayOfWeek.WEDNESDAY, ParserUtil.parseDay("Weds"));
+        assertEquals(DayOfWeek.WEDNESDAY, ParserUtil.parseDay(" WEDS "));
+    }
+
+    @Test
     public void parseDay_longerStartOfName_returnsDay() throws Exception {
         // any start of the name with at least three letters, such as the common "tues" and "thurs"
         assertEquals(DayOfWeek.MONDAY, ParserUtil.parseDay("mond"));
@@ -271,7 +279,7 @@ public class ParserUtilTest {
     public void parseDay_invalidValue_throwsParseException() {
         List<String> invalidDays = List.of(
                 // empty, too short, or not the start of a day's name
-                "", WHITESPACE, "m", "mo", "sa", "mons", "mondays", "monday1", "weds", "tuesdays",
+                "", WHITESPACE, "m", "mo", "sa", "mons", "mondays", "monday1", "wends", "tuesdays",
                 // day numbers
                 "0", "1", "7",
                 // more than one day

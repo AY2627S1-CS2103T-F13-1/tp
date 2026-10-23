@@ -41,7 +41,7 @@ public class ListLessonsCommandParserTest {
 
     @Test
     public void parse_invalidDay_throwsParseException() {
-        for (String args : new String[] {" d/weds", " d/mo", " d/x", " d/1", " d/mon extra"}) {
+        for (String args : new String[] {" d/funday", " d/mo", " d/x", " d/1", " d/mon extra"}) {
             assertParseFailure(parser, args, MESSAGE_INVALID_DAY);
         }
     }
