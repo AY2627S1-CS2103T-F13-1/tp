@@ -86,6 +86,7 @@ public class FindStudentCommandParserTest {
 
         // a + only at the start, and at least one digit
         assertParseFailure(parser, " p/91+23", invalidPhoneKeyword("91+23"));
+        assertParseFailure(parser, " p/+-", invalidPhoneKeyword("+-"));
         assertParseFailure(parser, " p/+", invalidPhoneKeyword("+"));
         assertParseFailure(parser, " p/- -", invalidPhoneKeyword("- -"));
 
@@ -173,6 +174,12 @@ public class FindStudentCommandParserTest {
         // a country code is kept, so that the full number can be matched against stored numbers
         assertParseSuccess(parser, " p/+65 9123 4567", new FindStudentCommand(
                 new StudentContainsKeywordsPredicate(List.of(), List.of(), List.of("6591234567"))));
+        assertParseSuccess(parser, " p/+ 65 9123 4567", new FindStudentCommand(
+                new StudentContainsKeywordsPredicate(List.of(), List.of(), List.of("6591234567"))));
+
+        // copying the end of 9123-4567 can bring its hyphen along
+        assertParseSuccess(parser, " p/-4567", new FindStudentCommand(
+                new StudentContainsKeywordsPredicate(List.of(), List.of(), List.of("4567"))));
 
         // single digit and leading zeros are kept as typed
         assertParseSuccess(parser, " p/0", new FindStudentCommand(

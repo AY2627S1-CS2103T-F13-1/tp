@@ -139,7 +139,7 @@ Format: `findstudent [n/NAME_KEYWORDS...] [gn/GUARDIAN_NAME_KEYWORDS...] [p/PHON
 
 * At least one of `n/`, `gn/` and `p/` must be given, and each can be given at most once.
 * `n/` searches students' own names, and `gn/` searches their guardians' names.
-* `p/` takes one phone number, or part of one, and searches both the student's own phone number and their guardian's phone number. You can type the number as it appears elsewhere: spaces and hyphens are ignored, and a full number may start with a country code. For example, `p/9123 4567` and `p/+65 9123-4567` both find `91234567`.
+* `p/` takes one phone number, or part of one, and searches both the student's own phone number and their guardian's phone number. You can type the number as it appears elsewhere: spaces and hyphens are ignored, and a full number may start with a country code of up to three digits, such as `+65`. For example, `p/9123 4567` and `p/+65 9123-4567` both find `91234567`.
 * The search is case-insensitive, and a keyword can match any part of a name or number; for example, `aid` matches `Aiden` and `4567` matches `91234567`.
 * Within `n/` or `gn/`, a student needs to match only one of the keywords; for example, `n/aid chl` finds both `Aiden Tan` and `Chloe Lim`.
 * If more than one prefix is given, a student must match all of them.

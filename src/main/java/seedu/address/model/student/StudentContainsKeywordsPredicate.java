@@ -14,12 +14,16 @@ import seedu.address.model.person.Phone;
 /**
  * Tests that a {@code Student}'s name, their guardian's name and their phone numbers match the given keywords.
  * Name matching is case-insensitive, and a keyword may match any part of a name. A phone keyword may match
- * any part of the student's own phone number or their guardian's phone number, or end with the whole number,
- * as when it starts with a country code. Within each list, any one keyword may match.
+ * any part of the student's own phone number or their guardian's phone number, or be a whole number of at least
+ * seven digits with a country code of up to three digits in front. Within each list, any one keyword may match.
  * When several lists are non-empty, the student must match all of them. An empty list places no condition
  * on that detail, but a predicate with no keywords at all matches no student.
  */
 public class StudentContainsKeywordsPredicate implements Predicate<Student> {
+    // a full number is at least this long, so that a short stored number does not match many keywords
+    private static final int MIN_DIGITS_FOR_COUNTRY_CODE_MATCH = 7;
+    private static final int MAX_COUNTRY_CODE_DIGITS = 3;
+
     private final List<String> nameKeywords;
     private final List<String> guardianNameKeywords;
     private final List<String> phoneKeywords;
@@ -70,11 +74,19 @@ public class StudentContainsKeywordsPredicate implements Predicate<Student> {
     }
 
     /**
-     * Returns true if {@code number} contains any of {@code phoneKeywords}, or a keyword ends with the whole
-     * number, as when the keyword starts with a country code.
+     * Returns true if {@code number} contains any of {@code phoneKeywords}, or a keyword is the whole number with
+     * a country code of up to three digits in front of it.
      */
     private static boolean matchesAnyPhoneKeyword(String number, List<String> phoneKeywords) {
-        return toSearchTerms(phoneKeywords).anyMatch(keyword -> number.contains(keyword) || keyword.endsWith(number));
+        return toSearchTerms(phoneKeywords)
+                .anyMatch(keyword -> number.contains(keyword) || hasCountryCodeBefore(keyword, number));
+    }
+
+    private static boolean hasCountryCodeBefore(String keyword, String number) {
+        int countryCodeLength = keyword.length() - number.length();
+        return number.length() >= MIN_DIGITS_FOR_COUNTRY_CODE_MATCH
+                && countryCodeLength > 0 && countryCodeLength <= MAX_COUNTRY_CODE_DIGITS
+                && keyword.endsWith(number);
     }
 
     /** Returns the keywords that are not blank, trimmed and in lower case. */
