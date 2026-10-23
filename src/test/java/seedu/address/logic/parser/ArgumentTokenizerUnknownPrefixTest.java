@@ -34,6 +34,15 @@ public class ArgumentTokenizerUnknownPrefixTest {
     }
 
     @Test
+    public void verifyNoUnknownPrefixes_slashWordThatIsNotAPrefix_doesNotThrow() {
+        // class names such as Physics/Chem or A/E Math are content, left to the value's own rules
+        assertNoUnknownPrefix(" n/Sec 3 Physics/Chem");
+        assertNoUnknownPrefix(" n/Sec 3 A/E Math");
+        assertNoUnknownPrefix(" n/Math and/or Science");
+        assertNoUnknownPrefix(" n/Math start/1600");
+    }
+
+    @Test
     public void verifyNoUnknownPrefixes_unknownPrefixInValue_throwsParseException() {
         // the tokenizer reads a prefix it was not given as part of the value before it
         assertUnknownPrefix(" n/Aiden gp/91234567", "gp/");
@@ -49,6 +58,11 @@ public class ArgumentTokenizerUnknownPrefixTest {
 
         // prefixes are case-sensitive, so an upper-case prefix is unknown
         assertUnknownPrefix(" N/Aiden", "N/");
+        assertUnknownPrefix(" n/Aiden GP/9123", "GP/");
+
+        // one or two lower-case letters, such as AB3's e/ and t/, are taken for a prefix too
+        assertUnknownPrefix(" n/Aiden e/aiden@example.com", "e/");
+        assertUnknownPrefix(" n/Aiden xy/1", "xy/");
     }
 
     @Test
