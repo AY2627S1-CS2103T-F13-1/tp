@@ -42,6 +42,8 @@ public class ListStudentsCommandTest {
             LocalTime.of(16, 0), LocalTime.of(18, 0));
     private static final Lesson PHYSICS = new Lesson("Physics", DayOfWeek.WEDNESDAY,
             LocalTime.of(19, 0), LocalTime.of(20, 30));
+    private static final Lesson LATE_PHYSICS = new Lesson("Late Physics", DayOfWeek.FRIDAY,
+            LocalTime.of(23, 0), LocalTime.of(1, 0));
 
     private Model model;
     private Model expectedModel;
@@ -118,6 +120,14 @@ public class ListStudentsCommandTest {
         assertCommandSuccess(new ListStudentsCommand(Index.fromOneBased(1)), model,
                 "Listed students enrolled in " + PHYSICS, expectedModel);
         assertEquals(List.of(RYAN), model.getFilteredStudentList());
+    }
+
+    @Test
+    public void execute_lessonEndsNextDay_marksNextDay() throws Exception {
+        model.addLesson(LATE_PHYSICS);
+
+        assertEquals("Listed students enrolled in Late Physics (Fri 2300-0100) (next day)",
+                new ListStudentsCommand(Index.fromOneBased(1)).execute(model).getFeedbackToUser());
     }
 
     @Test

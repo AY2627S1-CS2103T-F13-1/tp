@@ -29,6 +29,8 @@ public class EnrolCommandTest {
             LocalTime.of(16, 0), LocalTime.of(18, 0));
     private final Lesson science = new Lesson("Science", DayOfWeek.MONDAY,
             LocalTime.of(16, 0), LocalTime.of(18, 0));
+    private final Lesson latePhysics = new Lesson("Late Physics", DayOfWeek.FRIDAY,
+            LocalTime.of(23, 0), LocalTime.of(1, 0));
 
     private void populate() {
         model.addStudent(beth);
@@ -84,6 +86,39 @@ public class EnrolCommandTest {
         assertEquals(3, model.getEnrolmentList().size());
         assertEquals(List.of(science, math), model.getAddressBook().getLessonsForStudent(beth));
         assertEquals(List.of(beth, aiden), model.getAddressBook().getStudentsInLesson(math));
+    }
+
+    @Test
+    public void execute_lessonClashesWithStudentsOtherLesson_enrolsAndWarns() throws Exception {
+        // science and math are both on Monday 1600-1800
+        populate();
+        parser.parseCommand("enrol s/2 l/2").execute(model);
+
+        assertEquals("Enrolled Aiden Tan in Science (Mon 1600-1800)\n"
+                + "Warning: Aiden Tan already attends clashing lesson(s): Sec 3 A-Math (Mon 1600-1800)",
+                parser.parseCommand("enrol s/2 l/1").execute(model).getFeedbackToUser());
+        assertEquals(List.of(science, math), model.getAddressBook().getLessonsForStudent(aiden));
+    }
+
+    @Test
+    public void execute_clashingLessonOfAnotherStudent_noWarning() throws Exception {
+        // only the student's own lessons count: Beth's clashing Science lesson does not concern Aiden
+        populate();
+        parser.parseCommand("enrol s/1 l/1").execute(model);
+
+        assertEquals("Enrolled Aiden Tan in Sec 3 A-Math (Mon 1600-1800)",
+                parser.parseCommand("enrol s/2 l/2").execute(model).getFeedbackToUser());
+    }
+
+    @Test
+    public void execute_lessonEndsNextDay_marksNextDayInMessages() throws Exception {
+        model.addStudent(aiden);
+        model.addLesson(latePhysics);
+        assertEquals("Enrolled Aiden Tan in Late Physics (Fri 2300-0100) (next day)",
+                parser.parseCommand("enrol s/1 l/1").execute(model).getFeedbackToUser());
+        assertThrows(CommandException.class,
+                "Aiden Tan is already enrolled in Late Physics (Fri 2300-0100) (next day)", () ->
+                        parser.parseCommand("enrol s/1 l/1").execute(model));
     }
 
     @Test

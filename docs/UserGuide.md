@@ -157,7 +157,7 @@ Shows all lessons, or only lessons that start on a specified day.
 
 Format: `listlessons [d/DAY]`
 
-* `DAY` must be `mon`, `tue`, `wed`, `thu`, `fri`, `sat` or `sun`, in any letter case.
+* `DAY` is a day of the week, written in full or as at least its first three letters, in any letter case; for example, `mon`, `tues`, `weds`, `Thurs` and `friday` all work.
 * A lesson that runs past midnight belongs to the day on which it starts.
 * Running `listlessons` without `d/` clears the lesson filter.
 
@@ -175,10 +175,11 @@ Format: `editlesson INDEX [n/NAME] [d/DAY] [st/START_TIME] [et/END_TIME]`
 * `INDEX` must be a positive integer and refers to the index shown in the current lesson list.
 * At least one optional field must be provided. Fields that are not provided remain unchanged.
 * `NAME` must be 1 to 50 characters long, start with a letter or digit, and contain only English letters, digits, spaces and `- ' . , & ( ) +`.
-* `DAY` must be `mon`, `tue`, `wed`, `thu`, `fri`, `sat` or `sun`, in any letter case.
-* Times must use four-digit 24-hour format from `0000` to `2359`. The start and end times cannot be equal. An end time earlier than the start time means that the lesson ends on the next day.
+* `DAY` is a day of the week, written in full or as at least its first three letters, in any letter case; for example, `mon`, `tues`, `weds`, `Thurs` and `friday` all work.
+* Times use the 24-hour clock, as `HHMM` or `HH:MM`, from `0000` to `2359`; for example, `1700` and `17:00` are both 5:00 PM. The start and end times cannot be equal. An end time earlier than the start time means that the lesson ends on the next day.
 * The edited lesson must not duplicate another lesson.
 * The lesson's identity and student enrolments are preserved. A student list filtered by this lesson remains valid.
+* If the edited lesson's time overlaps other lessons, it is still edited, and the result warns which lessons it clashes with, as `addlesson` does. Lessons hidden by `listlessons d/DAY` count too. The result also warns if the edit makes the lesson run past midnight for more than 12 hours.
 * The active lesson filter remains in effect and is re-evaluated after the edit. For example, changing the day may remove the lesson from the displayed day filter.
 
 Examples:
@@ -193,9 +194,9 @@ Adds a weekly lesson to the address book.
 
 Format: `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`
 
-* `DAY` must be `mon`, `tue`, `wed`, `thu`, `fri`, `sat` or `sun`, in any letter case.
-* `START_TIME` and `END_TIME` must use four digits in 24-hour time, such as `1600`.
-* If the end time is earlier than the start time, the lesson is treated as ending on the next day.
+* `DAY` is a day of the week, written in full or as at least its first three letters, in any letter case; for example, `mon`, `tues`, `weds`, `Thurs` and `friday` all work.
+* `START_TIME` and `END_TIME` use the 24-hour clock, as `HHMM` or `HH:MM`; for example, `1600` and `16:00` are both 4:00 PM.
+* If the end time is earlier than the start time, the lesson is treated as ending on the next day. If such a lesson lasts more than 12 hours, the result warns that the start and end times may be swapped.
 * The start and end times must be different.
 
 Examples:
@@ -212,6 +213,7 @@ Format: `enrol s/STUDENT_INDEX l/LESSON_INDEX`
 * `STUDENT_INDEX` refers to the current displayed student list.
 * `LESSON_INDEX` refers to the current displayed lesson list.
 * A student cannot be enrolled in the same lesson more than once.
+* If the student already attends a lesson at an overlapping time, they are still enrolled, and the result warns which of their lessons clash.
 
 Example:
 * `enrol s/1 l/2` enrols the first displayed student in the second displayed lesson.

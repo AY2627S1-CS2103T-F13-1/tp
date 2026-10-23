@@ -3,6 +3,7 @@ package seedu.address.model;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
+import java.util.Optional;
 
 import javafx.collections.ObservableList;
 import seedu.address.model.lesson.Enrolment;
@@ -29,6 +30,17 @@ public interface ReadOnlyAddressBook {
 
     /** Returns the unmodifiable observable enrolment list. */
     ObservableList<Enrolment> getEnrolmentList();
+
+    /**
+     * Returns the stored lesson that {@code lesson} duplicates: the one with its ID, or one with the same name,
+     * ignoring case and extra spaces, day and times.
+     */
+    default Optional<Lesson> findDuplicateOf(Lesson lesson) {
+        requireNonNull(lesson);
+        return getLessonList().stream()
+                .filter(existing -> existing.getId().equals(lesson.getId()) || existing.isSameLesson(lesson))
+                .findFirst();
+    }
 
     /** Returns whether the student is enrolled in the lesson. */
     default boolean isEnrolled(Student student, Lesson lesson) {

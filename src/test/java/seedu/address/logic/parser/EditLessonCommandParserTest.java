@@ -88,6 +88,16 @@ public class EditLessonCommandParserTest {
     }
 
     @Test
+    public void parse_fullDayNameAndTimesWithColons_returnsEditLessonCommand() {
+        EditLessonDescriptor descriptor = new EditLessonDescriptor();
+        descriptor.setDay(DayOfWeek.TUESDAY);
+        descriptor.setStartTime(LocalTime.parse("17:00"));
+        descriptor.setEndTime(LocalTime.parse("19:00"));
+
+        assertParseSuccess(parser, "1 d/Tuesday st/17:00 et/1900", command(descriptor));
+    }
+
+    @Test
     public void parse_overnightTimes_returnsEditLessonCommand() {
         EditLessonDescriptor descriptor = new EditLessonDescriptor();
         descriptor.setStartTime(LocalTime.parse("22:00"));
@@ -139,14 +149,14 @@ public class EditLessonCommandParserTest {
 
     @Test
     public void parse_invalidDay_throwsParseException() {
-        for (String day : List.of("", "tues", "monday", "m", "mon tue", "1")) {
+        for (String day : List.of("", "funday", "mo", "m", "mon tue", "1")) {
             assertParseFailure(parser, "1 d/" + day, ParserUtil.MESSAGE_INVALID_DAY);
         }
     }
 
     @Test
     public void parse_invalidTime_throwsParseException() {
-        for (String time : List.of("", "4pm", "2400", "1660", "16:00", "900")) {
+        for (String time : List.of("", "4pm", "2400", "1660", "16:60", "900")) {
             assertParseFailure(parser, "1 st/" + time, ParserUtil.MESSAGE_INVALID_TIME);
             assertParseFailure(parser, "1 et/" + time, ParserUtil.MESSAGE_INVALID_TIME);
         }

@@ -30,6 +30,8 @@ public class UnenrolCommandTest {
             LocalTime.of(16, 0), LocalTime.of(18, 0));
     private final Lesson science = new Lesson("Science", DayOfWeek.MONDAY,
             LocalTime.of(16, 0), LocalTime.of(18, 0));
+    private final Lesson latePhysics = new Lesson("Late Physics", DayOfWeek.FRIDAY,
+            LocalTime.of(23, 0), LocalTime.of(1, 0));
 
     private void populate() {
         model.addStudent(beth);
@@ -90,6 +92,18 @@ public class UnenrolCommandTest {
         assertThrows(CommandException.class, Messages.MESSAGE_INVALID_LESSON_DISPLAYED_INDEX, () ->
                 parser.parseCommand("unenrol s/1 l/2").execute(model));
         assertEquals(3, model.getEnrolmentList().size());
+    }
+
+    @Test
+    public void execute_lessonEndsNextDay_marksNextDayInMessages() throws Exception {
+        model.addStudent(aiden);
+        model.addLesson(latePhysics);
+        model.enrolStudent(aiden, latePhysics);
+        assertEquals("Unenrolled Aiden Tan from Late Physics (Fri 2300-0100) (next day)",
+                parser.parseCommand("unenrol s/1 l/1").execute(model).getFeedbackToUser());
+        assertThrows(CommandException.class,
+                "Aiden Tan is not enrolled in Late Physics (Fri 2300-0100) (next day)", () ->
+                        parser.parseCommand("unenrol s/1 l/1").execute(model));
     }
 
     @Test

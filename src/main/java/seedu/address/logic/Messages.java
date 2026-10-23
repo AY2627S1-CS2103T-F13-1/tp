@@ -1,5 +1,6 @@
 package seedu.address.logic;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -20,6 +21,14 @@ public class Messages {
     public static final String MESSAGE_INVALID_PERSON_DISPLAYED_INDEX = "The person index provided is invalid.";
     public static final String MESSAGE_INVALID_STUDENT_DISPLAYED_INDEX = "The student index provided is invalid.";
     public static final String MESSAGE_INVALID_LESSON_DISPLAYED_INDEX = "The lesson index provided is invalid.";
+    public static final String MESSAGE_CLASH_WARNING = "Warning: clashes with %1$s";
+    public static final String MESSAGE_STUDENT_CLASH_WARNING = "Warning: %1$s already attends clashing lesson(s): %2$s";
+    public static final String MESSAGE_LONG_LESSON_WARNING = "Warning: this lesson lasts %1$s and ends the next day."
+            + " Check that the start and end times are not swapped.";
+    public static final int LONG_OVERNIGHT_LESSON_MINUTES = 12 * 60;
+    public static final String MESSAGE_DUPLICATE_LESSON = "This lesson already exists: %1$s";
+    public static final String MESSAGE_LESSON_HIDDEN =
+            "It is hidden by the lesson filter; run listlessons to show every lesson.";
     public static final String MESSAGE_PERSONS_LISTED_OVERVIEW = "%1$d person(s) listed!";
     public static final String MESSAGE_STUDENTS_LISTED_OVERVIEW = "%1$d student(s) listed!";
     public static final String MESSAGE_DUPLICATE_FIELDS =
@@ -69,6 +78,56 @@ public class Messages {
      */
     public static String format(Lesson lesson) {
         return lesson.endsNextDay() ? lesson + " (next day)" : lesson.toString();
+    }
+
+    /**
+     * Returns a warning on a new line naming {@code clashingLessons}, or an empty string if there are none.
+     * Clashes are allowed, as the tutor may teach overlapping lessons on purpose.
+     */
+    public static String formatClashWarning(List<Lesson> clashingLessons) {
+        if (clashingLessons.isEmpty()) {
+            return "";
+        }
+        return "\n" + String.format(MESSAGE_CLASH_WARNING, formatLessons(clashingLessons));
+    }
+
+    /**
+     * Returns a warning on a new line naming the lessons of {@code student} that clash with a lesson they are
+     * being enrolled in, or an empty string if there are none.
+     */
+    public static String formatStudentClashWarning(Student student, List<Lesson> clashingLessons) {
+        if (clashingLessons.isEmpty()) {
+            return "";
+        }
+        return "\n" + String.format(MESSAGE_STUDENT_CLASH_WARNING, student.getName(), formatLessons(clashingLessons));
+    }
+
+    /**
+     * Returns a warning on a new line if {@code lesson} runs past midnight for more than 12 hours, which usually
+     * means its start and end times were swapped, or an empty string otherwise.
+     */
+    public static String formatLongLessonWarning(Lesson lesson) {
+        int minutes = lesson.getDurationInMinutes();
+        if (!lesson.endsNextDay() || minutes <= LONG_OVERNIGHT_LESSON_MINUTES) {
+            return "";
+        }
+        int hours = minutes / 60;
+        int extraMinutes = minutes % 60;
+        String duration = extraMinutes == 0 ? hours + " h" : hours + " h " + extraMinutes + " min";
+        return "\n" + String.format(MESSAGE_LONG_LESSON_WARNING, duration);
+    }
+
+    /**
+     * Returns the error for a lesson that duplicates {@code existingLesson}, which names it and, if the lesson
+     * list does not show it, says how to show it.
+     */
+    public static String formatDuplicateLesson(Lesson existingLesson, boolean isShown) {
+        String message = String.format(MESSAGE_DUPLICATE_LESSON, format(existingLesson));
+        return isShown ? message : message + "\n" + MESSAGE_LESSON_HIDDEN;
+    }
+
+    private static String formatLessons(List<Lesson> lessons) {
+        return lessons.stream().map(Messages::format).collect(Collectors.joining("; "));
     }
 
 }

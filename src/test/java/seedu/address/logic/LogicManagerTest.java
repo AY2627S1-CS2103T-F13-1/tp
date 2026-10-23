@@ -220,7 +220,7 @@ public class LogicManagerTest {
         logic.execute(AddLessonCommand.COMMAND_WORD + " n/Sec 3 A-Math d/mon st/1600 et/1800");
 
         assertCommandException(AddLessonCommand.COMMAND_WORD + " n/sec 3  a-math d/MON st/1600 et/1800",
-                AddLessonCommand.MESSAGE_DUPLICATE_LESSON);
+                "This lesson already exists: Sec 3 A-Math (Mon 1600-1800)");
         assertEquals(1, logic.getFilteredLessonList().size());
         assertEquals(1, readSavedAddressBook().getLessonList().size());
     }
@@ -243,7 +243,7 @@ public class LogicManagerTest {
                 String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddLessonCommand.MESSAGE_USAGE));
         assertParseException(AddLessonCommand.COMMAND_WORD + " n/Sec 3 A-Math d/mon st/1600 et/1600",
                 Lesson.MESSAGE_TIME_CONSTRAINTS);
-        assertParseException(AddLessonCommand.COMMAND_WORD + " n/Sec 3 A-Math d/monday st/1600 et/1800",
+        assertParseException(AddLessonCommand.COMMAND_WORD + " n/Sec 3 A-Math d/funday st/1600 et/1800",
                 ParserUtil.MESSAGE_INVALID_DAY);
         assertTrue(logic.getFilteredLessonList().isEmpty());
     }
@@ -260,7 +260,7 @@ public class LogicManagerTest {
                 + " 1 n/Advanced Math d/tue st/2200 et/0100");
 
         Lesson editedLesson = logic.getFilteredLessonList().getFirst();
-        assertEquals("Edited lesson: Advanced Math (Tue 2200-0100)", result.getFeedbackToUser());
+        assertEquals("Edited lesson: Advanced Math (Tue 2200-0100) (next day)", result.getFeedbackToUser());
         assertEquals(originalLessonId, editedLesson.getId());
         assertEquals("Advanced Math", editedLesson.getName());
         assertEquals(DayOfWeek.TUESDAY, editedLesson.getDay());
