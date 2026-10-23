@@ -243,7 +243,7 @@ public class LogicManagerTest {
                 String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddLessonCommand.MESSAGE_USAGE));
         assertParseException(AddLessonCommand.COMMAND_WORD + " n/Sec 3 A-Math d/mon st/1600 et/1600",
                 Lesson.MESSAGE_TIME_CONSTRAINTS);
-        assertParseException(AddLessonCommand.COMMAND_WORD + " n/Sec 3 A-Math d/monday st/1600 et/1800",
+        assertParseException(AddLessonCommand.COMMAND_WORD + " n/Sec 3 A-Math d/weds st/1600 et/1800",
                 ParserUtil.MESSAGE_INVALID_DAY);
         assertTrue(logic.getFilteredLessonList().isEmpty());
     }

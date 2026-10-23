@@ -240,23 +240,38 @@ public class ParserUtilTest {
     }
 
     @Test
-    public void parseDay_fullName_throwsParseException() {
-        // a day is set in one fixed way, its first three letters, so its full name is not accepted
-        List<String> fullNames = List.of("monday", "tuesday", "wednesday", "thursday", "friday", "saturday",
-                "sunday", "Monday", "MONDAY");
-
-        for (String day : fullNames) {
-            assertThrows(ParseException.class, MESSAGE_INVALID_DAY, () -> ParserUtil.parseDay(day));
+    public void parseDay_fullName_returnsDay() throws Exception {
+        // users often type the full name, and blocking it adds nothing
+        assertEquals(DayOfWeek.MONDAY, ParserUtil.parseDay("monday"));
+        assertEquals(DayOfWeek.TUESDAY, ParserUtil.parseDay("tuesday"));
+        assertEquals(DayOfWeek.WEDNESDAY, ParserUtil.parseDay("wednesday"));
+        assertEquals(DayOfWeek.THURSDAY, ParserUtil.parseDay("thursday"));
+        assertEquals(DayOfWeek.FRIDAY, ParserUtil.parseDay("friday"));
+        assertEquals(DayOfWeek.SATURDAY, ParserUtil.parseDay("saturday"));
+        assertEquals(DayOfWeek.SUNDAY, ParserUtil.parseDay("sunday"));
+        for (String day : List.of("Monday", "MONDAY", "mOnDaY")) {
+            assertEquals(DayOfWeek.MONDAY, ParserUtil.parseDay(day));
         }
+    }
+
+    @Test
+    public void parseDay_longerStartOfName_returnsDay() throws Exception {
+        // any start of the name with at least three letters, such as the common "tues" and "thurs"
+        assertEquals(DayOfWeek.MONDAY, ParserUtil.parseDay("mond"));
+        assertEquals(DayOfWeek.TUESDAY, ParserUtil.parseDay("tues"));
+        assertEquals(DayOfWeek.WEDNESDAY, ParserUtil.parseDay("wedn"));
+        assertEquals(DayOfWeek.THURSDAY, ParserUtil.parseDay("thur"));
+        assertEquals(DayOfWeek.THURSDAY, ParserUtil.parseDay("Thurs"));
+        assertEquals(DayOfWeek.FRIDAY, ParserUtil.parseDay("frida"));
+        assertEquals(DayOfWeek.SATURDAY, ParserUtil.parseDay("satur"));
+        assertEquals(DayOfWeek.SUNDAY, ParserUtil.parseDay("SUNDA"));
     }
 
     @Test
     public void parseDay_invalidValue_throwsParseException() {
         List<String> invalidDays = List.of(
-                // empty, too short or too long
-                "", WHITESPACE, "m", "mo", "mond", "mons",
-                // other common abbreviations; "tues" is the Developer Guide's example of an invalid day
-                "tues", "weds", "thur", "thurs",
+                // empty, too short, or not the start of a day's name
+                "", WHITESPACE, "m", "mo", "sa", "mons", "mondays", "monday1", "weds", "tuesdays",
                 // day numbers
                 "0", "1", "7",
                 // more than one day
@@ -295,6 +310,31 @@ public class ParserUtilTest {
     }
 
     @Test
+    public void parseTime_withColon_returnsTime() throws Exception {
+        // the lesson cards show times as HH:mm, so users may type them that way too
+        assertEquals(LocalTime.of(16, 0), ParserUtil.parseTime("16:00"));
+        assertEquals(LocalTime.of(0, 0), ParserUtil.parseTime("00:00"));
+        assertEquals(LocalTime.of(23, 59), ParserUtil.parseTime("23:59"));
+        assertEquals(LocalTime.of(9, 30), ParserUtil.parseTime("09:30"));
+
+        // with a colon, the hour can be a single digit
+        assertEquals(LocalTime.of(9, 30), ParserUtil.parseTime("9:30"));
+        assertEquals(LocalTime.of(0, 5), ParserUtil.parseTime("0:05"));
+        assertEquals(LocalTime.of(16, 0), ParserUtil.parseTime(WHITESPACE + "16:00" + WHITESPACE));
+    }
+
+    @Test
+    public void parseTime_invalidWithColon_throwsParseException() {
+        List<String> invalidTimes = List.of("24:00", "16:60", "29:00", "16:0", "16:000", "016:00", ":1600",
+                "1600:", "16:", ":00", "16::00", "16:00:00", "9:5", "-9:00", "+9:00", "16 :00", "16: 00",
+                "１６:００");
+
+        for (String time : invalidTimes) {
+            assertThrows(ParseException.class, MESSAGE_INVALID_TIME, () -> ParserUtil.parseTime(time));
+        }
+    }
+
+    @Test
     public void parseTime_validValueWithWhitespace_returnsTime() throws Exception {
         assertEquals(LocalTime.of(16, 0), ParserUtil.parseTime(WHITESPACE + "1600" + WHITESPACE));
     }
@@ -317,7 +357,7 @@ public class ParserUtilTest {
     @Test
     public void parseTime_otherTimeFormats_throwsParseException() {
         // "4pm" is the Developer Guide's example of an invalid time
-        List<String> invalidTimes = List.of("4pm", "4:00pm", "0400pm", "16:00", "16.00", "16-00", "16 00",
+        List<String> invalidTimes = List.of("4pm", "4:00pm", "0400pm", "16.00", "16-00", "16 00",
                 "16h00", "1600h", "1600hrs", "noon", "abcd");
 
         for (String time : invalidTimes) {
