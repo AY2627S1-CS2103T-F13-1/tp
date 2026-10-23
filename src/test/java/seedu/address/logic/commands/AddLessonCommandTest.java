@@ -11,8 +11,6 @@ import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -398,12 +396,8 @@ public class AddLessonCommandTest {
     }
 
     private static String getSuccessMessage(Lesson addedLesson, Lesson... clashingLessons) {
-        String message = String.format(AddLessonCommand.MESSAGE_SUCCESS, Messages.format(addedLesson));
-        if (clashingLessons.length == 0) {
-            return message;
-        }
-        return message + "\n" + String.format(AddLessonCommand.MESSAGE_CLASH_WARNING,
-                Stream.of(clashingLessons).map(Messages::format).collect(Collectors.joining("; ")));
+        return String.format(AddLessonCommand.MESSAGE_SUCCESS, Messages.format(addedLesson))
+                + Messages.formatClashWarning(List.of(clashingLessons));
     }
 
     /** Creates a lesson with a newly generated ID; times are given as {@code HH:mm}. */

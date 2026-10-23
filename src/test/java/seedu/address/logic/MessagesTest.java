@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -32,6 +33,18 @@ public class MessagesTest {
     public void formatLesson_wholeDay_notMarkedNextDay() {
         assertEquals("Holiday Camp (Sat 0000-2359)", Messages.format(lesson("Holiday Camp", DayOfWeek.SATURDAY,
                 "00:00", "23:59")));
+    }
+
+    @Test
+    public void formatClashWarning_noClashes_returnsEmptyString() {
+        assertEquals("", Messages.formatClashWarning(List.of()));
+    }
+
+    @Test
+    public void formatClashWarning_clashes_listsThemOnNewLine() {
+        assertEquals("\nWarning: clashes with Sec 3 A-Math (Mon 1600-1800); Night Class (Fri 2200-0100) (next day)",
+                Messages.formatClashWarning(List.of(lesson("Sec 3 A-Math", DayOfWeek.MONDAY, "16:00", "18:00"),
+                        lesson("Night Class", DayOfWeek.FRIDAY, "22:00", "01:00"))));
     }
 
     /** Creates a lesson with a newly generated ID; times are given as {@code HH:mm}. */

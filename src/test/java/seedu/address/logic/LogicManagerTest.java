@@ -260,7 +260,7 @@ public class LogicManagerTest {
                 + " 1 n/Advanced Math d/tue st/2200 et/0100");
 
         Lesson editedLesson = logic.getFilteredLessonList().getFirst();
-        assertEquals("Edited lesson: Advanced Math (Tue 2200-0100)", result.getFeedbackToUser());
+        assertEquals("Edited lesson: Advanced Math (Tue 2200-0100) (next day)", result.getFeedbackToUser());
         assertEquals(originalLessonId, editedLesson.getId());
         assertEquals("Advanced Math", editedLesson.getName());
         assertEquals(DayOfWeek.TUESDAY, editedLesson.getDay());
