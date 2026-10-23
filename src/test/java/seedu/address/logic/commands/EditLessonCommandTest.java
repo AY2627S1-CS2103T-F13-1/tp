@@ -214,8 +214,28 @@ public class EditLessonCommandTest {
                 "sec 4 physics", DayOfWeek.WEDNESDAY, "19:00", "20:30");
 
         assertEditFailure(new EditLessonCommand(INDEX_FIRST_LESSON, duplicatePhysics),
-                EditLessonCommand.MESSAGE_DUPLICATE_LESSON);
+                Messages.formatDuplicateLesson(PHYSICS, false));
         assertEquals(List.of(A_MATH), model.getFilteredLessonList());
+    }
+
+    @Test
+    public void execute_duplicateOfShownLesson_namesIt() {
+        EditLessonDescriptor duplicatePhysics = descriptor("Sec 4 Physics", DayOfWeek.WEDNESDAY, "19:00", "20:30");
+
+        assertEditFailure(new EditLessonCommand(INDEX_FIRST_LESSON, duplicatePhysics),
+                "This lesson already exists: Sec 4 Physics (Wed 1900-2030)");
+    }
+
+    @Test
+    public void execute_startMovedPastEnd_editsAndWarnsOfLength() throws Exception {
+        // moving only the start of a 1600-1800 lesson to 1900 makes it run past midnight for 23 hours
+        EditLessonDescriptor descriptor = new EditLessonDescriptor();
+        descriptor.setStartTime(LocalTime.parse("19:00"));
+
+        assertEquals("Edited lesson: Sec 3 A-Math (Mon 1900-1800) (next day)\n"
+                + "Warning: this lesson lasts 23 h and ends the next day. Check that the start and end times"
+                + " are not swapped.",
+                new EditLessonCommand(INDEX_FIRST_LESSON, descriptor).execute(model).getFeedbackToUser());
     }
 
     @Test

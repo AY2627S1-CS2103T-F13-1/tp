@@ -220,7 +220,7 @@ public class LogicManagerTest {
         logic.execute(AddLessonCommand.COMMAND_WORD + " n/Sec 3 A-Math d/mon st/1600 et/1800");
 
         assertCommandException(AddLessonCommand.COMMAND_WORD + " n/sec 3  a-math d/MON st/1600 et/1800",
-                AddLessonCommand.MESSAGE_DUPLICATE_LESSON);
+                "This lesson already exists: Sec 3 A-Math (Mon 1600-1800)");
         assertEquals(1, logic.getFilteredLessonList().size());
         assertEquals(1, readSavedAddressBook().getLessonList().size());
     }

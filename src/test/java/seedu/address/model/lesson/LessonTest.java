@@ -57,6 +57,14 @@ public class LessonTest {
     }
 
     @Test
+    public void getDurationInMinutes_countsPastMidnight() {
+        assertEquals(120, lesson("Math", 16, 18).getDurationInMinutes());
+        assertEquals(180, lesson("Math", 22, 1).getDurationInMinutes());
+        assertEquals(24 * 60 - 1, new Lesson("Math", DayOfWeek.MONDAY, LocalTime.of(16, 1), LocalTime.of(16, 0))
+                .getDurationInMinutes());
+    }
+
+    @Test
     public void endsNextDay_trueOnlyIfEndTimeIsBeforeStartTime() {
         assertFalse(lesson("Math", 16, 18).endsNextDay());
         assertTrue(lesson("Math", 22, 1).endsNextDay());

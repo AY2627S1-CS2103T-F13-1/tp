@@ -89,6 +89,28 @@ public class EnrolCommandTest {
     }
 
     @Test
+    public void execute_lessonClashesWithStudentsOtherLesson_enrolsAndWarns() throws Exception {
+        // science and math are both on Monday 1600-1800
+        populate();
+        parser.parseCommand("enrol s/2 l/2").execute(model);
+
+        assertEquals("Enrolled Aiden Tan in Science (Mon 1600-1800)\n"
+                + "Warning: Aiden Tan already attends clashing lesson(s): Sec 3 A-Math (Mon 1600-1800)",
+                parser.parseCommand("enrol s/2 l/1").execute(model).getFeedbackToUser());
+        assertEquals(List.of(science, math), model.getAddressBook().getLessonsForStudent(aiden));
+    }
+
+    @Test
+    public void execute_clashingLessonOfAnotherStudent_noWarning() throws Exception {
+        // only the student's own lessons count: Beth's clashing Science lesson does not concern Aiden
+        populate();
+        parser.parseCommand("enrol s/1 l/1").execute(model);
+
+        assertEquals("Enrolled Aiden Tan in Sec 3 A-Math (Mon 1600-1800)",
+                parser.parseCommand("enrol s/2 l/2").execute(model).getFeedbackToUser());
+    }
+
+    @Test
     public void execute_lessonEndsNextDay_marksNextDayInMessages() throws Exception {
         model.addStudent(aiden);
         model.addLesson(latePhysics);
