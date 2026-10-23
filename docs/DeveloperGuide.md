@@ -630,13 +630,13 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 1a. Tutor gives keywords for the guardian's name instead of, or as well as, the student's name.
 
-  Use case resumes at step 2, with TutorReach matching students against all the given keywords.
+  Use case resumes at step 2, with TutorReach showing the students who match at least one keyword for each name searched.
 
-* 1b. Tutor gives part of a phone number instead of, or as well as, names.
+* 1b. Tutor gives a phone number, or part of one, instead of, or as well as, names.
 
-  Use case resumes at step 2, with TutorReach matching students whose own or guardian's phone number contains it.
+  Use case resumes at step 2, with TutorReach matching students whose own or guardian's phone number contains it, ignoring spaces, hyphens and any country code in front of a full number.
 
-* 1c. No keywords are given, or a phone keyword contains a character other than a digit.
+* 1c. No keywords are given, or the phone number contains a character other than a digit, space, hyphen or leading `+`.
 
     * 1c1. TutorReach shows an error message.
 
@@ -1061,8 +1061,11 @@ testers are expected to do more *exploratory* testing.
    1. Test case: `findstudent p/9123`<br>
       Expected: Only students whose own phone number or guardian's phone number contains "9123" are shown.
 
+   1. Test case: `findstudent p/+65 9123 4567`<br>
+      Expected: Only students whose own phone number or guardian's phone number is 91234567 are shown. The spaces and the country code are ignored.
+
    1. Test case: `findstudent p/91a`<br>
-      Expected: The list is unchanged. The status message states that phone search keywords should only contain digits.
+      Expected: The list is unchanged. The status message states that a phone search should contain only digits, spaces, hyphens and a leading `+`.
 
 ### Saving data
 
