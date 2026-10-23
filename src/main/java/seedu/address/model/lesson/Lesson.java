@@ -101,8 +101,8 @@ public final class Lesson {
         return (day.getValue() - 1) * MINUTES_PER_DAY + toMinuteOfDay(startTime);
     }
 
-    /** Includes the hours after midnight for a lesson that ends on the next day. */
-    private int getDurationInMinutes() {
+    /** Returns the length of the lesson, including the hours after midnight for a lesson that ends the next day. */
+    public int getDurationInMinutes() {
         int duration = Math.floorMod(toMinuteOfDay(endTime) - toMinuteOfDay(startTime), MINUTES_PER_DAY);
         assert duration > 0 : "The constructor rejects an end time equal to the start time";
         return duration;

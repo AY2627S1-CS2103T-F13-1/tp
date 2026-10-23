@@ -7,6 +7,7 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_START_TIME;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import seedu.address.commons.core.LogsCenter;
@@ -39,7 +40,6 @@ public class AddLessonCommand extends Command {
             + PREFIX_END_TIME + "1800";
 
     public static final String MESSAGE_SUCCESS = "New lesson added: %1$s";
-    public static final String MESSAGE_DUPLICATE_LESSON = "This lesson already exists.";
 
     private static final Logger logger = LogsCenter.getLogger(AddLessonCommand.class);
 
@@ -56,9 +56,11 @@ public class AddLessonCommand extends Command {
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
 
-        if (model.hasLesson(toAdd)) {
+        Optional<Lesson> existingLesson = model.getAddressBook().findDuplicateOf(toAdd);
+        if (existingLesson.isPresent()) {
             logger.fine("Rejected duplicate lesson: " + toAdd);
-            throw new CommandException(MESSAGE_DUPLICATE_LESSON);
+            throw new CommandException(Messages.formatDuplicateLesson(existingLesson.get(),
+                    model.getFilteredLessonList().contains(existingLesson.get())));
         }
 
         List<Lesson> clashingLessons = model.getAddressBook().getClashingLessons(toAdd);
@@ -66,7 +68,7 @@ public class AddLessonCommand extends Command {
         assert model.getFilteredLessonList().contains(toAdd) : "Adding a lesson should clear the lesson filter";
         logger.info("Added lesson: " + toAdd);
         return new CommandResult(String.format(MESSAGE_SUCCESS, Messages.format(toAdd))
-                + Messages.formatClashWarning(clashingLessons));
+                + Messages.formatLongLessonWarning(toAdd) + Messages.formatClashWarning(clashingLessons));
     }
 
     @Override
