@@ -86,14 +86,18 @@ public class EditLessonCommand extends Command {
             throw new CommandException(MESSAGE_DUPLICATE_LESSON);
         }
 
+        // the full list is checked, so lessons hidden by a day filter count; the lesson's own old times do not
+        List<Lesson> clashingLessons = model.getAddressBook().getClashingLessons(editedLesson);
         model.setLesson(lessonToEdit, editedLesson);
         Lesson storedLesson = model.getAddressBook().getLessonList().stream()
                 .filter(lesson -> lesson.getId().equals(editedLesson.getId()))
                 .findFirst()
                 .orElse(null);
         assert editedLesson.equals(storedLesson) : "Editing a lesson should update the address book";
-        logger.info("Edited lesson with ID: " + editedLesson.getId());
-        return new CommandResult(String.format(MESSAGE_EDIT_LESSON_SUCCESS, editedLesson));
+        logger.info("Edited lesson with ID: " + editedLesson.getId() + ", clashing with "
+                + clashingLessons.size() + " lesson(s)");
+        return new CommandResult(String.format(MESSAGE_EDIT_LESSON_SUCCESS, Messages.format(editedLesson))
+                + Messages.formatClashWarning(clashingLessons));
     }
 
     /**

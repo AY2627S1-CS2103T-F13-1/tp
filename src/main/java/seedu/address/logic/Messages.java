@@ -1,5 +1,6 @@
 package seedu.address.logic;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -20,6 +21,7 @@ public class Messages {
     public static final String MESSAGE_INVALID_PERSON_DISPLAYED_INDEX = "The person index provided is invalid.";
     public static final String MESSAGE_INVALID_STUDENT_DISPLAYED_INDEX = "The student index provided is invalid.";
     public static final String MESSAGE_INVALID_LESSON_DISPLAYED_INDEX = "The lesson index provided is invalid.";
+    public static final String MESSAGE_CLASH_WARNING = "Warning: clashes with %1$s";
     public static final String MESSAGE_PERSONS_LISTED_OVERVIEW = "%1$d person(s) listed!";
     public static final String MESSAGE_STUDENTS_LISTED_OVERVIEW = "%1$d student(s) listed!";
     public static final String MESSAGE_DUPLICATE_FIELDS =
@@ -69,6 +71,18 @@ public class Messages {
      */
     public static String format(Lesson lesson) {
         return lesson.endsNextDay() ? lesson + " (next day)" : lesson.toString();
+    }
+
+    /**
+     * Returns a warning on a new line naming {@code clashingLessons}, or an empty string if there are none.
+     * Clashes are allowed, as the tutor may teach overlapping lessons on purpose.
+     */
+    public static String formatClashWarning(List<Lesson> clashingLessons) {
+        if (clashingLessons.isEmpty()) {
+            return "";
+        }
+        String clashes = clashingLessons.stream().map(Messages::format).collect(Collectors.joining("; "));
+        return "\n" + String.format(MESSAGE_CLASH_WARNING, clashes);
     }
 
 }

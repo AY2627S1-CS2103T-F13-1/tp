@@ -219,16 +219,18 @@ uses `AddressBookRecovery` instead. Partial recovery applies to tutor data, not 
 
 ### Warning about clashing lessons
 
-`addlesson` adds a lesson even if its time overlaps an existing lesson, since a tutor may teach overlapping lessons on purpose. It then warns which lessons clash, so that an accidental double-booking is noticed.
+`addlesson` adds a lesson even if its time overlaps an existing lesson, since a tutor may teach overlapping lessons on purpose. It then warns which lessons clash, so that an accidental double-booking is noticed. `editlesson` warns in the same way when an edit moves a lesson onto another lesson's time.
 
 The sequence diagram below shows how `AddLessonCommand` finds the clashes before adding the lesson.
 
 ![Interactions inside the Logic and Model components when adding a lesson](images/AddLessonSequenceDiagram.png)
 
 1. `AddLessonCommand#execute()` first calls `Model#hasLesson()`. A duplicate lesson is rejected with a `CommandException`, so it never gets a warning instead.
-1. It calls `ReadOnlyAddressBook#getClashingLessons()`, which checks the full lesson list, so lessons hidden by `listlessons d/DAY` still count. A lesson with the same ID as the new lesson is skipped, so that a future `editlesson` does not report a lesson as clashing with its own old times.
+1. It calls `ReadOnlyAddressBook#getClashingLessons()`, which checks the full lesson list, so lessons hidden by `listlessons d/DAY` still count. A lesson with the same ID as the given lesson is skipped, so that `editlesson` does not report a lesson as clashing with its own old times.
 1. `getClashingLessons()` compares each lesson with the new one using `Lesson#overlaps()`.
-1. The command adds the lesson, and returns a `CommandResult` whose second line names the clashing lessons, if any.
+1. The command adds the lesson, and returns a `CommandResult` whose second line names the clashing lessons, if any. `Messages#formatClashWarning()` formats that line.
+
+`EditLessonCommand#execute()` follows the same steps after its own duplicate check. It passes the edited lesson, which keeps the original lesson's ID, to `getClashingLessons()`, and adds the same warning to its result.
 
 `Lesson#overlaps()` places each lesson on a weekly cycle of 7 × 24 × 60 minutes. A lesson starts at minute `(day - 1) × 1440 + start time` and lasts `(end time - start time) mod 1440` minutes, which also gives the right length for a lesson that runs past midnight. Two lessons overlap if either one starts before the other has ended, counting forward around the week. Counting around the week lets a Sunday lesson that runs past midnight clash with an early Monday lesson. A lesson that starts exactly when another ends does not clash with it.
 
@@ -467,6 +469,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | `* *`    | tutor                                     | remove a student from a lesson                                   | correct a wrong enrolment or record a student leaving one lesson                 |
 | `* *`    | tutor                                     | edit a student's or guardian's details                           | correct inaccurate or outdated details                                           |
 | `* *`    | tutor                                     | edit a lesson's details                                          | update a lesson that has moved to a different day or time                        |
+| `* *`    | tutor                                     | be warned when a lesson I add or move clashes with another one   | avoid double-booking myself                                                      |
 | `* *`    | tutor                                     | undo my most recent change                                       | recover from an accidental addition, edit or deletion                            |
 | `* *`    | tutor                                     | add more than one guardian to a student                          | store the contact details of both parents                                        |
 | `* *`    | tutor of a student with several guardians | mark one guardian as the primary contact                         | know whom to contact first                                                       |
@@ -478,7 +481,6 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | `* *`    | expert user                               | filter students using several criteria at once                   | quickly narrow down a long list of students                                      |
 | `* *`    | expert user                               | enrol or remove several students in one command                  | manage enrolment changes efficiently                                             |
 | `*`      | detail-oriented tutor                     | add private notes to a student                                   | record useful information that does not belong in their contact details          |
-| `*`      | tutor                                     | be warned when a new lesson clashes with an existing one         | avoid double-booking myself                                                      |
 | `*`      | tutor                                     | archive students who have stopped lessons                        | keep their details for future reference without cluttering my list              |
 
 ### Use cases
@@ -781,6 +783,12 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
   TutorReach removes the lesson from the displayed list after completing the edit.
 
+* 4b. The edited lesson's time overlaps other lessons.
+
+    * 4b1. TutorReach warns which lessons it clashes with.
+
+      Use case ends.
+
 ### Non-Functional Requirements
 
 1.  Should work on any _mainstream OS_ as long as it has Java `25` or above installed.
@@ -950,6 +958,9 @@ testers are expected to do more *exploratory* testing.
 
    1. Test case: `addlesson n/Sec 2 Math d/mon st/1900 et/2000`<br>
       Expected: The lesson is added with no warning, since it starts exactly when Sec 3 E-Math ends.
+
+   1. Test case: `editlesson INDEX st/1830`, where `INDEX` is Sec 2 Math's index in the lessons panel<br>
+      Expected: The lesson is edited to Mon 1830-2000. The status message shows the edited lesson and, on the next line, a warning that it clashes with Sec 3 E-Math (Mon 1700-1900).
 
 1. Filtering lessons by day
 

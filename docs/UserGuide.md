@@ -179,6 +179,7 @@ Format: `editlesson INDEX [n/NAME] [d/DAY] [st/START_TIME] [et/END_TIME]`
 * Times must use four-digit 24-hour format from `0000` to `2359`. The start and end times cannot be equal. An end time earlier than the start time means that the lesson ends on the next day.
 * The edited lesson must not duplicate another lesson.
 * The lesson's identity and student enrolments are preserved. A student list filtered by this lesson remains valid.
+* If the edited lesson's time overlaps other lessons, it is still edited, and the result warns which lessons it clashes with, as `addlesson` does. Lessons hidden by `listlessons d/DAY` count too.
 * The active lesson filter remains in effect and is re-evaluated after the edit. For example, changing the day may remove the lesson from the displayed day filter.
 
 Examples:
