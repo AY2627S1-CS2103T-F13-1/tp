@@ -42,6 +42,21 @@ public class LessonTest {
     }
 
     @Test
+    public void constructor_endSameAsStart_messageNamesOnlyThatProblem() {
+        // users type times as HHmm, so they cannot add seconds and should not be told about them
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> lesson("Math", 16, 16));
+        assertEquals("End time must not be the same as start time.", e.getMessage());
+        assertEquals(Lesson.MESSAGE_TIME_CONSTRAINTS, e.getMessage());
+    }
+
+    @Test
+    public void constructor_timeFinerThanMinute_messageNamesPrecision() {
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new Lesson("Math",
+                DayOfWeek.MONDAY, LocalTime.of(16, 0, 1), LocalTime.of(18, 0)));
+        assertEquals(Lesson.MESSAGE_TIME_PRECISION, e.getMessage());
+    }
+
+    @Test
     public void endsNextDay_trueOnlyIfEndTimeIsBeforeStartTime() {
         assertFalse(lesson("Math", 16, 18).endsNextDay());
         assertTrue(lesson("Math", 22, 1).endsNextDay());
