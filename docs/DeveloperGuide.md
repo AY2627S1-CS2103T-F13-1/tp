@@ -818,16 +818,15 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 ### Non-Functional Requirements
 
 1.  Should work on any _mainstream OS_ as long as it has Java `25` or above installed.
-2.  Should be able to hold up to 300 students and 100 lessons without any command taking longer than 1 second to complete on a typical laptop.
-3.  A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should be able to accomplish most of the tasks faster using commands than using the mouse.
-4.  Should work without an internet connection.
-5.  Should save the data after every command that changes it, so that no data is lost if the app is closed or the computer shuts down unexpectedly after that command.
-6.  Should store the data locally in a human-editable text file, so that advanced users can edit or back up the data directly.
-7.  Should not send any student or guardian data off the user's computer.
-8.  Should run from a single JAR file without an installer, and the JAR file should not exceed 100MB.
-9.  Should be used by a single user on one computer; it does not need to support sharing data between users.
-10. The GUI should work well (i.e., no resizing needed to use all features) for screen resolutions of 1920x1080 and higher at screen scales of 100% and 125%, and be usable (i.e., all features can be used, even if not optimally) at 1280x720 and higher at a screen scale of 150%.
-11. Should show an error message that states the problem and the correct command format when a command is invalid, instead of crashing.
+2.  A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should be able to accomplish most of the tasks faster using commands than using the mouse.
+3.  Should work without an internet connection.
+4.  Should save the data after every command that changes it, so that no data is lost if the app is closed or the computer shuts down unexpectedly after that command.
+5.  Should store the data locally in a human-editable text file, so that advanced users can edit or back up the data directly.
+6.  Should not send any student or guardian data off the user's computer.
+7.  Should run from a single JAR file without an installer, and the JAR file should not exceed 100MB.
+8.  Should be used by a single user on one computer; it does not need to support sharing data between users.
+9.  The GUI should work well (i.e., no resizing needed to use all features) for screen resolutions of 1920x1080 and higher at screen scales of 100% and 125%, and be usable (i.e., all features can be used, even if not optimally) at 1280x720 and higher at a screen scale of 150%.
+10. Should show an error message that states the problem and the correct command format when a command is invalid, instead of crashing.
 
 ### Glossary
 
