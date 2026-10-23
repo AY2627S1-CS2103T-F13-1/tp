@@ -20,9 +20,11 @@ import seedu.address.logic.parser.exceptions.ParseException;
  */
 public class ArgumentTokenizer {
 
-    // A word ending in a slash at the start or after whitespace, like a prefix. A slash right after a prefix,
-    // as in n/Math/Science, is part of a value instead.
-    private static final Pattern PREFIX_LIKE_WORD = Pattern.compile("(?:^|\\s)(?<word>[A-Za-z]+/)");
+    // A word ending in a slash at the start or after whitespace. A slash right after a prefix, as in
+    // n/Math/Science, is part of a value instead.
+    private static final Pattern SLASH_WORD = Pattern.compile("(?:^|\\s)(?<word>[A-Za-z]+/)");
+    // One or two lower-case letters, like the e/ and t/ of AddressBook-Level3 that users may still type.
+    private static final Pattern SHORT_PREFIX = Pattern.compile("[a-z]{1,2}/");
 
     /**
      * Tokenizes an arguments string and returns an {@code ArgumentMultimap} object that maps prefixes to their
@@ -41,6 +43,9 @@ public class ArgumentTokenizer {
      * Throws a {@code ParseException} naming the first word in {@code argsString} that looks like a prefix, such as
      * {@code gp/}, but is not one of the {@code prefixes} that {@code commandWord} takes. {@link #tokenize} would
      * read such a word as part of the preamble or of the value before it, and that value would be blamed instead.
+     * A word looks like a prefix if it is one of TutorReach's prefixes in any letter case, such as {@code N/}, or
+     * one or two lower-case letters, such as {@code e/}. Other words ending in a slash, such as {@code Physics/} in
+     * {@code Physics/Chem}, are left to the rules of the value they are in.
      *
      * @param argsString  Arguments string of the form: {@code preamble <prefix>value <prefix>value ...}
      * @param commandWord Command whose arguments these are, to name in the error
@@ -50,13 +55,18 @@ public class ArgumentTokenizer {
     public static void verifyNoUnknownPrefixes(String argsString, String commandWord, Prefix... prefixes)
             throws ParseException {
         List<String> knownPrefixes = Arrays.stream(prefixes).map(Prefix::getPrefix).toList();
-        Matcher matcher = PREFIX_LIKE_WORD.matcher(argsString);
+        Matcher matcher = SLASH_WORD.matcher(argsString);
         while (matcher.find()) {
             String word = matcher.group("word");
-            if (!knownPrefixes.contains(word)) {
+            if (looksLikePrefix(word) && !knownPrefixes.contains(word)) {
                 throw new ParseException(Messages.getErrorMessageForUnknownPrefix(commandWord, word, prefixes));
             }
         }
+    }
+
+    private static boolean looksLikePrefix(String word) {
+        return SHORT_PREFIX.matcher(word).matches() || CliSyntax.TUTORREACH_PREFIXES.stream()
+                .anyMatch(prefix -> prefix.getPrefix().equalsIgnoreCase(word));
     }
 
     /**
