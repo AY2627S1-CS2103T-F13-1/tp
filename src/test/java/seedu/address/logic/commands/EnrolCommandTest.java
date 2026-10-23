@@ -29,6 +29,8 @@ public class EnrolCommandTest {
             LocalTime.of(16, 0), LocalTime.of(18, 0));
     private final Lesson science = new Lesson("Science", DayOfWeek.MONDAY,
             LocalTime.of(16, 0), LocalTime.of(18, 0));
+    private final Lesson latePhysics = new Lesson("Late Physics", DayOfWeek.FRIDAY,
+            LocalTime.of(23, 0), LocalTime.of(1, 0));
 
     private void populate() {
         model.addStudent(beth);
@@ -84,6 +86,17 @@ public class EnrolCommandTest {
         assertEquals(3, model.getEnrolmentList().size());
         assertEquals(List.of(science, math), model.getAddressBook().getLessonsForStudent(beth));
         assertEquals(List.of(beth, aiden), model.getAddressBook().getStudentsInLesson(math));
+    }
+
+    @Test
+    public void execute_lessonEndsNextDay_marksNextDayInMessages() throws Exception {
+        model.addStudent(aiden);
+        model.addLesson(latePhysics);
+        assertEquals("Enrolled Aiden Tan in Late Physics (Fri 2300-0100) (next day)",
+                parser.parseCommand("enrol s/1 l/1").execute(model).getFeedbackToUser());
+        assertThrows(CommandException.class,
+                "Aiden Tan is already enrolled in Late Physics (Fri 2300-0100) (next day)", () ->
+                        parser.parseCommand("enrol s/1 l/1").execute(model));
     }
 
     @Test
