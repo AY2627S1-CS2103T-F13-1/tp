@@ -208,6 +208,8 @@ Examples:
 * `addlesson n/Late Physics d/fri st/2300 et/0100` adds a Friday lesson that ends on Saturday.
 * `addlesson n/Sec 3 E-Math d/mon st/1700 et/1900`, after the first example, adds the lesson and warns that it clashes with `Sec 3 A-Math (Mon 1600-1800)`.
 
+![The result of addlesson with a clash warning, and the two lessons in the lessons panel](images/AddLessonClashWarning.png)
+
 ### Enrolling a student: `enrol`
 
 Enrols a student in a lesson using the indices shown in the student and lesson panels.
