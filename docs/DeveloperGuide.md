@@ -270,6 +270,40 @@ The following sequence diagram shows the successful execution of `editstudent 1 
 
 Enrolments link the stable student and lesson UUIDs. Because an edit retains the target UUID, existing enrolments continue to refer to the edited record without being recreated. This also keeps a student list filtered by lesson valid when that lesson is edited.
 
+### Deleting a lesson
+
+`deletelesson` deletes the lesson at a displayed index. The students in it are kept, but their enrolments in the lesson are removed, so that no enrolment refers to a missing lesson.
+
+![Interactions inside the Logic and Model components for deletelesson](images/DeleteLessonSequenceDiagram.png)
+
+1. `DeleteLessonCommandParser` reads one positive index, and rejects anything else with the usage message.
+1. `DeleteLessonCommand#execute()` looks the index up in the filtered lesson list, so it deletes the lesson the tutor sees at that position, even when `listlessons d/DAY` hides other lessons.
+1. Before deleting, it asks the address book for the students enrolled in the lesson, so that the result can name them.
+1. `ModelManager#deleteLesson()` calls `AddressBook#removeLesson()`, which removes the lesson's enrolments and then the lesson. If the student list shows only this lesson's students (`liststudents l/INDEX`), the model shows all students again, since that filter no longer refers to a lesson.
+1. The result names the deleted lesson, marked `(next day)` if it runs past midnight, and the students who were unenrolled.
+
+#### Design considerations:
+
+**Aspect: What happens to the lesson's students:**
+
+* **Alternative 1 (current choice):** Keep the students and remove only their enrolments in the lesson.
+  * Pros: A tutor who stops a lesson keeps the contacts of its students and their guardians.
+  * Cons: Students with no lessons left must be deleted separately if they are no longer needed.
+
+* **Alternative 2:** Also delete students who have no other lessons.
+  * Pros: No students without lessons are left behind.
+  * Cons: Contacts the tutor may still need are lost without warning.
+
+**Aspect: A student list filtered by the deleted lesson:**
+
+* **Alternative 1 (current choice):** Show all students again.
+  * Pros: The student panel never shows a filter for a lesson that no longer exists.
+  * Cons: The tutor's view changes as a side effect of the deletion.
+
+* **Alternative 2:** Keep the filter, which now matches no student.
+  * Pros: The view does not change unexpectedly.
+  * Cons: An empty student panel looks as if all students were deleted.
+
 ### Enrolling a student in a lesson
 
 #### Implementation
