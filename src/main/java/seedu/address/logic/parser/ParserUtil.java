@@ -6,8 +6,11 @@ import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.StringUtil;
@@ -24,12 +27,15 @@ import seedu.address.model.tag.Tag;
 public class ParserUtil {
 
     public static final String MESSAGE_INVALID_INDEX = "Index must be a positive integer.";
-    public static final String MESSAGE_INVALID_DAY = "Day must be one of mon, tue, wed, thu, fri, sat or sun.";
+    public static final String MESSAGE_INVALID_DAY =
+            "Day must be a day's name or at least its first 3 letters, e.g. mon, tues or friday.";
     public static final String MESSAGE_INVALID_TIME =
-            "Times must be exactly four digits in 24-hour format, from 0000 to 2359, e.g. 1600.";
+            "Times must be 24-hour HHmm or HH:mm, from 0000 to 2359, e.g. 1600 or 16:00.";
 
-    private static final int DAY_ABBREVIATION_LENGTH = 3;
-    private static final String TIME_VALIDATION_REGEX = "([01][0-9]|2[0-3])[0-5][0-9]";
+    private static final int MIN_DAY_PREFIX_LENGTH = 3;
+    private static final Pattern TIME_WITHOUT_COLON = Pattern.compile("(?<hour>[01][0-9]|2[0-3])(?<minute>[0-5][0-9])");
+    // with a colon, the hour may drop its leading zero, as in 9:30
+    private static final Pattern TIME_WITH_COLON = Pattern.compile("(?<hour>[01]?[0-9]|2[0-3]):(?<minute>[0-5][0-9])");
 
     /**
      * Parses {@code oneBasedIndex} into an {@code Index} and returns it. Leading and trailing whitespaces will be
@@ -132,37 +138,42 @@ public class ParserUtil {
     }
 
     /**
-     * Parses a {@code String day} into a {@code DayOfWeek}. The day must be the first three letters of its
-     * name, such as {@code mon}, in any letter case. Leading and trailing whitespaces will be trimmed.
+     * Parses a {@code String day} into a {@code DayOfWeek}. The day may be its full name or any start of it with
+     * at least three letters, such as {@code mon}, {@code tues} or {@code friday}, in any letter case.
+     * Leading and trailing whitespaces will be trimmed.
      *
      * @throws ParseException if the given {@code day} is invalid.
      */
     public static DayOfWeek parseDay(String day) throws ParseException {
         requireNonNull(day);
         String normalizedDay = day.trim().toLowerCase(Locale.ROOT);
-        for (DayOfWeek dayOfWeek : DayOfWeek.values()) {
-            String abbreviation = dayOfWeek.name().substring(0, DAY_ABBREVIATION_LENGTH).toLowerCase(Locale.ROOT);
-            if (normalizedDay.equals(abbreviation)) {
-                return dayOfWeek;
+        if (normalizedDay.length() >= MIN_DAY_PREFIX_LENGTH) {
+            for (DayOfWeek dayOfWeek : DayOfWeek.values()) {
+                // the first three letters of each day differ, so at most one day can match
+                if (dayOfWeek.name().toLowerCase(Locale.ROOT).startsWith(normalizedDay)) {
+                    return dayOfWeek;
+                }
             }
         }
         throw new ParseException(MESSAGE_INVALID_DAY);
     }
 
     /**
-     * Parses a {@code String time} in the strict four-digit 24-hour format {@code HHmm} into a {@code LocalTime}.
-     * Leading and trailing whitespaces will be trimmed.
+     * Parses a {@code String time} in the 24-hour format {@code HHmm} or {@code HH:mm} into a {@code LocalTime}.
+     * With a colon, the hour may be a single digit, as in {@code 9:30}. Leading and trailing whitespaces will be
+     * trimmed.
      *
      * @throws ParseException if the given {@code time} is invalid.
      */
     public static LocalTime parseTime(String time) throws ParseException {
         requireNonNull(time);
         String trimmedTime = time.trim();
-        if (!trimmedTime.matches(TIME_VALIDATION_REGEX)) {
-            throw new ParseException(MESSAGE_INVALID_TIME);
+        for (Pattern format : List.of(TIME_WITHOUT_COLON, TIME_WITH_COLON)) {
+            Matcher matcher = format.matcher(trimmedTime);
+            if (matcher.matches()) {
+                return LocalTime.of(Integer.parseInt(matcher.group("hour")), Integer.parseInt(matcher.group("minute")));
+            }
         }
-        int hour = Integer.parseInt(trimmedTime.substring(0, 2));
-        int minute = Integer.parseInt(trimmedTime.substring(2));
-        return LocalTime.of(hour, minute);
+        throw new ParseException(MESSAGE_INVALID_TIME);
     }
 }
