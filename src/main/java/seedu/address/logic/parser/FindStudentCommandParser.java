@@ -24,8 +24,8 @@ public class FindStudentCommandParser implements Parser<FindStudentCommand> {
     public static final String MESSAGE_INVALID_PHONE_KEYWORD =
             "Phone search should contain only digits, spaces, hyphens and a leading +: %1$s";
 
-    // one number written as it often is, such as +65 9123-4567
-    private static final String PHONE_SEARCH_VALIDATION_REGEX = "\\+?[0-9][0-9\\s-]*";
+    // one number written as it often is, such as +65 9123-4567, or a copied part of one, such as -4567
+    private static final String PHONE_SEARCH_VALIDATION_REGEX = "\\+?[0-9\\s-]*[0-9][0-9\\s-]*";
     private static final String NON_DIGIT_REGEX = "[^0-9]";
 
     /**
