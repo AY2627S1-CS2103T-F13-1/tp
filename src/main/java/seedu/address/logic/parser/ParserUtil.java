@@ -33,6 +33,8 @@ public class ParserUtil {
             "Times must be 24-hour HHmm or HH:mm, from 0000 to 2359, e.g. 1600 or 16:00.";
 
     private static final int MIN_DAY_PREFIX_LENGTH = 3;
+    // a common abbreviation that is not the start of the day's name
+    private static final String WEDNESDAY_ABBREVIATION = "weds";
     private static final Pattern TIME_WITHOUT_COLON = Pattern.compile("(?<hour>[01][0-9]|2[0-3])(?<minute>[0-5][0-9])");
     // with a colon, the hour may drop its leading zero, as in 9:30
     private static final Pattern TIME_WITH_COLON = Pattern.compile("(?<hour>[01]?[0-9]|2[0-3]):(?<minute>[0-5][0-9])");
@@ -139,14 +141,17 @@ public class ParserUtil {
 
     /**
      * Parses a {@code String day} into a {@code DayOfWeek}. The day may be its full name or any start of it with
-     * at least three letters, such as {@code mon}, {@code tues} or {@code friday}, in any letter case.
-     * Leading and trailing whitespaces will be trimmed.
+     * at least three letters, such as {@code mon}, {@code tues} or {@code friday}, or {@code weds}, in any letter
+     * case. Leading and trailing whitespaces will be trimmed.
      *
      * @throws ParseException if the given {@code day} is invalid.
      */
     public static DayOfWeek parseDay(String day) throws ParseException {
         requireNonNull(day);
         String normalizedDay = day.trim().toLowerCase(Locale.ROOT);
+        if (normalizedDay.equals(WEDNESDAY_ABBREVIATION)) {
+            return DayOfWeek.WEDNESDAY;
+        }
         if (normalizedDay.length() >= MIN_DAY_PREFIX_LENGTH) {
             for (DayOfWeek dayOfWeek : DayOfWeek.values()) {
                 // the first three letters of each day differ, so at most one day can match

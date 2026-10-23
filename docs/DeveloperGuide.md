@@ -949,8 +949,8 @@ testers are expected to do more *exploratory* testing.
    1. Test case: `addlesson n/Sec 4 E-Math d/Tuesday st/16:30 et/18:30`<br>
       Expected: A lesson card for Sec 4 E-Math (Tue 1630-1830) is added. A day may be written in full, and a time may contain a colon.
 
-   1. Other incorrect commands to try: `addlesson n/Math d/weds st/1600 et/1800`, `addlesson n/Math d/mo st/1600 et/1800`, `addlesson n/Math d/mon st/4pm et/1800`, `addlesson n/Math d/mon st/2400 et/2430`<br>
-      Expected: No lesson is added. The status message shows the error for the invalid value: a day must be its name or at least its first three letters, so `weds` and `mo` are rejected, and a time must be `HHMM` or `HH:MM` from `0000` to `2359`.
+   1. Other incorrect commands to try: `addlesson n/Math d/funday st/1600 et/1800`, `addlesson n/Math d/mo st/1600 et/1800`, `addlesson n/Math d/mon st/4pm et/1800`, `addlesson n/Math d/mon st/2400 et/2430`<br>
+      Expected: No lesson is added. The status message shows the error for the invalid value: a day must be its name or at least its first three letters, so `funday` and `mo` are rejected, and a time must be `HHMM` or `HH:MM` from `0000` to `2359`.
 
 1. Adding a lesson that clashes with another
 
@@ -975,7 +975,7 @@ testers are expected to do more *exploratory* testing.
    1. Test case: `listlessons`<br>
       Expected: All lessons are shown again.
 
-   1. Other incorrect commands to try: `listlessons mon`, `listlessons d/weds`, `listlessons d/mon d/tue`, `listlessons n/Math`<br>
+   1. Other incorrect commands to try: `listlessons mon`, `listlessons d/funday`, `listlessons d/mon d/tue`, `listlessons n/Math`<br>
       Expected: The list is unchanged. The status message shows the relevant invalid command, day or duplicate-prefix error.
 
 1. Deleting a lesson
@@ -1009,7 +1009,7 @@ testers are expected to do more *exploratory* testing.
    1. Test case: `editlesson 1 st/1700 et/1700`<br>
       Expected: No lesson is edited. The status message states that the end time must not be the same as the start time.
 
-   1. Other incorrect commands to try: `editlesson 1`, `editlesson 0 n/Math`, `editlesson 1 d/weds`, `editlesson 1 st/4pm`, `editlesson 1 d/mon d/tue`<br>
+   1. Other incorrect commands to try: `editlesson 1`, `editlesson 0 n/Math`, `editlesson 1 d/funday`, `editlesson 1 st/4pm`, `editlesson 1 d/mon d/tue`<br>
       Expected: No lesson is edited. The status message shows the relevant missing field, invalid index, invalid value or duplicate-prefix error.
 
 1. Editing a lesson while a filter is active
