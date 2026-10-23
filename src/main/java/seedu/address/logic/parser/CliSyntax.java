@@ -1,5 +1,7 @@
 package seedu.address.logic.parser;
 
+import java.util.List;
+
 /**
  * Contains Command Line Interface (CLI) syntax definitions common to multiple commands
  */
@@ -18,5 +20,9 @@ public class CliSyntax {
     public static final Prefix PREFIX_DAY = new Prefix("d/");
     public static final Prefix PREFIX_START_TIME = new Prefix("st/");
     public static final Prefix PREFIX_END_TIME = new Prefix("et/");
+
+    /** Prefixes taken by TutorReach's commands. */
+    public static final List<Prefix> TUTORREACH_PREFIXES = List.of(PREFIX_STUDENT, PREFIX_LESSON, PREFIX_NAME,
+            PREFIX_PHONE, PREFIX_GUARDIAN_NAME, PREFIX_GUARDIAN_PHONE, PREFIX_DAY, PREFIX_START_TIME, PREFIX_END_TIME);
 
 }
