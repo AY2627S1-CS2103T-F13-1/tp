@@ -250,6 +250,17 @@ public class StudentContainsKeywordsPredicateTest {
     }
 
     @Test
+    public void test_phoneKeywordWithCountryCode_returnsTrue() {
+        // the keyword ends with the whole stored number, as when a caller ID shows +65 in front
+        assertTrue(phonePredicate("6593210283").test(ryan));
+        assertTrue(phonePredicate("6591234567").test(aiden));
+        assertTrue(phonePredicate("6582223333").test(weiJie));
+
+        // a different number with the same country code does not match
+        assertFalse(phonePredicate("6593210284").test(ryan));
+    }
+
+    @Test
     public void test_phoneDoesNotContainKeywords_returnsFalse() {
         // Non-matching digits
         assertFalse(phonePredicate("0000").test(ryan));

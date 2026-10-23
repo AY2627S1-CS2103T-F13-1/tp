@@ -73,15 +73,22 @@ public class FindStudentCommandParserTest {
     }
 
     @Test
-    public void parse_nonDigitPhoneKeyword_throwsParseException() {
-        assertParseFailure(parser, " p/+6591234567", invalidPhoneKeyword("+6591234567"));
-        assertParseFailure(parser, " p/9123-4567", invalidPhoneKeyword("9123-4567"));
+    public void parse_invalidPhoneSearch_throwsParseException() {
         assertParseFailure(parser, " p/91a", invalidPhoneKeyword("91a"));
         assertParseFailure(parser, " p/Tan", invalidPhoneKeyword("Tan"));
-        assertParseFailure(parser, " n/Aiden p/9123 x", invalidPhoneKeyword("x"));
+        assertParseFailure(parser, " n/Aiden p/9123 x", invalidPhoneKeyword("9123 x"));
 
-        // unrelated prefix after p/ is read as a phone keyword
-        assertParseFailure(parser, " p/9123 l/1", invalidPhoneKeyword("l/1"));
+        // a + only at the start, and at least one digit
+        assertParseFailure(parser, " p/91+23", invalidPhoneKeyword("91+23"));
+        assertParseFailure(parser, " p/+", invalidPhoneKeyword("+"));
+        assertParseFailure(parser, " p/- -", invalidPhoneKeyword("- -"));
+
+        // other separators and brackets are not ignored
+        assertParseFailure(parser, " p/9123.4567", invalidPhoneKeyword("9123.4567"));
+        assertParseFailure(parser, " p/(65) 91234567", invalidPhoneKeyword("(65) 91234567"));
+
+        // unrelated prefix after p/ is read as part of the phone number
+        assertParseFailure(parser, " p/9123 l/1", invalidPhoneKeyword("9123 l/1"));
     }
 
     @Test
@@ -150,17 +157,24 @@ public class FindStudentCommandParserTest {
     }
 
     @Test
-    public void parse_phoneKeywords_returnsFindStudentCommand() {
+    public void parse_phoneNumberAsTyped_returnsFindStudentCommand() {
+        // p/ takes one number, so spaces and hyphens inside it are dropped instead of splitting it
         FindStudentCommand expectedCommand = new FindStudentCommand(
-                new StudentContainsKeywordsPredicate(List.of(), List.of(), List.of("9123", "4567")));
+                new StudentContainsKeywordsPredicate(List.of(), List.of(), List.of("91234567")));
+        assertParseSuccess(parser, " p/91234567", expectedCommand);
         assertParseSuccess(parser, " p/9123 4567", expectedCommand);
+        assertParseSuccess(parser, " p/9123-4567", expectedCommand);
+        assertParseSuccess(parser, " \t p/ 9123 \n 45-67 ", expectedCommand);
 
-        // multiple whitespaces between keywords
-        assertParseSuccess(parser, " \t p/ 9123 \n 4567 ", expectedCommand);
+        // a country code is kept, so that the full number can be matched against stored numbers
+        assertParseSuccess(parser, " p/+65 9123 4567", new FindStudentCommand(
+                new StudentContainsKeywordsPredicate(List.of(), List.of(), List.of("6591234567"))));
 
         // single digit and leading zeros are kept as typed
-        assertParseSuccess(parser, " p/0 0283", new FindStudentCommand(
-                new StudentContainsKeywordsPredicate(List.of(), List.of(), List.of("0", "0283"))));
+        assertParseSuccess(parser, " p/0", new FindStudentCommand(
+                new StudentContainsKeywordsPredicate(List.of(), List.of(), List.of("0"))));
+        assertParseSuccess(parser, " p/0283", new FindStudentCommand(
+                new StudentContainsKeywordsPredicate(List.of(), List.of(), List.of("0283"))));
     }
 
     @Test

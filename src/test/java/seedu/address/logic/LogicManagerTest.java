@@ -137,12 +137,19 @@ public class LogicManagerTest {
                 String.format(MESSAGE_STUDENTS_LISTED_OVERVIEW, 1), expectedModel);
         assertEquals(List.of(aiden), logic.getFilteredStudentList());
 
-        // aiden is found through the guardian's phone, ryan through their own
+        // aiden is found through the guardian's phone, typed with a space as it is often written
         expectedModel.updateFilteredStudentList(
-                new StudentContainsKeywordsPredicate(List.of(), List.of(), List.of("4567", "0283")));
-        assertCommandSuccess(FindStudentCommand.COMMAND_WORD + " p/4567 0283",
-                String.format(MESSAGE_STUDENTS_LISTED_OVERVIEW, 2), expectedModel);
-        assertEquals(List.of(aiden, ryan), logic.getFilteredStudentList());
+                new StudentContainsKeywordsPredicate(List.of(), List.of(), List.of("91234567")));
+        assertCommandSuccess(FindStudentCommand.COMMAND_WORD + " p/9123 4567",
+                String.format(MESSAGE_STUDENTS_LISTED_OVERVIEW, 1), expectedModel);
+        assertEquals(List.of(aiden), logic.getFilteredStudentList());
+
+        // ryan is found through their own phone, typed as a caller ID shows it
+        expectedModel.updateFilteredStudentList(
+                new StudentContainsKeywordsPredicate(List.of(), List.of(), List.of("6593210283")));
+        assertCommandSuccess(FindStudentCommand.COMMAND_WORD + " p/+65 9321-0283",
+                String.format(MESSAGE_STUDENTS_LISTED_OVERVIEW, 1), expectedModel);
+        assertEquals(List.of(ryan), logic.getFilteredStudentList());
     }
 
     @Test
