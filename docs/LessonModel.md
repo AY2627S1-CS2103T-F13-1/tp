@@ -1,7 +1,7 @@
 # Lesson model and storage
 
 This issue supplies shared data and APIs. Lesson commands, their parsers, and UI layouts remain
-separate tasks. Storage uses the existing local `data/addressbook.json` path (or the configured path).
+separate tasks. Storage uses the local `data/addressbook.json` path, relative to the app's working directory.
 No database or new dependencies are needed.
 
 ## Types
@@ -96,15 +96,17 @@ The JSON root retains `persons` and `students` and adds `lessons` and `enrolment
 }
 ```
 
-Missing lesson/enrolment lists default to empty. Older students without IDs receive one on load;
-it becomes persistent at the next normal save. Existing person data remains intact. Lessons and
-links require IDs. Invalid records, duplicates and links to missing records are skipped independently during file loading.
-The first valid occurrence wins. Recovery creates a unique backup of the original bytes and reports a warning
-in the existing result display. Unreadable files or backup failures block saving to the affected path.
-The strict `JsonSerializableAddressBook.toModelType()` conversion remains available for validation; normal
-file loading uses `AddressBookRecovery` to isolate even records with invalid JSON field types. Successful commands that change stored records
-save the whole address book through LogicManager; do not add separate file writes to new commands.
+Missing or null lesson/enrolment lists default to empty. Older students without IDs receive one on load;
+it becomes persistent at the next successful save. Lessons and enrolments require valid IDs.
 
-Commands that only change views override `changesStoredData()` to return false and do not save.
-Mutating commands default to true; LogicManager checks the storage save guard before execution.
-This prevents mutations during blocked-saving sessions. Unexpected disk-write failures restore the previous data and filters.
+Invalid records, duplicates and links to missing records are skipped independently after backing up the
+original file. The first valid occurrence wins. Unreadable files or backup failures block saving to the
+affected path. Normal loading uses `AddressBookRecovery`; `JsonSerializableAddressBook.toModelType()`
+remains a strict conversion API.
+
+Do not add file writes to commands. `LogicManager` checks the save guard before executing a potentially
+mutating command, saves only if records change, and restores data and filters on I/O failure.
+Read-only commands override `changesStoredData()` to return `false` and bypass saving.
+
+See [Saving and recovering tutor data](DeveloperGuide.md#saving-and-recovering-tutor-data) for the full
+loading, backup and save behaviour.

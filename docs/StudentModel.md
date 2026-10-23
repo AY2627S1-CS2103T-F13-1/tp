@@ -62,7 +62,7 @@ For UI development without an add command, create a `ModelManager` in a test/dem
 
 ## Local storage
 
-Students use the existing configured JSON file (default `data/addressbook.json`). No database
+Students use the local JSON file `data/addressbook.json`, relative to the app's working directory. No database
 or new dependency is required. The file now contains both legacy `persons` and new `students`:
 
 ```json
@@ -70,6 +70,7 @@ or new dependency is required. The file now contains both legacy `persons` and n
   "persons": [],
   "students": [
     {
+      "id": "00000000-0000-0000-0000-000000000001",
       "name": "Aiden Tan",
       "phone": null,
       "guardianName": "Tan Mei Ling",
@@ -79,12 +80,13 @@ or new dependency is required. The file now contains both legacy `persons` and n
 }
 ```
 
-Old files without `students` still load with an empty student list. Existing AB3 contacts are
-preserved as persons; they are not automatically converted to students. Student records are
-validated on load, including duplicate detection. Invalid records are skipped with a startup warning
-and a backup of the original file. Unreadable files or backup failures disable saving to protect the source. Existing AB3 commands and screens still operate on persons until the team
-implements the student commands and UI; the existing `clear` clears the entire address book.
+Old files without `students` load with an empty student list. Legacy `persons` are retained separately,
+not converted into students. Students without IDs receive one on load; the ID persists only after a
+successful save. The `clear` command clears the entire address book, including lessons and enrolments.
 
-Commands that only change views override `changesStoredData()` to return false and do not save.
-Mutating commands default to true; LogicManager checks the storage save guard before execution.
-This prevents mutations during blocked-saving sessions. Unexpected disk-write failures restore the previous data and filters.
+Invalid records are skipped only after the original bytes have been backed up. Unreadable files or backup
+failures block saving. Commands use the model API; `LogicManager` owns the save guard, change detection
+and rollback of data and filters on I/O failure.
+
+See [Saving and recovering tutor data](DeveloperGuide.md#saving-and-recovering-tutor-data) for the full
+loading, backup and save behaviour.

@@ -340,13 +340,14 @@ Format: `exit`
 
 ### Saving the data
 
-AddressBook automatically saves after commands that change data. Viewing, searching, help and exit commands do not rewrite the data file. You do not need to save manually.
+TutorReach automatically saves after commands that change data. Viewing, searching, help and exit commands do not rewrite the data file. You do not need to save manually.
 
 If saving fails, the data change is undone and the previous display filters are restored. Fix the reported storage problem before retrying the command. Saves use atomic file replacement; a filesystem that does not support this will report a save error instead of overwriting the existing file unsafely.
 
 ### Editing the data file
 
-AddressBook data is saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. Advanced users are welcome to update data directly by editing that data file.
+TutorReach stores data in `data/addressbook.json` by default, relative to the folder from which you launch the app.
+Only edit this file while the app is closed.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
 If individual records are invalid or duplicated, the app loads the valid records and skips the invalid ones.
@@ -354,14 +355,15 @@ Enrolments referencing missing students or lessons are also skipped. The first v
 A warning in the message box reports how many records were skipped and where the original file was backed up.
 Backups are saved beside the data file as `addressbook.json.recovery-<unique number>.bak`; older backups are preserved.
 These files remain on disk after closing the app and are not automatically deleted. Open a backup in a text editor
-to review the original data, including skipped records.
+to review the original data, including skipped records. A recovery backup contains the original problems too;
+repair those entries before using it as your data file.
 The source file is unchanged until a successful command that changes records saves the recovered data.<br>
 If the JSON cannot be read, its lists have an invalid structure, or a backup cannot be created, the app starts empty
 with a warning and **disables saving** to protect the source file. Fix the file or restore a backup while the app
 is closed, then restart. While saving is disabled, commands that change records are rejected before changing the data.
 Listing, searching, help, and exit remain available.<br>
 Only edit the file while the app is closed, and keep a backup before editing it.<br>
-Furthermore, certain edits can cause the AddressBook to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Therefore, edit the data file only if you are confident that you can update it correctly.
+Keep student and lesson IDs unchanged when editing details, as enrolments use those IDs to link records.
 </div>
 
 ### Archiving data files `[coming in v2.0]`
