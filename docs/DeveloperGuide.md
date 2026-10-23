@@ -225,7 +225,7 @@ The sequence diagram below shows how `AddLessonCommand` finds the clashes before
 
 ![Interactions inside the Logic and Model components when adding a lesson](images/AddLessonSequenceDiagram.png)
 
-1. `AddLessonCommand#execute()` first calls `Model#hasLesson()`. A duplicate lesson is rejected with a `CommandException`, so it never gets a warning instead.
+1. `AddLessonCommand#execute()` first calls `ReadOnlyAddressBook#findDuplicateOf()`. A duplicate lesson is rejected with a `CommandException` that names the existing lesson, so it never gets a warning instead.
 1. It calls `ReadOnlyAddressBook#getClashingLessons()`, which checks the full lesson list, so lessons hidden by `listlessons d/DAY` still count. A lesson with the same ID as the given lesson is skipped, so that `editlesson` does not report a lesson as clashing with its own old times.
 1. `getClashingLessons()` compares each lesson with the new one using `Lesson#overlaps()`.
 1. The command adds the lesson, and returns a `CommandResult` whose second line names the clashing lessons, if any. `Messages#formatClashWarning()` formats that line.

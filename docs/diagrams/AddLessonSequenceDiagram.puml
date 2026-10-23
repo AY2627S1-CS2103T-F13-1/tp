@@ -17,20 +17,20 @@ end box
 LogicManager -> AddLessonCommand : execute(m)
 activate AddLessonCommand
 
-AddLessonCommand -> Model : hasLesson(newLesson)
-activate Model
-Model --> AddLessonCommand : false
-deactivate Model
-
-note right of AddLessonCommand
-  A duplicate lesson is rejected
-  here with a CommandException.
-end note
-
 AddLessonCommand -> Model : getAddressBook()
 activate Model
 Model --> AddLessonCommand
 deactivate Model
+
+AddLessonCommand -> AddressBook : findDuplicateOf(newLesson)
+activate AddressBook
+AddressBook --> AddLessonCommand : none
+deactivate AddressBook
+
+note right of AddLessonCommand
+  A duplicate lesson is rejected here with
+  a CommandException that names it.
+end note
 
 AddLessonCommand -> AddressBook : getClashingLessons(newLesson)
 activate AddressBook
