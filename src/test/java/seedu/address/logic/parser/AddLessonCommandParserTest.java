@@ -138,7 +138,9 @@ public class AddLessonCommandParserTest {
 
         // similar prefixes that are not the lesson ones; the first is named
         assertParseFailure(parser, " n/Sec 3 A-Math d/mon s/1600 e/1800", unknownPrefix("s/"));
-        assertParseFailure(parser, " n/Sec 3 A-Math d/mon start/1600 end/1800", unknownPrefix("start/"));
+
+        // longer words are not taken for prefixes, so the missing st/ and et/ are reported
+        assertParseFailure(parser, " n/Sec 3 A-Math d/mon start/1600 end/1800", MESSAGE_INVALID_FORMAT);
 
         // a prefix must follow a space to be read as one
         assertParseFailure(parser, " n/Sec 3 A-Mathd/mon st/1600 et/1800", MESSAGE_INVALID_FORMAT);
@@ -263,6 +265,15 @@ public class AddLessonCommandParserTest {
 
         // a mistyped prefix is reported instead of the missing field it was meant to be
         assertParseFailure(parser, " n/Math d/mon st/1600 e/1800", unknownPrefix("e/"));
+    }
+
+    @Test
+    public void parse_slashInLessonName_reportsNameRule() {
+        // a slash word inside a name is not a prefix, so the error is the lesson-name rule
+        for (String name : List.of("Sec 3 Physics/Chem", "Sec 3 A/E Math", "Math and/or Science", "Physics/Chem")) {
+            assertParseFailure(parser, " n/" + name + DAY_DESC + START_DESC + END_DESC,
+                    Lesson.MESSAGE_NAME_CONSTRAINTS);
+        }
     }
 
     private static String unknownPrefix(String prefix) {
