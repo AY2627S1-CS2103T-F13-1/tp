@@ -119,6 +119,7 @@ public class ModelManager implements Model {
     @Override
     public void deletePerson(Person target) {
         addressBook.removePerson(target);
+        filteredPersons.setPredicate(filteredPersons.getPredicate());
     }
 
     @Override
@@ -153,6 +154,7 @@ public class ModelManager implements Model {
     @Override
     public void deleteStudent(Student student) {
         addressBook.removeStudent(student);
+        refreshStudentLessonFilter();
     }
 
     @Override
@@ -181,6 +183,7 @@ public class ModelManager implements Model {
     @Override
     public void setLesson(Lesson target, Lesson editedLesson) {
         addressBook.setLesson(target, editedLesson);
+        refreshStudentLessonFilter();
     }
 
     @Override

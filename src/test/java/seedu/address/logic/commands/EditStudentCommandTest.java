@@ -193,6 +193,19 @@ public class EditStudentCommandTest {
     }
 
     @Test
+    public void execute_editedLessonTime_keepsStudentLessonFilterLive() throws Exception {
+        model.addLesson(A_MATH);
+        model.enrolStudent(AIDEN, A_MATH);
+        model.filterStudentsByLesson(A_MATH);
+        Lesson editedLesson = new Lesson(A_MATH.getId(), A_MATH.getName(), A_MATH.getDay(),
+                LocalTime.of(17, 0), LocalTime.of(19, 0));
+
+        model.setLesson(A_MATH, editedLesson);
+
+        assertEquals(List.of(AIDEN), model.getFilteredStudentList());
+    }
+
+    @Test
     public void equals() {
         EditStudentDescriptor nameDescriptor = createDescriptor(new Name("Aiden Lee"), null, null);
         EditStudentDescriptor phoneDescriptor = createDescriptor(null, new Phone("92345678"), null);
