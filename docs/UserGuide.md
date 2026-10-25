@@ -270,21 +270,34 @@ If saving fails, the data change is undone and the previous display filters are 
 TutorReach stores data in `data/addressbook.json` by default, relative to the folder from which you launch the app.
 Only edit this file while the app is closed.
 
-<div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-If individual records are invalid or duplicated, the app loads the valid records and skips the invalid ones.
-Enrolments referencing missing students or lessons are also skipped. The first valid duplicate is kept.
-A warning in the message box reports how many records were skipped and where the original file was backed up.
-Backups are saved beside the data file as `addressbook.json.recovery-<unique number>.bak`; older backups are preserved.
-These files remain on disk after closing the app and are not automatically deleted. Open a backup in a text editor
-to review the original data, including skipped records. A recovery backup contains the original problems too;
-repair those entries before using it as your data file.
-The source file is unchanged until a successful command that changes records saves the recovered data.<br>
-If the JSON cannot be read, its lists have an invalid structure, or a backup cannot be created, the app starts empty
-with a warning and **disables saving** to protect the source file. Fix the file or restore a backup while the app
-is closed, then restart. While saving is disabled, commands that change records are rejected before changing the data.
-Listing, searching, help, and exit remain available.<br>
-Only edit the file while the app is closed, and keep a backup before editing it.<br>
-Keep student and lesson IDs unchanged when editing details, as enrolments use those IDs to link records.
+Before editing, keep a backup of the file. Student and lesson IDs are especially important:
+enrolments use those IDs to link records, so keep them unchanged while editing other details.
+
+<div markdown="block" class="alert alert-warning">
+
+**:warning: If TutorReach finds problems in the file**
+
+* **Minor record problems.** Invalid or duplicated records are skipped;
+  the first valid duplicate is kept. Enrolments that refer to a missing student or lesson are also skipped.
+* **Recovery backup.** The original file is copied beside the data file as
+  `addressbook.json.recovery-<unique number>.bak`. Older backups are kept, and these files remain on disk
+  after closing the app. A backup contains the original problems too, so repair those entries before using
+  it as your data file.
+* **Recovered data is saved later.** The source file is unchanged until you successfully run a command that
+  changes records. The warning reports how many records were skipped and where the backup is located.
+
+</div>
+
+<div markdown="block" class="alert alert-danger">
+
+**:no_entry: If saving is disabled**
+
+* **When this happens.** If the JSON cannot be read, its lists have an invalid structure, or a backup cannot
+  be created, the app starts empty with a warning and **disables saving** to protect the source file.
+* **What still works.** Listing, searching, help and exit remain available. Commands that change records are
+  rejected before changing any data.
+* **How to recover.** Close the app, fix the file or restore a backup, then restart TutorReach.
+
 </div>
 
 --------------------------------------------------------------------------------------------------------------------
