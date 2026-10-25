@@ -103,6 +103,24 @@ public class BlockedSavingTest {
         assertEquals(new AddressBook(), model.getAddressBook());
     }
 
+    @Test
+    public void blockedStorage_addStudent_reportsErrorAndLeavesUiAndFileUnchanged() throws Exception {
+        Path file = folder.resolve("data.json");
+        Files.writeString(file, "{");
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(file);
+        assertThrows(DataLoadingException.class, storage::readAddressBook);
+        ModelManager model = new ModelManager();
+        LogicManager logic = logic(model, storage);
+
+        CommandException error = assertThrows(CommandException.class, () ->
+                logic.execute("addstudent n/Blocked p/90000001"));
+
+        assertTrue(error.getMessage().contains("Saving is disabled"));
+        assertTrue(model.getFilteredStudentList().isEmpty());
+        assertEquals(1, Files.readAllBytes(file).length);
+        assertEquals("{", Files.readString(file));
+    }
+
     private LogicManager logic(ModelManager model, JsonAddressBookStorage storage) {
         return new LogicManager(model,
                 new StorageManager(storage, new JsonUserPrefsStorage(folder.resolve("prefs.json"))));
