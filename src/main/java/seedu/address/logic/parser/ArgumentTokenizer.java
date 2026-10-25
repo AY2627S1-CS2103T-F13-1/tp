@@ -25,6 +25,8 @@ public class ArgumentTokenizer {
     private static final Pattern SLASH_WORD = Pattern.compile("(?:^|\\s)(?<word>[A-Za-z]+/)");
     // One or two lower-case letters, like the e/ and t/ of AddressBook-Level3 that users may still type.
     private static final Pattern SHORT_PREFIX = Pattern.compile("[a-z]{1,2}/");
+    // The s/o, d/o, a/l and a/p that join Singapore names, as in Kumar s/o Ravi, in any letter case.
+    private static final Pattern NAME_CONNECTOR = Pattern.compile("(?i)[sd]/o|a/[lp]");
 
     /**
      * Tokenizes an arguments string and returns an {@code ArgumentMultimap} object that maps prefixes to their
@@ -45,7 +47,8 @@ public class ArgumentTokenizer {
      * read such a word as part of the preamble or of the value before it, and that value would be blamed instead.
      * A word looks like a prefix if it is one of TutorReach's prefixes in any letter case, such as {@code N/}, or
      * one or two lower-case letters, such as {@code e/}. Other words ending in a slash, such as {@code Physics/} in
-     * {@code Physics/Chem}, are left to the rules of the value they are in.
+     * {@code Physics/Chem}, are left to the rules of the value they are in, and so are the name connectors
+     * {@code s/o}, {@code d/o}, {@code a/l} and {@code a/p}.
      *
      * @param argsString  Arguments string of the form: {@code preamble <prefix>value <prefix>value ...}
      * @param commandWord Command whose arguments these are, to name in the error
@@ -58,10 +61,21 @@ public class ArgumentTokenizer {
         Matcher matcher = SLASH_WORD.matcher(argsString);
         while (matcher.find()) {
             String word = matcher.group("word");
-            if (looksLikePrefix(word) && !knownPrefixes.contains(word)) {
+            if (looksLikePrefix(word) && !knownPrefixes.contains(word)
+                    && !isNameConnector(argsString, matcher.start("word"))) {
                 throw new ParseException(Messages.getErrorMessageForUnknownPrefix(commandWord, word, prefixes));
             }
         }
+    }
+
+    /**
+     * Returns true if a name connector such as {@code s/o} starts at {@code index} of {@code argsString} and is a
+     * whole word.
+     */
+    private static boolean isNameConnector(String argsString, int index) {
+        Matcher connector = NAME_CONNECTOR.matcher(argsString).region(index, argsString.length());
+        return connector.lookingAt() && (connector.end() == argsString.length()
+                || Character.isWhitespace(argsString.charAt(connector.end())));
     }
 
     private static boolean looksLikePrefix(String word) {

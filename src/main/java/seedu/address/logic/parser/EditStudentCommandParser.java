@@ -33,6 +33,8 @@ public class EditStudentCommandParser implements Parser<EditStudentCommand> {
     @Override
     public EditStudentCommand parse(String args) throws ParseException {
         requireNonNull(args);
+        ArgumentTokenizer.verifyNoUnknownPrefixes(args, EditStudentCommand.COMMAND_WORD,
+                PREFIX_NAME, PREFIX_PHONE, PREFIX_GUARDIAN_NAME, PREFIX_GUARDIAN_PHONE);
         ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(
                 args, PREFIX_NAME, PREFIX_PHONE, PREFIX_GUARDIAN_NAME, PREFIX_GUARDIAN_PHONE);
 

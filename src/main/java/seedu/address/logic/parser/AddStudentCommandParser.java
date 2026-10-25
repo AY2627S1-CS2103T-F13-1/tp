@@ -30,6 +30,8 @@ public class AddStudentCommandParser implements Parser<AddStudentCommand> {
      * @throws ParseException if the user input does not conform to the expected format
      */
     public AddStudentCommand parse(String args) throws ParseException {
+        ArgumentTokenizer.verifyNoUnknownPrefixes(args, AddStudentCommand.COMMAND_WORD,
+                PREFIX_NAME, PREFIX_PHONE, PREFIX_GUARDIAN_NAME, PREFIX_GUARDIAN_PHONE);
         ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(
                 args, PREFIX_NAME, PREFIX_PHONE, PREFIX_GUARDIAN_NAME, PREFIX_GUARDIAN_PHONE);
 
