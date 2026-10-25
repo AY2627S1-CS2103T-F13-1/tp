@@ -36,6 +36,9 @@ public class NameTest {
         assertTrue(Name.isValidName("peter the 2nd")); // alphanumeric characters
         assertTrue(Name.isValidName("Capital Tan")); // with capital letters
         assertTrue(Name.isValidName("David Roger Jackson Ray Jr 2nd")); // long names
+        assertTrue(Name.isValidName("李明")); // Chinese letters
+        assertTrue(Name.isValidName("José")); // accented letters
+        assertTrue(Name.isValidName("李四 2nd")); // mixed Unicode letters and digits
     }
 
     @Test

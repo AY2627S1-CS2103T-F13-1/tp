@@ -80,7 +80,7 @@ Format: `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`
 
 * At least one phone number is required: the student's own `p/`, or a guardian's `gp/`.
 * `gn/` and `gp/` must be given together.
-* Names may contain only letters, digits and spaces. Phone numbers may contain only digits and must be at least 3 digits long.
+* Names may contain Unicode letters and digits, plus spaces. Phone numbers may contain only digits and must be at least 3 digits long.
 * A student is a duplicate if another student has the same name, ignoring letter case and extra spaces, and shares at least one phone number with them (own or guardian's). Siblings with different names can share a guardian's number.
 * Adding a student clears the student filter, so all students are shown.
 
@@ -124,7 +124,7 @@ Format: `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHON
 * `INDEX` must be a positive integer and refers to the index shown in the current student list.
 * At least one optional field must be provided. Fields that are not provided remain unchanged.
 * `gn/GUARDIAN_NAME` and `gp/GUARDIAN_PHONE` must be provided together. They replace the student's existing guardian details.
-* Names must contain only alphanumeric characters and spaces and must not be blank. Phone numbers must contain only digits and be at least three digits long.
+* Names may contain Unicode letters and digits, plus spaces, and must not be blank. Phone numbers must contain only digits and be at least three digits long.
 * The edited student must not duplicate another student.
 * The student's identity and lesson enrolments are preserved.
 * The active student filter remains in effect and is re-evaluated after the edit. For example, a renamed student may disappear from a name search that they no longer match.
