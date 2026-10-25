@@ -43,4 +43,31 @@ public class HelpWindowTest {
             return null;
         });
     }
+
+    @Test
+    public void handleHelp_afterMinimizing_reusesMinimizedWindow() throws Exception {
+        JavaFxTestUtil.runOnFxThread(() -> {
+            Stage stage = new Stage();
+            try {
+                HelpWindow helpWindow = new HelpWindow(stage);
+                helpWindow.show();
+                assertTrue(stage.isShowing());
+
+                stage.setIconified(true);
+                assertTrue(stage.isShowing());
+                assertTrue(stage.isIconified());
+
+                helpWindow.show();
+                assertTrue(stage.isShowing());
+                assertTrue(stage.isIconified(), "Calling show again must not restore a minimized window");
+
+                helpWindow.focus();
+                assertTrue(stage.isShowing());
+                assertTrue(stage.isIconified(), "Requesting focus must not restore a minimized window");
+            } finally {
+                stage.close();
+            }
+            return null;
+        });
+    }
 }
