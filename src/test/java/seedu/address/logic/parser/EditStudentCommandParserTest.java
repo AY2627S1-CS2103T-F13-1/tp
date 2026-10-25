@@ -40,7 +40,21 @@ public class EditStudentCommandParserTest {
         assertParseFailure(parser, "-1 n/Aiden Tan", MESSAGE_INVALID_FORMAT);
         assertParseFailure(parser, "0 n/Aiden Tan", MESSAGE_INVALID_FORMAT);
         assertParseFailure(parser, "1 extra n/Aiden Tan", MESSAGE_INVALID_FORMAT);
-        assertParseFailure(parser, "1 x/value n/Aiden Tan", MESSAGE_INVALID_FORMAT);
+    }
+
+    @Test
+    public void parse_unknownPrefix_throwsParseException() {
+        // the error names the prefix instead of reporting a bad index or a bad name
+        assertParseFailure(parser, "1 x/value n/Aiden Tan", unknownPrefix("x/"));
+        assertParseFailure(parser, "1 x/abc", unknownPrefix("x/"));
+        assertParseFailure(parser, "1 n/Aiden x/abc", unknownPrefix("x/"));
+        assertParseFailure(parser, "1 N/Aiden", unknownPrefix("N/"));
+        assertParseFailure(parser, "1 p/92345678 l/1", unknownPrefix("l/"));
+    }
+
+    @Test
+    public void parse_nameConnector_checkedAsName() {
+        assertParseFailure(parser, "1 n/Kumar s/o Ravi", Name.MESSAGE_CONSTRAINTS);
     }
 
     @Test
@@ -108,5 +122,10 @@ public class EditStudentCommandParserTest {
         descriptor.setPhone(phone);
         descriptor.setGuardian(guardian);
         return descriptor;
+    }
+
+    private static String unknownPrefix(String prefix) {
+        return Messages.getErrorMessageForUnknownPrefix(EditStudentCommand.COMMAND_WORD, prefix,
+                PREFIX_NAME, PREFIX_PHONE, PREFIX_GUARDIAN_NAME, PREFIX_GUARDIAN_PHONE);
     }
 }

@@ -43,6 +43,25 @@ public class ArgumentTokenizerUnknownPrefixTest {
     }
 
     @Test
+    public void verifyNoUnknownPrefixes_nameConnector_doesNotThrow() {
+        // s/o, d/o, a/l and a/p join Singapore names, so they are part of a name, not a prefix
+        assertNoUnknownPrefix(" n/Kumar s/o Ravi");
+        assertNoUnknownPrefix(" n/Siti d/o Ahmad");
+        assertNoUnknownPrefix(" n/Muthu a/l Rajan");
+        assertNoUnknownPrefix(" n/Devi a/p Ramasamy");
+        assertNoUnknownPrefix(" n/KUMAR S/O RAVI");
+        assertNoUnknownPrefix(" n/Kumar s/o");
+        assertNoUnknownPrefix(" n/Kumar\ts/o\tRavi");
+    }
+
+    @Test
+    public void verifyNoUnknownPrefixes_prefixThatOnlyStartsLikeNameConnector_throwsParseException() {
+        assertUnknownPrefix(" n/Aiden s/1", "s/");
+        assertUnknownPrefix(" n/Aiden s/on", "s/");
+        assertUnknownPrefix(" n/Aiden d/o1", "d/");
+    }
+
+    @Test
     public void verifyNoUnknownPrefixes_unknownPrefixInValue_throwsParseException() {
         // the tokenizer reads a prefix it was not given as part of the value before it
         assertUnknownPrefix(" n/Aiden gp/91234567", "gp/");

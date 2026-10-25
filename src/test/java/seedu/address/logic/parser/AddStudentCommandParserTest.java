@@ -30,7 +30,23 @@ public class AddStudentCommandParserTest {
         assertParseFailure(parser, "", MESSAGE_INVALID_FORMAT);
         assertParseFailure(parser, " p/93210283", MESSAGE_INVALID_FORMAT);
         assertParseFailure(parser, " Aiden n/Tan p/93210283", MESSAGE_INVALID_FORMAT);
-        assertParseFailure(parser, " N/Aiden p/93210283", MESSAGE_INVALID_FORMAT);
+    }
+
+    @Test
+    public void parse_unknownPrefix_throwsParseException() {
+        // prefixes are case-sensitive, so the error names the prefix that was not recognised
+        assertParseFailure(parser, " N/Aiden p/93210283", unknownPrefix("N/"));
+        assertParseFailure(parser, " n/Aiden p/93210283 x/abc", unknownPrefix("x/"));
+        // l/ and s/ belong to other commands, so a tutor may type them here by mistake
+        assertParseFailure(parser, " n/Aiden p/93210283 l/1", unknownPrefix("l/"));
+        assertParseFailure(parser, " n/Aiden s/1 p/93210283", unknownPrefix("s/"));
+    }
+
+    @Test
+    public void parse_nameConnector_checkedAsName() {
+        // s/o is part of a name, so the name's own rule rejects it rather than an unknown-prefix error
+        assertParseFailure(parser, " n/Kumar s/o Ravi p/93210283", Name.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, " n/Aiden gn/Siti d/o Ahmad gp/91234567", Name.MESSAGE_CONSTRAINTS);
     }
 
     @Test
@@ -103,4 +119,8 @@ public class AddStudentCommandParserTest {
         }
     }
 
+    private static String unknownPrefix(String prefix) {
+        return Messages.getErrorMessageForUnknownPrefix(AddStudentCommand.COMMAND_WORD, prefix,
+                PREFIX_NAME, PREFIX_PHONE, PREFIX_GUARDIAN_NAME, PREFIX_GUARDIAN_PHONE);
+    }
 }

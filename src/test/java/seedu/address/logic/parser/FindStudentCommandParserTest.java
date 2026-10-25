@@ -76,6 +76,9 @@ public class FindStudentCommandParserTest {
         assertParseFailure(parser, " gn/Mei-Ling", invalidKeyword("Mei-Ling"));
         assertParseFailure(parser, " n/Aiden gn/O'Neil", invalidKeyword("O'Neil"));
         assertParseFailure(parser, " n/Aiden Tan*", invalidKeyword("Tan*"));
+
+        // s/o in a searched name is a keyword with a slash, not an unknown s/ prefix
+        assertParseFailure(parser, " n/kumar s/o", invalidKeyword("s/o"));
     }
 
     @Test
