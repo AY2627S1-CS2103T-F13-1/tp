@@ -12,6 +12,7 @@ import static seedu.address.testutil.StudentTestUtil.assertStudentDetailsEqual;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.io.TempDir;
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.logic.commands.AddLessonCommand;
 import seedu.address.logic.commands.AddStudentCommand;
+import seedu.address.logic.commands.ClearCommand;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.DeleteLessonCommand;
 import seedu.address.logic.commands.DeleteStudentCommand;
@@ -50,6 +52,7 @@ import seedu.address.model.person.Phone;
 import seedu.address.model.student.Guardian;
 import seedu.address.model.student.Student;
 import seedu.address.model.student.StudentContainsKeywordsPredicate;
+import seedu.address.model.util.SampleDataUtil;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
 import seedu.address.storage.StorageManager;
@@ -63,13 +66,14 @@ public class LogicManagerTest {
 
     private Model model = new ModelManager();
     private Logic logic;
+    private StorageManager storage;
 
     @BeforeEach
     public void setUp() {
         JsonAddressBookStorage addressBookStorage =
                 new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
         JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(temporaryFolder.resolve("userPrefs.json"));
-        StorageManager storage = new StorageManager(addressBookStorage, userPrefsStorage);
+        storage = new StorageManager(addressBookStorage, userPrefsStorage);
         logic = new LogicManager(model, storage);
     }
 
@@ -343,6 +347,48 @@ public class LogicManagerTest {
         assertTrue(logic.getFilteredLessonList().isEmpty());
         assertEquals(List.of("Physics"), readSavedAddressBook().getLessonList().stream()
                 .map(Lesson::getName).toList());
+    }
+
+    @Test
+    public void execute_clearAfterLessonFilter_resetsStudentLessonFilter() throws Exception {
+        logic.execute(AddStudentCommand.COMMAND_WORD + " n/Aiden Tan p/91234567");
+        logic.execute(AddLessonCommand.COMMAND_WORD + " n/Math d/mon st/1600 et/1800");
+        logic.execute(EnrolCommand.COMMAND_WORD + " s/1 l/1");
+        logic.execute(ListStudentsCommand.COMMAND_WORD + " l/1");
+        assertEquals(1, logic.getFilteredStudentList().size());
+
+        logic.execute(ClearCommand.COMMAND_WORD);
+
+        assertEquals(List.of(), logic.getFilteredStudentList());
+        assertEquals(List.of(), logic.getFilteredLessonList());
+    }
+
+    @Test
+    public void execute_clearWithPersons_persistsEmptyTutorDataAndClearsLegacyList() throws Exception {
+        model = new ModelManager(SampleDataUtil.getSampleAddressBook(), new UserPrefs());
+        logic = new LogicManager(model, storage);
+        assertEquals(6, logic.getFilteredPersonList().size());
+
+        logic.execute(ClearCommand.COMMAND_WORD);
+
+        assertEquals(0, logic.getFilteredPersonList().size());
+        assertEquals(0, logic.getFilteredStudentList().size());
+        assertEquals(0, logic.getFilteredLessonList().size());
+        assertTrue(Files.exists(temporaryFolder.resolve("addressBook.json")));
+        assertEquals(0, new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"))
+                .readAddressBook().orElseThrow().getPersonList().size());
+    }
+
+    @Test
+    public void execute_liststudentsByMissingLesson_throwsCommandExceptionAndKeepsFilter() throws Exception {
+        Student aiden = new Student(new Name("Aiden Tan"), new Phone("91234567"), null);
+        model.addStudent(aiden);
+        logic.execute(FindStudentCommand.COMMAND_WORD + " n/aiden");
+        assertEquals(List.of(aiden), logic.getFilteredStudentList());
+
+        assertCommandException(ListStudentsCommand.COMMAND_WORD + " l/1",
+                Messages.MESSAGE_INVALID_LESSON_DISPLAYED_INDEX);
+        assertEquals(List.of(aiden), logic.getFilteredStudentList());
     }
 
     @Test
