@@ -103,7 +103,7 @@ The sequence diagram below illustrates the interactions within the `Logic` compo
 
 How the `Logic` component works:
 
-1. When `Logic` is called upon to execute a command, the command is passed to a `TutorBookParser` object, which in turn creates a parser that matches the command (e.g., `DeleteStudentCommandParser`) and uses it to parse the command.
+1. When `Logic` is called upon to execute a command, the command is passed to an `AddressBookParser` object, which in turn creates a parser that matches the command (e.g., `DeleteStudentCommandParser`) and uses it to parse the command.
 1. This results in a `Command` object (more precisely, an object of one of its subclasses e.g., `DeleteStudentCommand`) which is executed by the `LogicManager`.
 1. The command can communicate with the `Model` when it is executed (e.g. to delete a student).<br>
    Note that although this is shown as a single step in the diagram above for simplicity, the code can require several interactions between the command object and the `Model` to complete the operation.
@@ -114,7 +114,7 @@ Here are the other classes in `Logic` (omitted from the class diagram above) tha
 <img src="images/ParserClasses.png" width="600"/>
 
 How the parsing works:
-* When called upon to parse a user command, the `TutorBookParser` class creates an `XYZCommandParser` (`XYZ` is a placeholder for the specific command name, e.g., `AddStudentCommandParser`). The parser uses the other classes shown above to parse the user command and create an `XYZCommand` object (e.g., `AddStudentCommand`). The `TutorBookParser` returns that object as a `Command` object.
+* When called upon to parse a user command, the `AddressBookParser` class creates an `XYZCommandParser` (`XYZ` is a placeholder for the specific command name, e.g., `AddStudentCommandParser`). The parser uses the other classes shown above to parse the user command and create an `XYZCommand` object (e.g., `AddStudentCommand`). The `AddressBookParser` returns that object as a `Command` object.
 * All `XYZCommandParser` classes, such as `AddStudentCommandParser` and `DeleteStudentCommandParser`, implement the `Parser` interface so they can be treated similarly where appropriate, for example during testing.
 
 ### Model component
@@ -313,7 +313,7 @@ Deleting a student or lesson also removes every enrolment containing that record
 
 The `unenrol` command removes a student from a lesson, keeping both the student and the lesson. It is facilitated by `UnenrolCommand`, `UnenrolCommandParser` and the following operations:
 
-* `TutorBook#isEnrolled(Student, Lesson)` — Checks whether the student is enrolled in the lesson.
+* `AddressBook#isEnrolled(Student, Lesson)` — Checks whether the student is enrolled in the lesson.
 * `Model#unenrolStudent(Student, Lesson)` — Removes the enrolment linking the student to the lesson.
 
 The sequence diagram below shows how `unenrol s/1 l/2` is executed.
@@ -327,9 +327,9 @@ Step 1. `UnenrolCommandParser` checks that `s/` and `l/` are each present exactl
 
 Step 2. `UnenrolCommand#execute()` looks up the student in the filtered student list and the lesson in the filtered lesson list. If either index is out of range, it throws a `CommandException`, checking the student index first.
 
-Step 3. The command calls `TutorBook#isEnrolled()`. If the student is not enrolled in the lesson, it throws a `CommandException` naming both the student and the lesson.
+Step 3. The command calls `AddressBook#isEnrolled()`. If the student is not enrolled in the lesson, it throws a `CommandException` naming both the student and the lesson.
 
-Step 4. Otherwise, the command calls `Model#unenrolStudent()`, which removes the enrolment from the `TutorBook`. If the student list is currently showing only one lesson's students, the filter is reapplied, so a student unenrolled from that lesson disappears from the list. Both panels stay filtered as before.
+Step 4. Otherwise, the command calls `Model#unenrolStudent()`, which removes the enrolment from the `AddressBook`. If the student list is currently showing only one lesson's students, the filter is reapplied, so a student unenrolled from that lesson disappears from the list. Both panels stay filtered as before.
 
 ### \[Proposed\] Undo/redo feature
 

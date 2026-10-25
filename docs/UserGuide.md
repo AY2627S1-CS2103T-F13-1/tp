@@ -3,7 +3,7 @@ layout: page
 title: User Guide
 ---
 
-AddressBook Level 3 (AB3) is a **desktop application for managing contacts, optimized for use through a Command Line Interface (CLI)** while retaining the benefits of a Graphical User Interface (GUI). If you type quickly, AB3 can help you manage contacts faster than traditional GUI applications.
+TutorReach is a **desktop application for tutors who need to manage students, guardians and weekly lessons, optimized for use through a Command Line Interface (CLI)** while retaining the benefits of a Graphical User Interface (GUI). If you type quickly, TutorReach can help you manage tutoring records faster than traditional GUI applications.
 
 * Table of Contents
 {:toc}
@@ -15,24 +15,26 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
 1. Ensure that Java `25` or later is installed on your computer.<br>
    **Mac users:** Ensure you have the precise JDK version prescribed [here](https://se-education.org/guides/tutorials/javaInstallationMac.html).
 
-1. Download the latest `.jar` file from [here](https://github.com/se-edu/addressbook-level3/releases).
+1. Download the latest `.jar` file from the project's GitHub releases page.
 
-1. Copy the file to the folder you want to use as the _home folder_ for your AddressBook.
+1. Copy the file to the folder you want to use as the _home folder_ for TutorReach.
 
-1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar addressbook.jar`.<br>
+1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -cp addressbook.jar seedu.address.Main`.<br>
    A GUI similar to the one below should appear in a few seconds. Note how the app contains some sample data.<br>
    ![Ui](images/Ui.png)
 
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
    Some example commands you can try:
 
-   * `list` : Lists all contacts.
+   * `addstudent n/Aiden Tan gn/Tan Mei Ling gp/91234567` : Adds a student named `Aiden Tan` with a guardian.
 
-   * `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01` : Adds a contact named `John Doe` to the Address Book.
+   * `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800` : Adds a weekly Monday lesson from 16:00 to 18:00.
 
-   * `delete 3` : Deletes the 3rd contact shown in the current list.
+   * `liststudents` : Lists all students.
 
-   * `clear` : Deletes all contacts.
+   * `deletestudent 3` : Deletes the 3rd student shown in the current list.
+
+   * `clear` : Deletes all entries.
 
    * `exit` : Exits the app.
 
@@ -47,18 +49,18 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
 **:information_source: Notes about the command format:**<br>
 
 * Words in `UPPER_CASE` are the parameters to be supplied by the user.<br>
-  For example, in `add n/NAME`, replace `NAME` with a value such as `John Doe`.
+  For example, in `addstudent n/NAME`, replace `NAME` with a value such as `Aiden Tan`.
 
 * Items in square brackets are optional.<br>
-  For example, `n/NAME [t/TAG]` can be used as `n/John Doe t/friend` or as `n/John Doe`.
+  For example, `listlessons [d/DAY]` can be used as `listlessons` or as `listlessons d/mon`.
 
-* Items followed by `…`​ can appear zero or more times.<br>
-  For example, `[t/TAG]…​` may be omitted, or written as `t/friend` or `t/friend t/family`.
+* Items followed by `…`​ accept one or more space-separated keywords.<br>
+  For example, `NAME_KEYWORDS...` may be written as `aiden` or as `aiden chloe`.
 
 * Parameters can be in any order.<br>
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
 
-* Extraneous parameters for commands that take no parameters, such as `help`, `list`, `exit`, and `clear`, are ignored.<br>
+* Extraneous parameters for commands that take no parameters, such as `help`, `exit`, and `clear`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
 
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
@@ -131,6 +133,7 @@ Examples:
 
 * `editstudent 1 p/92345678` changes only the phone number of the first displayed student.
 * `editstudent 2 gn/Lim Mei gp/91234567` replaces only the guardian details of the second displayed student.
+
 ### Finding students: `findstudent`
 
 Finds students by their name, their guardian's name, or part of a phone number.
@@ -186,7 +189,6 @@ Examples:
 * `editlesson 1 d/tue st/1700 et/1900` changes only the day and times of the first displayed lesson.
 * `editlesson 2 n/Sec 3 Mathematics` changes only the name of the second displayed lesson.
 
-
 ### Adding a lesson: `addlesson`
 
 Adds a weekly lesson to the address book.
@@ -199,7 +201,7 @@ Format: `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`
 * The start and end times must be different.
 
 Examples:
-* `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800` adds a Monday lesson from 4:00 PM to 6:00 PM.
+* `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800` adds a Monday lesson from 16:00 to 18:00.
 * `addlesson n/Late Physics d/fri st/2300 et/0100` adds a Friday lesson that ends on Saturday.
 
 ### Enrolling a student: `enrol`
@@ -238,87 +240,6 @@ Deletes a lesson using its displayed index. Students are kept, but their enrolme
 Format: `deletelesson INDEX`
 
 * `INDEX` refers to the current displayed lesson list and must be a positive integer.
-
-Example:
-* `deletelesson 2` deletes the second displayed lesson.
-
-
-### Adding a person: `add`
-
-Adds a person to the address book.
-
-Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]…​`
-
-<div markdown="span" class="alert alert-primary">:bulb: **Tip:**
-A person can have any number of tags, including zero.
-</div>
-
-Examples:
-* `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01`
-* `add n/Betsy Crowe t/friend e/betsycrowe@example.com a/Newgate Prison p/1234567 t/criminal`
-
-### Listing all persons: `list`
-
-Shows a list of all persons in the address book.
-
-Format: `list`
-
-### Editing a person: `edit`
-
-Edits an existing person in the address book.
-
-Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`
-
-* Edits the person at the specified `INDEX`. The index refers to the index number shown in the displayed person list. The index **must be a positive integer** 1, 2, 3, …​
-* At least one of the optional fields must be provided.
-* Existing values will be updated to the input values.
-* When editing tags, all of the person's existing tags are removed; adding tags is not cumulative.
-* To remove all of a person's tags, enter `t/` without a tag after it.
-
-Examples:
-*  `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st person to be `91234567` and `johndoe@example.com` respectively.
-*  `edit 2 n/Betsy Crower t/` Edits the name of the 2nd person to be `Betsy Crower` and clears all existing tags.
-
-### Locating persons by name: `find`
-
-Finds persons whose names contain any of the given keywords.
-
-Format: `find KEYWORD [MORE_KEYWORDS]`
-
-* The search is case-insensitive; for example, `hans` matches `Hans`.
-* Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
-* The search considers only names.
-* Only full words match; for example, `Han` does not match `Hans`.
-* Persons matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
-
-Examples:
-* `find John` returns `john` and `John Doe`
-* `find alex david` returns `Alex Yeoh`, `David Li`<br>
-  ![result for 'find alex david'](images/findAlexDavidResult.png)
-
-### Deleting a person: `delete`
-
-Deletes the specified person from the address book.
-
-Format: `delete INDEX`
-
-* Deletes the person at the specified `INDEX`.
-* The index refers to the index number shown in the displayed person list.
-* The index **must be a positive integer** 1, 2, 3, …​
-
-Examples:
-* `list` followed by `delete 2` deletes the 2nd person in the address book.
-* `find Betsy` followed by `delete 1` deletes the 1st person in the results of the `find` command.
-
-### Deleting a lesson: `deletelesson`
-
-Deletes the specified lesson. Students enrolled in it are kept, but are no longer enrolled in that lesson.
-
-Format: `deletelesson INDEX`
-
-* Deletes the lesson at the specified `INDEX`.
-* The index refers to the index number shown in the displayed lesson list.
-* The index **must be a positive integer** 1, 2, 3, …​
 * The result names the deleted lesson and lists the students who were unenrolled from it, if any.
 * If the students panel is showing only the students of that lesson (`liststudents l/INDEX`), all students are shown again.
 
@@ -366,16 +287,12 @@ Only edit the file while the app is closed, and keep a backup before editing it.
 Keep student and lesson IDs unchanged when editing details, as enrolments use those IDs to link records.
 </div>
 
-### Archiving data files `[coming in v2.0]`
-
-_Details coming soon ..._
-
 --------------------------------------------------------------------------------------------------------------------
 
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?<br>
-**A**: Install the app on the other computer and overwrite the data file it creates with the data file from your previous AddressBook home folder.
+**A**: Install the app on the other computer and overwrite the data file it creates with the data file from your previous TutorReach home folder.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -392,21 +309,14 @@ Action | Format, Examples
 --------|------------------
 **Add student** | `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `addstudent n/Aiden Tan gn/Tan Mei Ling gp/91234567`
 **Delete student** | `deletestudent INDEX`<br> e.g., `deletestudent 3`
-**Add** | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]…​` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague`
 **Add lesson** | `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`<br> e.g., `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800`
 **Clear** | `clear`
-**Delete** | `delete INDEX`<br> e.g., `delete 3`
 **Delete lesson** | `deletelesson INDEX`<br> e.g., `deletelesson 2`
-**Edit** | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
 **Edit student** | `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `editstudent 1 p/92345678`
 **Edit lesson** | `editlesson INDEX [n/NAME] [d/DAY] [st/START_TIME] [et/END_TIME]`<br> e.g., `editlesson 1 d/tue st/1700 et/1900`
-**Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **Find students** | `findstudent [n/NAME_KEYWORDS...] [gn/GUARDIAN_NAME_KEYWORDS...] [p/PHONE_DIGITS...]`<br> e.g., `findstudent p/4567`
-**List** | `list`
 **List students** | `liststudents [l/LESSON_INDEX]`<br> e.g., `liststudents l/1`
 **List lessons** | `listlessons [d/DAY]`<br> e.g., `listlessons d/mon`
-**Add lesson** | `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`<br> e.g., `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800`
 **Enrol student** | `enrol s/STUDENT_INDEX l/LESSON_INDEX`<br> e.g., `enrol s/1 l/2`
 **Unenrol student** | `unenrol s/STUDENT_INDEX l/LESSON_INDEX`<br> e.g., `unenrol s/1 l/2`
-**Delete lesson** | `deletelesson INDEX`<br> e.g., `deletelesson 2`
 **Help** | `help`
