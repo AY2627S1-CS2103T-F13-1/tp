@@ -877,8 +877,8 @@ testers are expected to do more *exploratory* testing.
 
    1. Prerequisites: List all students using the `liststudents` command.
 
-   1. Test case: `addstudent n/Aiden Tan gn/Tan Mei Ling gp/91234567`<br>
-      Expected: A student card for Aiden Tan is added at the end of the students panel, with no phone of their own and Tan Mei Ling as guardian. The status message shows the added student's details.
+   1. Test case: `addstudent n/Marcus Lim gn/Lim Hui Min gp/98761234`<br>
+      Expected: A student card for Marcus Lim is added at the end of the students panel, with no phone of their own and Lim Hui Min as guardian. The status message shows the added student's details.
 
    1. Test case: `addstudent n/Ryan Lim p/93210283`<br>
       Expected: A student with no guardian is added. The status message shows the added student's details.
@@ -891,12 +891,12 @@ testers are expected to do more *exploratory* testing.
 
 1. Adding a duplicate student
 
-   1. Prerequisites: The test case `addstudent n/Aiden Tan gn/Tan Mei Ling gp/91234567` above has been executed.
+   1. Prerequisites: The test case `addstudent n/Marcus Lim gn/Lim Hui Min gp/98761234` above has been executed.
 
-   1. Test case: `addstudent n/aiden  tan p/91234567`<br>
+   1. Test case: `addstudent n/marcus  lim p/98761234`<br>
       Expected: No student is added, since the name matches (ignoring case and extra spaces) and a phone number is shared. The status message shows `This student already exists`.
 
-   1. Test case: `addstudent n/Aiden Tan p/88887777`<br>
+   1. Test case: `addstudent n/Marcus Lim p/88887777`<br>
       Expected: The student is added, since no phone number is shared.
 
 ### Editing a student

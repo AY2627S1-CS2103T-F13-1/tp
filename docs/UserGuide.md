@@ -85,7 +85,7 @@ Format: `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`
 * Adding a student clears the student filter, so all students are shown.
 
 Examples:
-* `addstudent n/Aiden Tan gn/Tan Mei Ling gp/91234567` adds a student whose guardian is the only contact.
+* `addstudent n/Marcus Lim gn/Lim Hui Min gp/98761234` adds a student whose guardian is the only contact.
 * `addstudent n/Chloe Lim p/98765432` adds a student with their own phone number and no guardian.
 
 ### Deleting a student: `deletestudent`
@@ -315,7 +315,7 @@ Keep student and lesson IDs unchanged when editing details, as enrolments use th
 
 Action | Format, Examples
 --------|------------------
-**Add student** | `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `addstudent n/Aiden Tan gn/Tan Mei Ling gp/91234567`
+**Add student** | `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `addstudent n/Marcus Lim gn/Lim Hui Min gp/98761234`
 **Delete student** | `deletestudent INDEX`<br> e.g., `deletestudent 3`
 **Add lesson** | `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`<br> e.g., `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800`
 **Clear** | `clear`

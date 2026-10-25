@@ -26,9 +26,9 @@ public class AddStudentCommand extends Command {
             + "[" + PREFIX_GUARDIAN_NAME + "GUARDIAN_NAME "
             + PREFIX_GUARDIAN_PHONE + "GUARDIAN_PHONE]\n"
             + "Example: " + COMMAND_WORD + " "
-            + PREFIX_NAME + "Aiden Tan "
-            + PREFIX_GUARDIAN_NAME + "Tan Mei Ling "
-            + PREFIX_GUARDIAN_PHONE + "91234567";
+            + PREFIX_NAME + "Marcus Lim "
+            + PREFIX_GUARDIAN_NAME + "Lim Hui Min "
+            + PREFIX_GUARDIAN_PHONE + "98761234";
 
     public static final String MESSAGE_SUCCESS = "New student added: %1$s";
     public static final String MESSAGE_DUPLICATE_STUDENT = "This student already exists";
