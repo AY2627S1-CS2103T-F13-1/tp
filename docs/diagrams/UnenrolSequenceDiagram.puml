@@ -4,7 +4,7 @@ skinparam ArrowFontStyle plain
 
 box Logic LOGIC_COLOR_T1
 participant ":LogicManager" as LogicManager LOGIC_COLOR
-participant ":TutorBookParser" as TutorBookParser LOGIC_COLOR
+participant ":AddressBookParser" as AddressBookParser LOGIC_COLOR
 participant ":UnenrolCommandParser" as UnenrolCommandParser LOGIC_COLOR
 participant "u:UnenrolCommand" as UnenrolCommand LOGIC_COLOR
 participant "r:CommandResult" as CommandResult LOGIC_COLOR
@@ -18,17 +18,17 @@ end box
 [-> LogicManager : execute("unenrol s/1 l/2")
 activate LogicManager
 
-LogicManager -> TutorBookParser : parseCommand("unenrol s/1 l/2")
-activate TutorBookParser
+LogicManager -> AddressBookParser : parseCommand("unenrol s/1 l/2")
+activate AddressBookParser
 
 create UnenrolCommandParser
-TutorBookParser -> UnenrolCommandParser
+AddressBookParser -> UnenrolCommandParser
 activate UnenrolCommandParser
 
-UnenrolCommandParser --> TutorBookParser
+UnenrolCommandParser --> AddressBookParser
 deactivate UnenrolCommandParser
 
-TutorBookParser -> UnenrolCommandParser : parse(" s/1 l/2")
+AddressBookParser -> UnenrolCommandParser : parse(" s/1 l/2")
 activate UnenrolCommandParser
 
 create UnenrolCommand
@@ -38,14 +38,14 @@ activate UnenrolCommand
 UnenrolCommand --> UnenrolCommandParser :
 deactivate UnenrolCommand
 
-UnenrolCommandParser --> TutorBookParser : u
+UnenrolCommandParser --> AddressBookParser : u
 deactivate UnenrolCommandParser
 'Hidden arrow to position the destroy marker below the end of the activation bar.
-UnenrolCommandParser -[hidden]-> TutorBookParser
+UnenrolCommandParser -[hidden]-> AddressBookParser
 destroy UnenrolCommandParser
 
-TutorBookParser --> LogicManager : u
-deactivate TutorBookParser
+AddressBookParser --> LogicManager : u
+deactivate AddressBookParser
 
 LogicManager -> UnenrolCommand : execute(m)
 activate UnenrolCommand
