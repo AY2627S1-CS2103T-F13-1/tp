@@ -911,14 +911,14 @@ testers are expected to do more *exploratory* testing.
 
    1. Download the JAR file and copy it into an empty folder.
 
-   1. Double-click the JAR file.<br>
-      Expected: The GUI opens with a set of sample students and lessons. The window size may not be optimal.
+   1. Open a terminal in that folder and run `java -jar tutorReach.jar`.<br>
+      Expected: The GUI opens with a set of sample students. The window size may not be optimal.
 
 1. Saving window preferences
 
    1. Resize the window to an optimal size. Move the window to a different location. Close the window.
 
-   1. Relaunch the app by double-clicking the JAR file.<br>
+   1. Relaunch the app with `java -jar tutorReach.jar`.<br>
        Expected: The most recent window size and location are retained.
 
 1. Shutting down
@@ -1138,7 +1138,7 @@ testers are expected to do more *exploratory* testing.
    1. Prerequisites: At least one lesson is shown, with students enrolled.
 
    1. Test case: `liststudents l/1`<br>
-      Expected: Only the students enrolled in the first lesson are shown, and the status message states how many.
+      Expected: Only the students enrolled in the first lesson are shown, and the status message names the lesson.
 
    1. Test case: `liststudents 1`<br>
       Expected: The list is unchanged. The status message shows the invalid command format error.
@@ -1176,7 +1176,7 @@ Use a disposable copy of the data file for these tests. The default path is `dat
 relative to the app's working directory. Close the app before
 editing files, and retain a separate copy of the original data.
 
-1. Missing file: move the data file aside and launch the app. Expect sample students and lessons.
+1. Missing file: move the data file aside and launch the app. Expect the sample students.
    Exit without changing data; no tutor data file should be created.
 1. Partial recovery: in a valid file containing at least two students, change one student's phone to
    `invalid`, then restart. Expect that student and any enrolments referencing them to be skipped,
