@@ -1,11 +1,15 @@
 package seedu.address.model.util;
 
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
+import seedu.address.model.lesson.Enrolment;
+import seedu.address.model.lesson.Lesson;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Name;
@@ -55,6 +59,16 @@ public class SampleDataUtil {
         };
     }
 
+    /**
+     * Returns sample weekly lessons covering daytime and past-midnight schedules.
+     */
+    public static Lesson[] getSampleLessons() {
+        return new Lesson[] {
+            new Lesson("Sec 3 A-Math", DayOfWeek.MONDAY, LocalTime.of(16, 0), LocalTime.of(18, 0)),
+            new Lesson("Late Physics", DayOfWeek.FRIDAY, LocalTime.of(23, 0), LocalTime.of(1, 0)),
+        };
+    }
+
     public static ReadOnlyAddressBook getSampleAddressBook() {
         AddressBook sampleAb = new AddressBook();
         for (Person samplePerson : getSamplePersons()) {
@@ -63,6 +77,16 @@ public class SampleDataUtil {
         for (Student sampleStudent : getSampleStudents()) {
             sampleAb.addStudent(sampleStudent);
         }
+        for (Lesson sampleLesson : getSampleLessons()) {
+            sampleAb.addLesson(sampleLesson);
+        }
+
+        Student aiden = sampleAb.getStudentList().get(0);
+        Student chloe = sampleAb.getStudentList().get(1);
+        Lesson mathsLesson = sampleAb.getLessonList().get(0);
+        Lesson physicsLesson = sampleAb.getLessonList().get(1);
+        sampleAb.addEnrolment(new Enrolment(aiden.getId(), mathsLesson.getId()));
+        sampleAb.addEnrolment(new Enrolment(chloe.getId(), physicsLesson.getId()));
         return sampleAb;
     }
 
