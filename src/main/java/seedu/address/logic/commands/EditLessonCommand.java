@@ -37,7 +37,8 @@ public class EditLessonCommand extends Command {
             + "[" + PREFIX_DAY + "DAY] "
             + "[" + PREFIX_START_TIME + "START_TIME] "
             + "[" + PREFIX_END_TIME + "END_TIME]\n"
-            + "DAY is one of mon, tue, wed, thu, fri, sat or sun. Times are four digits, e.g. 1600.\n"
+            + "DAY is a day's name or at least its first 3 letters, e.g. mon or monday.\n"
+            + "Times are in 24-hour format, e.g. 1600 or 16:00.\n"
             + "An end time earlier than the start time means the lesson ends on the next day.\n"
             + "Example: " + COMMAND_WORD + " 1 "
             + PREFIX_DAY + "tue "
@@ -46,7 +47,6 @@ public class EditLessonCommand extends Command {
 
     public static final String MESSAGE_EDIT_LESSON_SUCCESS = "Edited lesson: %1$s";
     public static final String MESSAGE_NOT_EDITED = "At least one field to edit must be provided.";
-    public static final String MESSAGE_DUPLICATE_LESSON = "This lesson already exists";
 
     private static final Logger logger = LogsCenter.getLogger(EditLessonCommand.class);
 
@@ -78,22 +78,28 @@ public class EditLessonCommand extends Command {
             throw new CommandException(e.getMessage());
         }
 
-        boolean hasDuplicate = model.getAddressBook().getLessonList().stream()
+        Optional<Lesson> existingLesson = model.getAddressBook().getLessonList().stream()
                 .filter(lesson -> !lesson.getId().equals(lessonToEdit.getId()))
-                .anyMatch(lesson -> lesson.isSameLesson(editedLesson));
-        if (hasDuplicate) {
+                .filter(lesson -> lesson.isSameLesson(editedLesson))
+                .findFirst();
+        if (existingLesson.isPresent()) {
             logger.fine("Rejected duplicate lesson edit for ID: " + lessonToEdit.getId());
-            throw new CommandException(MESSAGE_DUPLICATE_LESSON);
+            throw new CommandException(Messages.formatDuplicateLesson(existingLesson.get(),
+                    model.getFilteredLessonList().contains(existingLesson.get())));
         }
 
+        // the full list is checked, so lessons hidden by a day filter count; the lesson's own old times do not
+        List<Lesson> clashingLessons = model.getAddressBook().getClashingLessons(editedLesson);
         model.setLesson(lessonToEdit, editedLesson);
         Lesson storedLesson = model.getAddressBook().getLessonList().stream()
                 .filter(lesson -> lesson.getId().equals(editedLesson.getId()))
                 .findFirst()
                 .orElse(null);
         assert editedLesson.equals(storedLesson) : "Editing a lesson should update the address book";
-        logger.info("Edited lesson with ID: " + editedLesson.getId());
-        return new CommandResult(String.format(MESSAGE_EDIT_LESSON_SUCCESS, editedLesson));
+        logger.info("Edited lesson with ID: " + editedLesson.getId() + ", clashing with "
+                + clashingLessons.size() + " lesson(s)");
+        return new CommandResult(String.format(MESSAGE_EDIT_LESSON_SUCCESS, Messages.format(editedLesson))
+                + Messages.formatLongLessonWarning(editedLesson) + Messages.formatClashWarning(clashingLessons));
     }
 
     /**

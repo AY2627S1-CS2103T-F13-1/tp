@@ -20,7 +20,7 @@ public class ListLessonsCommand extends Command {
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Lists lessons, optionally filtered by their starting day.\n"
             + "Parameters: [d/DAY]\n"
-            + "DAY is one of mon, tue, wed, thu, fri, sat or sun.\n"
+            + "DAY is a day's name or at least its first 3 letters, e.g. mon or monday.\n"
             + "Example: " + COMMAND_WORD + " d/mon";
 
     public static final String MESSAGE_SUCCESS = "Listed all lessons.";

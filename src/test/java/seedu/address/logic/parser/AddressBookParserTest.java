@@ -201,7 +201,7 @@ public class AddressBookParserTest {
     @Test
     public void parseCommand_listLessonsInvalidDay_throwsParseException() {
         assertThrows(ParseException.class, ParserUtil.MESSAGE_INVALID_DAY, () ->
-                parser.parseCommand(ListLessonsCommand.COMMAND_WORD + " d/monday"));
+                parser.parseCommand(ListLessonsCommand.COMMAND_WORD + " d/funday"));
     }
 
     @Test

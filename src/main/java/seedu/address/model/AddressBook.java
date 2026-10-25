@@ -174,9 +174,7 @@ public class AddressBook implements ReadOnlyAddressBook {
 
     /** Checks both ID collisions and duplicate lesson details. */
     public boolean hasLesson(Lesson lesson) {
-        requireNonNull(lesson);
-        return lessons.stream().anyMatch(existing -> existing.getId().equals(lesson.getId())
-                || existing.isSameLesson(lesson));
+        return findDuplicateOf(lesson).isPresent();
     }
 
     /** Adds a lesson; throws IllegalArgumentException for a duplicate. */

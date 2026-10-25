@@ -219,16 +219,22 @@ uses `AddressBookRecovery` instead. Partial recovery applies to tutor data, not 
 
 ### Warning about clashing lessons
 
-`addlesson` adds a lesson even if its time overlaps an existing lesson, since a tutor may teach overlapping lessons on purpose. It then warns which lessons clash, so that an accidental double-booking is noticed.
+`addlesson` adds a lesson even if its time overlaps an existing lesson, since a tutor may teach overlapping lessons on purpose. It then warns which lessons clash, so that an accidental double-booking is noticed. `editlesson` warns in the same way when an edit moves a lesson onto another lesson's time, and `enrol` warns when the student already attends a lesson at an overlapping time, since that student would be double-booked.
 
 The sequence diagram below shows how `AddLessonCommand` finds the clashes before adding the lesson.
 
 ![Interactions inside the Logic and Model components when adding a lesson](images/AddLessonSequenceDiagram.png)
 
-1. `AddLessonCommand#execute()` first calls `Model#hasLesson()`. A duplicate lesson is rejected with a `CommandException`, so it never gets a warning instead.
-1. It calls `ReadOnlyAddressBook#getClashingLessons()`, which checks the full lesson list, so lessons hidden by `listlessons d/DAY` still count. A lesson with the same ID as the new lesson is skipped, so that a future `editlesson` does not report a lesson as clashing with its own old times.
+1. `AddLessonCommand#execute()` first calls `ReadOnlyAddressBook#findDuplicateOf()`. A duplicate lesson is rejected with a `CommandException` that names the existing lesson, so it never gets a warning instead.
+1. It calls `ReadOnlyAddressBook#getClashingLessons()`, which checks the full lesson list, so lessons hidden by `listlessons d/DAY` still count. A lesson with the same ID as the given lesson is skipped, so that `editlesson` does not report a lesson as clashing with its own old times.
 1. `getClashingLessons()` compares each lesson with the new one using `Lesson#overlaps()`.
-1. The command adds the lesson, and returns a `CommandResult` whose second line names the clashing lessons, if any.
+1. The command adds the lesson, and returns a `CommandResult` whose second line names the clashing lessons, if any. `Messages#formatClashWarning()` formats that line.
+
+`EditLessonCommand#execute()` follows the same steps after its own duplicate check. It passes the edited lesson, which keeps the original lesson's ID, to `getClashingLessons()`, and adds the same warning to its result. `EnrolCommand#execute()` keeps only the clashing lessons the student is enrolled in, and names them with `Messages#formatStudentClashWarning()`.
+
+A duplicate lesson is rejected with an error that names the existing lesson (`Messages#formatDuplicateLesson()`), and says how to show it if the lesson list's day filter hides it.
+
+Because an end time earlier than the start time means a lesson past midnight, swapped times are not rejected. Instead, `addlesson` and `editlesson` warn when a lesson runs past midnight for more than 12 hours (`Messages#formatLongLessonWarning()`), which is almost always a mistake, while late lessons of a few hours past midnight give no warning.
 
 `Lesson#overlaps()` places each lesson on a weekly cycle of 7 × 24 × 60 minutes. A lesson starts at minute `(day - 1) × 1440 + start time` and lasts `(end time - start time) mod 1440` minutes, which also gives the right length for a lesson that runs past midnight. Two lessons overlap if either one starts before the other has ended, counting forward around the week. Counting around the week lets a Sunday lesson that runs past midnight clash with an early Monday lesson. A lesson that starts exactly when another ends does not clash with it.
 
@@ -501,6 +507,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | `* *`    | tutor                                     | remove a student from a lesson                                   | correct a wrong enrolment or record a student leaving one lesson                 |
 | `* *`    | tutor                                     | edit a student's or guardian's details                           | correct inaccurate or outdated details                                           |
 | `* *`    | tutor                                     | edit a lesson's details                                          | update a lesson that has moved to a different day or time                        |
+| `* *`    | tutor                                     | be warned when a lesson I add or move clashes with another one   | avoid double-booking myself                                                      |
 | `* *`    | tutor                                     | undo my most recent change                                       | recover from an accidental addition, edit or deletion                            |
 | `* *`    | tutor                                     | add more than one guardian to a student                          | store the contact details of both parents                                        |
 | `* *`    | tutor of a student with several guardians | mark one guardian as the primary contact                         | know whom to contact first                                                       |
@@ -512,7 +519,6 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | `* *`    | expert user                               | filter students using several criteria at once                   | quickly narrow down a long list of students                                      |
 | `* *`    | expert user                               | enrol or remove several students in one command                  | manage enrolment changes efficiently                                             |
 | `*`      | detail-oriented tutor                     | add private notes to a student                                   | record useful information that does not belong in their contact details          |
-| `*`      | tutor                                     | be warned when a new lesson clashes with an existing one         | avoid double-booking myself                                                      |
 | `*`      | tutor                                     | archive students who have stopped lessons                        | keep their details for future reference without cluttering my list              |
 
 ### Use cases
@@ -648,6 +654,12 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 * 5b. The student is already enrolled in the lesson.
 
     * 5b1. TutorReach shows an error message.
+
+      Use case ends.
+
+* 6a. The student already attends another lesson at an overlapping time.
+
+    * 6a1. TutorReach enrols the student and warns which of their lessons clash.
 
       Use case ends.
 
@@ -815,6 +827,12 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
   TutorReach removes the lesson from the displayed list after completing the edit.
 
+* 4b. The edited lesson's time overlaps other lessons.
+
+    * 4b1. TutorReach warns which lessons it clashes with.
+
+      Use case ends.
+
 ### Non-Functional Requirements
 
 1.  Should work on any _mainstream OS_ as long as it has Java `25` or above installed.
@@ -959,19 +977,25 @@ testers are expected to do more *exploratory* testing.
       Expected: A lesson card for Sec 3 A-Math (Mon 1600-1800) with no students is added at the end of the lessons panel.
 
    1. Test case: the same command again<br>
-      Expected: No lesson is added. The status message shows `This lesson already exists.`
+      Expected: No lesson is added. The status message shows `This lesson already exists: Sec 3 A-Math (Mon 1600-1800)`.
 
    1. Test case: `addlesson n/sec 3  a-math d/MON st/1600 et/1800`<br>
-      Expected: No lesson is added. The day may be in any letter case, and the name matches the existing lesson's once case and extra spaces are ignored. The status message shows `This lesson already exists.`
+      Expected: No lesson is added. The day may be in any letter case, and the name matches the existing lesson's once case and extra spaces are ignored. The status message shows `This lesson already exists: Sec 3 A-Math (Mon 1600-1800)`.
 
    1. Test case: `addlesson n/Night Class d/fri st/2200 et/0100`<br>
       Expected: A lesson card for Night Class (Fri 2200-0100) is added. An end time earlier than the start time means the lesson runs past midnight and ends on the next day, so the status message marks it `(next day)`.
 
+   1. Test case: `addlesson n/Swapped d/sat st/1800 et/1600`<br>
+      Expected: The lesson is added as Sat 1800-1600 (next day). The status message warns that it lasts 22 h and that the start and end times may be swapped.
+
    1. Test case: `addlesson n/Sec 3 A-Math d/mon st/1600 et/1600`<br>
       Expected: No lesson is added. The status message states that the end time must not be the same as the start time.
 
-   1. Other incorrect commands to try: `addlesson n/Math d/tues st/1600 et/1800`, `addlesson n/Math d/monday st/1600 et/1800`, `addlesson n/Math d/mon st/4pm et/1800`, `addlesson n/Math d/mon st/2400 et/2430`<br>
-      Expected: No lesson is added. The status message shows the error for the invalid value: a day must be one of `mon`, `tue`, `wed`, `thu`, `fri`, `sat` and `sun`, and a time must be exactly four digits from `0000` to `2359`.
+   1. Test case: `addlesson n/Sec 4 E-Math d/Tuesday st/16:30 et/18:30`<br>
+      Expected: A lesson card for Sec 4 E-Math (Tue 1630-1830) is added. A day may be written in full, and a time may contain a colon.
+
+   1. Other incorrect commands to try: `addlesson n/Math d/funday st/1600 et/1800`, `addlesson n/Math d/mo st/1600 et/1800`, `addlesson n/Math d/mon st/4pm et/1800`, `addlesson n/Math d/mon st/2400 et/2430`<br>
+      Expected: No lesson is added. The status message shows the error for the invalid value: a day must be its name or at least its first three letters, so `funday` and `mo` are rejected, and a time must be `HHMM` or `HH:MM` from `0000` to `2359`.
 
 1. Adding a lesson that clashes with another
 
@@ -983,17 +1007,20 @@ testers are expected to do more *exploratory* testing.
    1. Test case: `addlesson n/Sec 2 Math d/mon st/1900 et/2000`<br>
       Expected: The lesson is added with no warning, since it starts exactly when Sec 3 E-Math ends.
 
+   1. Test case: `editlesson INDEX st/1830`, where `INDEX` is Sec 2 Math's index in the lessons panel<br>
+      Expected: The lesson is edited to Mon 1830-2000. The status message shows the edited lesson and, on the next line, a warning that it clashes with Sec 3 E-Math (Mon 1700-1900).
+
 1. Filtering lessons by day
 
    1. Prerequisites: Add lessons on at least two different days, including Monday.
 
    1. Test case: `listlessons d/mon`<br>
-      Expected: Only lessons starting on Monday are shown. Matching is case-insensitive.
+      Expected: Only lessons starting on Monday are shown. Matching is case-insensitive, and `listlessons d/Monday` gives the same list.
 
    1. Test case: `listlessons`<br>
       Expected: All lessons are shown again.
 
-   1. Other incorrect commands to try: `listlessons mon`, `listlessons d/monday`, `listlessons d/mon d/tue`, `listlessons n/Math`<br>
+   1. Other incorrect commands to try: `listlessons mon`, `listlessons d/funday`, `listlessons d/mon d/tue`, `listlessons n/Math`<br>
       Expected: The list is unchanged. The status message shows the relevant invalid command, day or duplicate-prefix error.
 
 1. Deleting a lesson
@@ -1027,7 +1054,7 @@ testers are expected to do more *exploratory* testing.
    1. Test case: `editlesson 1 st/1700 et/1700`<br>
       Expected: No lesson is edited. The status message states that the end time must not be the same as the start time.
 
-   1. Other incorrect commands to try: `editlesson 1`, `editlesson 0 n/Math`, `editlesson 1 d/monday`, `editlesson 1 st/4pm`, `editlesson 1 d/mon d/tue`<br>
+   1. Other incorrect commands to try: `editlesson 1`, `editlesson 0 n/Math`, `editlesson 1 d/funday`, `editlesson 1 st/4pm`, `editlesson 1 d/mon d/tue`<br>
       Expected: No lesson is edited. The status message shows the relevant missing field, invalid index, invalid value or duplicate-prefix error.
 
 1. Editing a lesson while a filter is active
@@ -1059,6 +1086,13 @@ testers are expected to do more *exploratory* testing.
 
    1. Test case: `enrol s/x l/1` (where x is larger than the number of students shown)<br>
       Expected: No change. The status message shows `The student index provided is invalid`.
+
+1. Enrolling a student in a clashing lesson
+
+   1. Prerequisites: The first student is enrolled in Sec 3 A-Math (Mon 1600-1800), and the lesson Sec 3 E-Math (Mon 1700-1900) exists at index `INDEX`.
+
+   1. Test case: `enrol s/1 l/INDEX`<br>
+      Expected: The student is enrolled. The status message warns, on the next line, that the student already attends the clashing lesson Sec 3 A-Math (Mon 1600-1800).
 
 ### Viewing and finding students
 

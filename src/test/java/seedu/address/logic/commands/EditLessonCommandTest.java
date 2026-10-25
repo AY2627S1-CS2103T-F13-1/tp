@@ -120,6 +120,58 @@ public class EditLessonCommandTest {
     }
 
     @Test
+    public void execute_overnightLesson_marksNextDayInMessage() throws Exception {
+        EditLessonDescriptor descriptor = new EditLessonDescriptor();
+        descriptor.setStartTime(LocalTime.parse("22:00"));
+        descriptor.setEndTime(LocalTime.parse("01:00"));
+
+        assertEquals("Edited lesson: Sec 3 A-Math (Mon 2200-0100) (next day)",
+                new EditLessonCommand(INDEX_FIRST_LESSON, descriptor).execute(model).getFeedbackToUser());
+    }
+
+    @Test
+    public void execute_editedIntoClash_editsAndWarns() {
+        // moving Physics to Monday 1700-2030 overlaps Sec 3 A-Math, Monday 1600-1800
+        EditLessonDescriptor descriptor = new EditLessonDescriptor();
+        descriptor.setDay(DayOfWeek.MONDAY);
+        descriptor.setStartTime(LocalTime.parse("17:00"));
+        Lesson editedLesson = lessonWithId(PHYSICS, "Sec 4 Physics", DayOfWeek.MONDAY, "17:00", "20:30");
+        Model expectedModel = copyModel();
+        expectedModel.setLesson(PHYSICS, editedLesson);
+
+        assertCommandSuccess(new EditLessonCommand(INDEX_SECOND_LESSON, descriptor), model,
+                "Edited lesson: Sec 4 Physics (Mon 1700-2030)\n"
+                        + "Warning: clashes with Sec 3 A-Math (Mon 1600-1800)", expectedModel);
+    }
+
+    @Test
+    public void execute_clashHiddenByFilter_stillWarns() {
+        model.updateFilteredLessonList(lesson -> lesson.getId().equals(PHYSICS.getId()));
+        EditLessonDescriptor descriptor = descriptor("Sec 4 Physics", DayOfWeek.MONDAY, "17:00", "18:00");
+        Lesson editedLesson = lessonWithId(PHYSICS, "Sec 4 Physics", DayOfWeek.MONDAY, "17:00", "18:00");
+        Model expectedModel = copyModel();
+        expectedModel.updateFilteredLessonList(lesson -> lesson.getId().equals(PHYSICS.getId()));
+        expectedModel.setLesson(PHYSICS, editedLesson);
+
+        assertCommandSuccess(new EditLessonCommand(INDEX_FIRST_LESSON, descriptor), model,
+                getSuccessMessage(editedLesson, A_MATH), expectedModel);
+    }
+
+    @Test
+    public void execute_overlapsOnlyOwnOldTimes_noWarning() {
+        // a lesson does not clash with itself, so shifting it within its old slot gives no warning
+        EditLessonDescriptor descriptor = new EditLessonDescriptor();
+        descriptor.setStartTime(LocalTime.parse("16:30"));
+        descriptor.setEndTime(LocalTime.parse("17:30"));
+        Lesson editedLesson = lessonWithId(A_MATH, "Sec 3 A-Math", DayOfWeek.MONDAY, "16:30", "17:30");
+        Model expectedModel = copyModel();
+        expectedModel.setLesson(A_MATH, editedLesson);
+
+        assertCommandSuccess(new EditLessonCommand(INDEX_FIRST_LESSON, descriptor), model,
+                getSuccessMessage(editedLesson), expectedModel);
+    }
+
+    @Test
     public void execute_startTimeBecomesEndTime_throwsCommandException() {
         EditLessonDescriptor descriptor = new EditLessonDescriptor();
         descriptor.setStartTime(A_MATH.getEndTime());
@@ -162,8 +214,28 @@ public class EditLessonCommandTest {
                 "sec 4 physics", DayOfWeek.WEDNESDAY, "19:00", "20:30");
 
         assertEditFailure(new EditLessonCommand(INDEX_FIRST_LESSON, duplicatePhysics),
-                EditLessonCommand.MESSAGE_DUPLICATE_LESSON);
+                Messages.formatDuplicateLesson(PHYSICS, false));
         assertEquals(List.of(A_MATH), model.getFilteredLessonList());
+    }
+
+    @Test
+    public void execute_duplicateOfShownLesson_namesIt() {
+        EditLessonDescriptor duplicatePhysics = descriptor("Sec 4 Physics", DayOfWeek.WEDNESDAY, "19:00", "20:30");
+
+        assertEditFailure(new EditLessonCommand(INDEX_FIRST_LESSON, duplicatePhysics),
+                "This lesson already exists: Sec 4 Physics (Wed 1900-2030)");
+    }
+
+    @Test
+    public void execute_startMovedPastEnd_editsAndWarnsOfLength() throws Exception {
+        // moving only the start of a 1600-1800 lesson to 1900 makes it run past midnight for 23 hours
+        EditLessonDescriptor descriptor = new EditLessonDescriptor();
+        descriptor.setStartTime(LocalTime.parse("19:00"));
+
+        assertEquals("Edited lesson: Sec 3 A-Math (Mon 1900-1800) (next day)\n"
+                + "Warning: this lesson lasts 23 h and ends the next day. Check that the start and end times"
+                + " are not swapped.",
+                new EditLessonCommand(INDEX_FIRST_LESSON, descriptor).execute(model).getFeedbackToUser());
     }
 
     @Test
@@ -255,8 +327,9 @@ public class EditLessonCommandTest {
         return new ModelManager(model.getAddressBook(), new UserPrefs());
     }
 
-    private static String getSuccessMessage(Lesson editedLesson) {
-        return String.format(EditLessonCommand.MESSAGE_EDIT_LESSON_SUCCESS, editedLesson);
+    private static String getSuccessMessage(Lesson editedLesson, Lesson... clashingLessons) {
+        return String.format(EditLessonCommand.MESSAGE_EDIT_LESSON_SUCCESS, Messages.format(editedLesson))
+                + Messages.formatClashWarning(List.of(clashingLessons));
     }
 
     private static EditLessonDescriptor descriptorWithName(String name) {
