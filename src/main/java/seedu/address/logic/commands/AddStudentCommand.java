@@ -18,7 +18,7 @@ public class AddStudentCommand extends Command {
 
     public static final String COMMAND_WORD = "addstudent";
 
-    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Adds a student to the address book. "
+    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Adds a student. "
             + "A student must have either their own phone number or a guardian with a phone number.\n"
             + "Parameters: "
             + PREFIX_NAME + "NAME "

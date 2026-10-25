@@ -191,7 +191,7 @@ Examples:
 
 ### Adding a lesson: `addlesson`
 
-Adds a weekly lesson to the address book.
+Adds a weekly lesson.
 
 Format: `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`
 
@@ -257,7 +257,7 @@ Examples:
 
 ### Clearing all entries: `clear`
 
-Clears all entries from the address book.
+Deletes all students and lessons.
 
 Format: `clear`
 
