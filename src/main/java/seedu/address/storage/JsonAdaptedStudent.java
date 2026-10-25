@@ -43,8 +43,8 @@ class JsonAdaptedStudent {
         if (name == null || !Name.isValidName(name)) {
             throw new IllegalValueException(Name.MESSAGE_CONSTRAINTS);
         }
-        if ((guardianName == null) != (guardianPhone == null)) {
-            throw new IllegalValueException("Guardian name and phone must be given together.");
+        if ((guardianName != null) != (guardianPhone != null)) {
+            throw new IllegalValueException("Guardian name and guardian phone must be provided together.");
         }
         if (phone == null && guardianPhone == null) {
             throw new IllegalValueException(Student.MESSAGE_CONTACT_REQUIRED);
