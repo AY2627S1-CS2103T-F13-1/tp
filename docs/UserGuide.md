@@ -261,6 +261,10 @@ Deletes all students and lessons.
 
 Format: `clear`
 
+<div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
+`clear` deletes everything at once, with no confirmation, and cannot be undone. Any text after `clear` is ignored, so `clear 1` also deletes everything. To keep a copy, back up the data file first.
+</div>
+
 ### Exiting the program: `exit`
 
 Exits the program.
