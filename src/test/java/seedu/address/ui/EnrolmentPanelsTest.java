@@ -98,6 +98,52 @@ public class EnrolmentPanelsTest {
         });
     }
 
+    @Test
+    public void editStudent_existingLessonCardShowsNewName() throws Exception {
+        JavaFxTestUtil.runOnFxThread(() -> {
+            Model model = new ModelManager();
+            Student student = new Student(new Name("Aiden Tan"), new Phone("91234567"), null);
+            Lesson lesson = new Lesson("Math", DayOfWeek.MONDAY, LocalTime.of(16, 0), LocalTime.of(18, 0));
+            model.addStudent(student);
+            model.addLesson(lesson);
+            model.enrolStudent(student, lesson);
+            StudentListPanel students = new StudentListPanel(model.getFilteredStudentList(), model.getAddressBook());
+            LessonListPanel lessons = new LessonListPanel(model.getFilteredLessonList(), model.getAddressBook());
+            HBox root = showPanels(students, lessons);
+
+            model.setStudent(student, new Student(student.getId(), new Name("Aiden Lim"), new Phone("91234567"),
+                    null));
+            root.applyCss();
+            root.layout();
+
+            assertEquals("Aiden Lim", getLabelText(lessons.getRoot(), "enrolledStudents"));
+            return null;
+        });
+    }
+
+    @Test
+    public void editLesson_existingStudentCardShowsNewLesson() throws Exception {
+        JavaFxTestUtil.runOnFxThread(() -> {
+            Model model = new ModelManager();
+            Student student = new Student(new Name("Aiden Tan"), new Phone("91234567"), null);
+            Lesson lesson = new Lesson("Math", DayOfWeek.MONDAY, LocalTime.of(16, 0), LocalTime.of(18, 0));
+            model.addStudent(student);
+            model.addLesson(lesson);
+            model.enrolStudent(student, lesson);
+            StudentListPanel students = new StudentListPanel(model.getFilteredStudentList(), model.getAddressBook());
+            LessonListPanel lessons = new LessonListPanel(model.getFilteredLessonList(), model.getAddressBook());
+            HBox root = showPanels(students, lessons);
+
+            model.setLesson(lesson, new Lesson(lesson.getId(), "Physics", DayOfWeek.TUESDAY, LocalTime.of(16, 0),
+                    LocalTime.of(18, 0)));
+            root.applyCss();
+            root.layout();
+
+            assertEquals("Physics — Tuesday, 16:00 – 18:00", getLabelText(students.getRoot(), "lessons"));
+            return null;
+        });
+    }
+
     private static HBox showPanels(StudentListPanel students, LessonListPanel lessons) {
         HBox root = new HBox(students.getRoot(), lessons.getRoot());
         new Scene(root, 900, 600);

@@ -30,4 +30,9 @@ public class SampleDataUtilTest {
             assertStudentDetailsEqual(expected[i], students.get(i));
         }
     }
+
+    @Test
+    public void getSampleAddressBook_hasNoAddressBookPersons() {
+        assertEquals(List.of(), SampleDataUtil.getSampleAddressBook().getPersonList());
+    }
 }

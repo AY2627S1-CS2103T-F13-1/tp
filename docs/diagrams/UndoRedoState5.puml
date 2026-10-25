@@ -7,9 +7,9 @@ skinparam ClassBackgroundColor #FFFFAA
 title After command "addlesson n/Sec 1 Math"
 
 package States <<rectangle>> {
-    class State1 as "<u>tb0:TutorBook</u>"
-    class State2 as "<u>tb1:TutorBook</u>"
-    class State3 as "<u>tb3:TutorBook</u>"
+    class State1 as "<u>tb0:AddressBook</u>"
+    class State2 as "<u>tb1:AddressBook</u>"
+    class State3 as "<u>tb3:AddressBook</u>"
 }
 
 State1 -[hidden]right-> State2
