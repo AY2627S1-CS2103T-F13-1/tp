@@ -77,6 +77,9 @@ dependencies {
 
 shadowJar {
     archiveFileName = 'addressbook.jar'
+    manifest {
+        attributes 'JavaFX-Application-Class': 'seedu.address.MainApp'
+    }
 }
 
 defaultTasks 'clean', 'test'
