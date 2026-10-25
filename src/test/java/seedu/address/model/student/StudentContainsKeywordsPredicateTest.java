@@ -250,6 +250,30 @@ public class StudentContainsKeywordsPredicateTest {
     }
 
     @Test
+    public void test_phoneKeywordWithCountryCode_returnsTrue() {
+        // the keyword ends with the whole stored number, as when a caller ID shows +65 in front
+        assertTrue(phonePredicate("6593210283").test(ryan));
+        assertTrue(phonePredicate("6591234567").test(aiden));
+        assertTrue(phonePredicate("6582223333").test(weiJie));
+
+        // a different number with the same country code does not match
+        assertFalse(phonePredicate("6593210284").test(ryan));
+    }
+
+    @Test
+    public void test_storedNumberTooShortForCountryCodeMatch_returnsFalse() {
+        // a short stored number, such as an extension, is not a full number with a country code in front of it
+        Student withExtension = new Student(new Name("Short Num"), new Phone("567"), null);
+        assertFalse(phonePredicate("6591234567").test(withExtension));
+        assertFalse(phonePredicate("15550567").test(withExtension));
+        assertTrue(phonePredicate("567").test(withExtension));
+
+        // a country code has at most three digits
+        assertFalse(phonePredicate("123493210283").test(ryan));
+        assertTrue(phonePredicate("12393210283").test(ryan));
+    }
+
+    @Test
     public void test_phoneDoesNotContainKeywords_returnsFalse() {
         // Non-matching digits
         assertFalse(phonePredicate("0000").test(ryan));

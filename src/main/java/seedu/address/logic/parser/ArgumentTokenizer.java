@@ -3,7 +3,12 @@ package seedu.address.logic.parser;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import seedu.address.logic.Messages;
+import seedu.address.logic.parser.exceptions.ParseException;
 
 /**
  * Tokenizes arguments string of the form: {@code preamble <prefix>value <prefix>value ...}<br>
@@ -14,6 +19,14 @@ import java.util.stream.Collectors;
  *    in the above example.<br>
  */
 public class ArgumentTokenizer {
+
+    // A word ending in a slash at the start or after whitespace. A slash right after a prefix, as in
+    // n/Math/Science, is part of a value instead.
+    private static final Pattern SLASH_WORD = Pattern.compile("(?:^|\\s)(?<word>[A-Za-z]+/)");
+    // One or two lower-case letters, like the e/ and t/ of AddressBook-Level3 that users may still type.
+    private static final Pattern SHORT_PREFIX = Pattern.compile("[a-z]{1,2}/");
+    // The s/o, d/o, a/l and a/p that join Singapore names, as in Kumar s/o Ravi, in any letter case.
+    private static final Pattern NAME_CONNECTOR = Pattern.compile("(?i)[sd]/o|a/[lp]");
 
     /**
      * Tokenizes an arguments string and returns an {@code ArgumentMultimap} object that maps prefixes to their
@@ -26,6 +39,48 @@ public class ArgumentTokenizer {
     public static ArgumentMultimap tokenize(String argsString, Prefix... prefixes) {
         List<PrefixPosition> positions = findAllPrefixPositions(argsString, prefixes);
         return extractArguments(argsString, positions);
+    }
+
+    /**
+     * Throws a {@code ParseException} naming the first word in {@code argsString} that looks like a prefix, such as
+     * {@code gp/}, but is not one of the {@code prefixes} that {@code commandWord} takes. {@link #tokenize} would
+     * read such a word as part of the preamble or of the value before it, and that value would be blamed instead.
+     * A word looks like a prefix if it is one of TutorReach's prefixes in any letter case, such as {@code N/}, or
+     * one or two lower-case letters, such as {@code e/}. Other words ending in a slash, such as {@code Physics/} in
+     * {@code Physics/Chem}, are left to the rules of the value they are in, and so are the name connectors
+     * {@code s/o}, {@code d/o}, {@code a/l} and {@code a/p}.
+     *
+     * @param argsString  Arguments string of the form: {@code preamble <prefix>value <prefix>value ...}
+     * @param commandWord Command whose arguments these are, to name in the error
+     * @param prefixes    Prefixes the command takes
+     * @throws ParseException if {@code argsString} contains a prefix-like word that is not in {@code prefixes}
+     */
+    public static void verifyNoUnknownPrefixes(String argsString, String commandWord, Prefix... prefixes)
+            throws ParseException {
+        List<String> knownPrefixes = Arrays.stream(prefixes).map(Prefix::getPrefix).toList();
+        Matcher matcher = SLASH_WORD.matcher(argsString);
+        while (matcher.find()) {
+            String word = matcher.group("word");
+            if (looksLikePrefix(word) && !knownPrefixes.contains(word)
+                    && !isNameConnector(argsString, matcher.start("word"))) {
+                throw new ParseException(Messages.getErrorMessageForUnknownPrefix(commandWord, word, prefixes));
+            }
+        }
+    }
+
+    /**
+     * Returns true if a name connector such as {@code s/o} starts at {@code index} of {@code argsString} and is a
+     * whole word.
+     */
+    private static boolean isNameConnector(String argsString, int index) {
+        Matcher connector = NAME_CONNECTOR.matcher(argsString).region(index, argsString.length());
+        return connector.lookingAt() && (connector.end() == argsString.length()
+                || Character.isWhitespace(argsString.charAt(connector.end())));
+    }
+
+    private static boolean looksLikePrefix(String word) {
+        return SHORT_PREFIX.matcher(word).matches() || CliSyntax.TUTORREACH_PREFIXES.stream()
+                .anyMatch(prefix -> prefix.getPrefix().equalsIgnoreCase(word));
     }
 
     /**

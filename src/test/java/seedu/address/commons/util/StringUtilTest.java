@@ -1,5 +1,6 @@
 package seedu.address.commons.util;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
@@ -9,6 +10,36 @@ import java.io.FileNotFoundException;
 import org.junit.jupiter.api.Test;
 
 public class StringUtilTest {
+
+    //---------------- Tests for normalizeSpaces --------------------------------------
+
+    @Test
+    public void normalizeSpaces_unicodeSpaces_becomeSpaces() {
+        // no-break, narrow no-break, ideographic and line separator spaces, as pasted from web pages, PDFs,
+        // messaging apps or a full-width input method
+        assertEquals("p/+65 9123 4567", StringUtil.normalizeSpaces("p/+65\u00A09123\u202F4567"));
+        assertEquals("addstudent n/Mei p/91234567",
+                StringUtil.normalizeSpaces("addstudent\u3000n/Mei\u2028p/91234567"));
+        assertEquals("a b", StringUtil.normalizeSpaces("a\tb"));
+    }
+
+    @Test
+    public void normalizeSpaces_invisibleCharacters_removed() {
+        // zero-width space and joiners, word joiner and byte order mark
+        assertEquals("liststudents", StringUtil.normalizeSpaces("\uFEFFlist\u200Bstu\u200C\u200Ddents\u2060"));
+    }
+
+    @Test
+    public void normalizeSpaces_plainText_unchanged() {
+        String text = "addlesson n/Sec 3 A-Math d/mon st/1600 et/1800";
+        assertEquals(text, StringUtil.normalizeSpaces(text));
+        assertEquals("", StringUtil.normalizeSpaces(""));
+    }
+
+    @Test
+    public void normalizeSpaces_nullGiven_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> StringUtil.normalizeSpaces(null));
+    }
 
     //---------------- Tests for isNonZeroUnsignedInteger --------------------------------------
 
