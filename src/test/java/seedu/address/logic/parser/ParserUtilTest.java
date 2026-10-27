@@ -25,13 +25,13 @@ import seedu.address.model.tag.Tag;
 
 public class ParserUtilTest {
     private static final String INVALID_NAME = "R@chel";
-    private static final String INVALID_PHONE = "+651234";
+    private static final String INVALID_PHONE = "(65) 1234";
     private static final String INVALID_ADDRESS = " ";
     private static final String INVALID_EMAIL = "example.com";
     private static final String INVALID_TAG = "#friend";
 
     private static final String VALID_NAME = "Rachel Walker";
-    private static final String VALID_PHONE = "123456";
+    private static final String VALID_PHONE = "12345678";
     private static final String VALID_ADDRESS = "123 Main Street #0505";
     private static final String VALID_EMAIL = "rachel@example.com";
     private static final String VALID_TAG_1 = "friend";
@@ -103,6 +103,29 @@ public class ParserUtilTest {
         String phoneWithWhitespace = WHITESPACE + VALID_PHONE + WHITESPACE;
         Phone expectedPhone = new Phone(VALID_PHONE);
         assertEquals(expectedPhone, ParserUtil.parsePhone(phoneWithWhitespace));
+    }
+
+    @Test
+    public void parsePhone_formattedValue_returnsNormalizedPhone() throws Exception {
+        assertEquals(new Phone("91234567"), ParserUtil.parsePhone("+65 9123-4567"));
+        assertEquals(new Phone("+447700900123"), ParserUtil.parsePhone("+44 7700-900123"));
+    }
+
+    @Test
+    public void parseStudentPhone_null_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> ParserUtil.parseStudentPhone(null));
+    }
+
+    @Test
+    public void parseStudentPhone_invalidValue_throwsParseException() {
+        assertThrows(ParseException.class, Phone.MESSAGE_STUDENT_PHONE_CONSTRAINTS, ()
+            -> ParserUtil.parseStudentPhone("6591234567"));
+    }
+
+    @Test
+    public void parseStudentPhone_validValue_returnsNormalizedPhone() throws Exception {
+        assertEquals(new Phone("91234567"), ParserUtil.parseStudentPhone(" +65 9123-4567 "));
+        assertEquals(new Phone("+447700900123"), ParserUtil.parseStudentPhone("+44 7700-900123"));
     }
 
     @Test

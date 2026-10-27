@@ -81,4 +81,29 @@ public class StudentStorageTest {
         assertEquals(1, storage.readAddressBook().orElseThrow().getStudentList().size());
         assertTrue(storage.getLoadWarning().contains("skipped 1"));
     }
+
+    @Test
+    public void readAndSave_formattedPhones_storesNormalizedDigits() throws Exception {
+        Path sourceFile = testFolder.resolve("formatted.json");
+        Files.writeString(sourceFile, """
+                {"students": [
+                  {"name": "Aiden Tan", "phone": "9123-4567", "guardianName": "Mei Tan",
+                   "guardianPhone": "+65 9234-5678"},
+                  {"name": "Alex Smith", "phone": "+44 7700-900123"}
+                ]}
+                """);
+        JsonAddressBookStorage sourceStorage = new JsonAddressBookStorage(sourceFile);
+        AddressBook loadedBook = new AddressBook(sourceStorage.readAddressBook().orElseThrow());
+        Student student = loadedBook.getStudentList().getFirst();
+        assertEquals(new Phone("91234567"), student.getPhone().orElseThrow());
+        assertEquals(new Phone("92345678"), student.getGuardian().orElseThrow().getPhone());
+        assertEquals(new Phone("+447700900123"), loadedBook.getStudentList().get(1).getPhone().orElseThrow());
+
+        Path savedFile = testFolder.resolve("normalized.json");
+        new JsonAddressBookStorage(savedFile).saveAddressBook(loadedBook);
+        String savedJson = Files.readString(savedFile);
+        assertTrue(savedJson.contains("\"phone\" : \"91234567\""));
+        assertTrue(savedJson.contains("\"guardianPhone\" : \"92345678\""));
+        assertTrue(savedJson.contains("\"phone\" : \"+447700900123\""));
+    }
 }

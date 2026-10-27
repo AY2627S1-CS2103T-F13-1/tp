@@ -65,7 +65,8 @@ public class StudentContainsKeywordsPredicate implements Predicate<Student> {
     /** Returns the student's own phone number, if any, followed by their guardian's, if any. */
     private static Stream<String> getPhoneNumbers(Student student) {
         Stream<Phone> guardianPhone = student.getGuardian().map(Guardian::getPhone).stream();
-        return Stream.concat(student.getPhone().stream(), guardianPhone).map(phone -> phone.value);
+        return Stream.concat(student.getPhone().stream(), guardianPhone)
+                .map(phone -> phone.value.replace("+", ""));
     }
 
     private static boolean containsAnySubstring(String text, List<String> keywords) {
