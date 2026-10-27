@@ -117,6 +117,21 @@ public class EditStudentCommandTest {
     }
 
     @Test
+    public void execute_realNameCharacters_success() {
+        Name updatedName = new Name("José Anne-Marie");
+        Guardian updatedGuardian = new Guardian(new Name("Kumar s/o Ravi"), new Phone("93456789"));
+        EditStudentDescriptor descriptor = createDescriptor(updatedName, null, updatedGuardian);
+        EditStudentCommand command = new EditStudentCommand(INDEX_FIRST_PERSON, descriptor);
+        Student editedStudent = new Student(AIDEN.getId(), updatedName, null, updatedGuardian);
+        Model expectedModel = new ModelManager(getStudentAddressBook(), new UserPrefs());
+        expectedModel.setStudent(AIDEN, editedStudent);
+        String expectedMessage = String.format(EditStudentCommand.MESSAGE_EDIT_STUDENT_SUCCESS,
+                Messages.format(editedStudent));
+
+        assertCommandSuccess(command, model, expectedMessage, expectedModel);
+    }
+
+    @Test
     public void execute_sameDetails_success() {
         EditStudentDescriptor descriptor = createDescriptor(AIDEN.getName(), null, null);
         EditStudentCommand command = new EditStudentCommand(INDEX_FIRST_PERSON, descriptor);

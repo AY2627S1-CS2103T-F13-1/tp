@@ -43,10 +43,11 @@ public class AddStudentCommandParserTest {
     }
 
     @Test
-    public void parse_nameConnector_checkedAsName() {
-        // s/o is part of a name, so the name's own rule rejects it rather than an unknown-prefix error
-        assertParseFailure(parser, " n/Kumar s/o Ravi p/93210283", Name.MESSAGE_CONSTRAINTS);
-        assertParseFailure(parser, " n/Aiden gn/Siti d/o Ahmad gp/91234567", Name.MESSAGE_CONSTRAINTS);
+    public void parse_nameConnectors_returnsAddStudentCommand() {
+        Student student = new Student(new Name("Kumar s/o Ravi"), new Phone("93210283"),
+                new Guardian(new Name("Siti d/o Ahmad"), new Phone("91234567")));
+
+        assertParsedStudent(" n/Kumar s/o Ravi p/93210283 gn/Siti d/o Ahmad gp/91234567", student);
     }
 
     @Test
@@ -108,6 +109,15 @@ public class AddStudentCommandParserTest {
         assertParsedStudent(" gp/91234567 p/92345678 n/Aiden Tan gn/Tan Mei Ling",
                 student);
     }
+
+    @Test
+    public void parse_realNameCharacters_returnsAddStudentCommand() {
+        Guardian guardian = new Guardian(new Name("O’Connor"), new Phone("91234567"));
+        Student student = new Student(new Name("José Anne-Marie"), new Phone("92345678"), guardian);
+
+        assertParsedStudent(" n/José Anne-Marie p/92345678 gn/O’Connor gp/91234567", student);
+    }
+
     private void assertParsedStudent(String input, Student expected) {
         try {
             ModelManager model = new ModelManager();
