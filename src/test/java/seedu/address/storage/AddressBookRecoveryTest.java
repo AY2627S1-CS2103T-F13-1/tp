@@ -98,6 +98,23 @@ public class AddressBookRecoveryTest {
     }
 
     @Test
+    public void duplicateJsonKeys_blocksSavingAndPreservesOriginal() throws Exception {
+        Path file = folder.resolve("addressbook.json");
+        String student = "{\"name\":\"Aiden\",\"phone\":\"91234567\"}";
+        for (String invalid : List.of(
+                "{\"students\":[" + student + "],\"students\":[]}",
+                "{\"students\":[{\"name\":\"Aiden\",\"name\":\"Ben\",\"phone\":\"91234567\"}]}")) {
+            Files.writeString(file, invalid);
+            JsonAddressBookStorage storage = new JsonAddressBookStorage(file);
+            assertThrows(DataLoadingException.class, storage::readAddressBook);
+            assertTrue(storage.getLoadWarning().contains("Saving is disabled"));
+            assertThrows(IOException.class, () -> storage.saveAddressBook(new AddressBook()));
+            assertEquals(invalid, Files.readString(file));
+        }
+        assertTrue(backups().isEmpty());
+    }
+
+    @Test
     public void failedBackup_blocksSaving() throws Exception {
         Path file = folder.resolve("addressbook.json");
         Files.writeString(file, MIXED_DATA);

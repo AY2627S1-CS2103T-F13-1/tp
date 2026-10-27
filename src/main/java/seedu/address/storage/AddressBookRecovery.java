@@ -22,6 +22,7 @@ final class AddressBookRecovery {
     /** Reads a complete JSON object; malformed file structure is not recoverable. */
     static AddressBookRecovery read(String json) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
+        mapper.enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
         JsonNode root;
         try (JsonParser parser = mapper.getFactory().createParser(json)) {
             root = mapper.readTree(parser);
