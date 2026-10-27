@@ -276,6 +276,10 @@ Format: `exit`
 
 ### Saving the data
 
+Only one TutorReach instance can use the same data folder at a time. If another instance is already running,
+close it before starting a new one. The `data/addressbook.json.lock` file may remain after closing the app;
+this is normal and does not prevent reopening it.
+
 TutorReach automatically saves after commands that change data. Viewing, searching, help and exit commands do not rewrite the data file. You do not need to save manually.
 
 If saving fails, the data change is undone and the previous display filters are restored. Fix the reported storage problem before retrying the command. Saves use atomic file replacement; a filesystem that does not support this will report a save error instead of overwriting the existing file unsafely.
