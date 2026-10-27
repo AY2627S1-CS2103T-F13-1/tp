@@ -65,6 +65,10 @@ public class EditStudentCommandParserTest {
                 EditStudentCommandParser.MESSAGE_INCOMPLETE_GUARDIAN);
         assertParseFailure(parser, "1 p/92345678 gn/Tan Mei Ling",
                 EditStudentCommandParser.MESSAGE_INCOMPLETE_GUARDIAN);
+        assertParseFailure(parser, "1 gn/Tan Mei Ling gp/",
+                EditStudentCommandParser.MESSAGE_INCOMPLETE_GUARDIAN);
+        assertParseFailure(parser, "1 gn/ gp/91234567",
+                EditStudentCommandParser.MESSAGE_INCOMPLETE_GUARDIAN);
     }
 
     @Test
@@ -116,11 +120,36 @@ public class EditStudentCommandParserTest {
                 new EditStudentCommand(index, guardianDescriptor));
     }
 
+    @Test
+    public void parse_emptyContactValues_returnsClearContactCommand() {
+        Index index = Index.fromOneBased(1);
+
+        EditStudentDescriptor phoneDescriptor = new EditStudentDescriptor();
+        phoneDescriptor.setPhone(null);
+        assertParseSuccess(parser, "1 p/    ", new EditStudentCommand(index, phoneDescriptor));
+
+        EditStudentDescriptor guardianDescriptor = new EditStudentDescriptor();
+        guardianDescriptor.setGuardian(null);
+        assertParseSuccess(parser, "1 gn/     gp/    ", new EditStudentCommand(index, guardianDescriptor));
+
+        EditStudentDescriptor allContactsDescriptor = new EditStudentDescriptor();
+        allContactsDescriptor.setPhone(null);
+        allContactsDescriptor.setGuardian(null);
+        assertParseSuccess(parser, "1 p/    gn/    gp/    ",
+                new EditStudentCommand(index, allContactsDescriptor));
+    }
+
     private static EditStudentDescriptor createDescriptor(Name name, Phone phone, Guardian guardian) {
         EditStudentDescriptor descriptor = new EditStudentDescriptor();
-        descriptor.setName(name);
-        descriptor.setPhone(phone);
-        descriptor.setGuardian(guardian);
+        if (name != null) {
+            descriptor.setName(name);
+        }
+        if (phone != null) {
+            descriptor.setPhone(phone);
+        }
+        if (guardian != null) {
+            descriptor.setGuardian(guardian);
+        }
         return descriptor;
     }
 

@@ -1,6 +1,7 @@
 package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_LESSON_DISPLAYED_INDEX;
@@ -194,6 +195,35 @@ public class LogicManagerTest {
         assertEquals(originalStudentId, savedStudent.getId());
         assertEquals(editedStudent, savedStudent);
         assertEquals(List.of(new Enrolment(originalStudentId, lessonId)), saved.getEnrolmentList());
+    }
+
+    @Test
+    public void execute_editStudentClearsContacts_preservesIdentityEnrolmentAndSaves() throws Exception {
+        logic.execute(AddStudentCommand.COMMAND_WORD
+                + " n/Aiden Tan p/91234567 gn/Tan Mei Ling gp/93456789");
+        logic.execute(AddLessonCommand.COMMAND_WORD + " n/Math d/mon st/1600 et/1800");
+        logic.execute(EnrolCommand.COMMAND_WORD + " s/1 l/1");
+        UUID originalStudentId = logic.getFilteredStudentList().getFirst().getId();
+        UUID lessonId = logic.getFilteredLessonList().getFirst().getId();
+
+        logic.execute(EditStudentCommand.COMMAND_WORD + " 1 p/    ");
+
+        Student studentWithoutPhone = logic.getFilteredStudentList().getFirst();
+        assertFalse(studentWithoutPhone.getPhone().isPresent());
+        assertEquals(new Guardian(new Name("Tan Mei Ling"), new Phone("93456789")),
+                studentWithoutPhone.getGuardian().orElseThrow());
+        assertEquals(originalStudentId, studentWithoutPhone.getId());
+        assertEquals(List.of(new Enrolment(originalStudentId, lessonId)), logic.getEnrolmentList());
+        assertEquals(studentWithoutPhone, readSavedAddressBook().getStudentList().getFirst());
+
+        logic.execute(EditStudentCommand.COMMAND_WORD + " 1 p/92345678 gn/    gp/    ");
+
+        Student studentWithoutGuardian = logic.getFilteredStudentList().getFirst();
+        assertEquals(new Phone("92345678"), studentWithoutGuardian.getPhone().orElseThrow());
+        assertFalse(studentWithoutGuardian.getGuardian().isPresent());
+        assertEquals(originalStudentId, studentWithoutGuardian.getId());
+        assertEquals(List.of(new Enrolment(originalStudentId, lessonId)), logic.getEnrolmentList());
+        assertEquals(studentWithoutGuardian, readSavedAddressBook().getStudentList().getFirst());
     }
 
     @Test

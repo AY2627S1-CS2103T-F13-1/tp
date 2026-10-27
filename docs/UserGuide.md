@@ -123,7 +123,9 @@ Format: `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHON
 
 * `INDEX` must be a positive integer and refers to the index shown in the current student list.
 * At least one optional field must be provided. Fields that are not provided remain unchanged.
-* `gn/GUARDIAN_NAME` and `gp/GUARDIAN_PHONE` must be provided together. They replace the student's existing guardian details.
+* Use `p/` without a value to remove the student's phone number.
+* `gn/GUARDIAN_NAME` and `gp/GUARDIAN_PHONE` must be provided together. They replace the student's existing guardian details. Use `gn/ gp/` without values to remove the guardian.
+* The edited student must retain at least one contact number: their own phone or a guardian's phone.
 * Names must contain only English letters, digits and spaces, as for `addstudent`, and must not be blank. Phone numbers must contain only digits and be at least three digits long.
 * The edited student must not duplicate another student.
 * The student's identity and lesson enrolments are preserved.
@@ -133,6 +135,9 @@ Examples:
 
 * `editstudent 1 p/92345678` changes only the phone number of the first displayed student.
 * `editstudent 2 gn/Lim Mei gp/91234567` replaces only the guardian details of the second displayed student.
+* `editstudent 1 p/` removes the first displayed student's phone number if they have a guardian phone.
+* `editstudent 2 gn/ gp/` removes the second displayed student's guardian if they have their own phone.
+
 ### Finding students: `findstudent`
 
 Finds students by their name, their guardian's name, or part of a phone number.
@@ -331,7 +336,7 @@ Action | Format, Examples
 **Add lesson** | `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`<br> e.g., `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800`
 **Clear** | `clear`
 **Delete lesson** | `deletelesson INDEX`<br> e.g., `deletelesson 2`
-**Edit student** | `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `editstudent 1 p/92345678`
+**Edit student** | `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `editstudent 1 p/92345678`; remove a phone with `editstudent 1 p/`
 **Edit lesson** | `editlesson INDEX [n/NAME] [d/DAY] [st/START_TIME] [et/END_TIME]`<br> e.g., `editlesson 1 d/tue st/1700 et/1900`
 **Find students** | `findstudent [n/NAME_KEYWORDS...] [gn/GUARDIAN_NAME_KEYWORDS...] [p/PHONE]`<br> e.g., `findstudent p/4567`
 **List students** | `liststudents [l/LESSON_INDEX]`<br> e.g., `liststudents l/1`
