@@ -46,6 +46,8 @@ public class EditLessonCommand extends Command {
             + PREFIX_END_TIME + "1900";
 
     public static final String MESSAGE_EDIT_LESSON_SUCCESS = "Edited lesson: %1$s";
+    public static final String MESSAGE_IDENTICAL_CHANGES = "The incoming changes are identical to the current lesson "
+            + "details. Change at least one field and try again.";
     public static final String MESSAGE_NOT_EDITED = "At least one field to edit must be provided.";
 
     private static final Logger logger = LogsCenter.getLogger(EditLessonCommand.class);
@@ -76,6 +78,11 @@ public class EditLessonCommand extends Command {
             editedLesson = createEditedLesson(lessonToEdit, editLessonDescriptor);
         } catch (IllegalArgumentException e) {
             throw new CommandException(e.getMessage());
+        }
+
+        if (lessonToEdit.equals(editedLesson)) {
+            logger.fine("Rejected unchanged lesson edit for ID: " + lessonToEdit.getId());
+            throw new CommandException(MESSAGE_IDENTICAL_CHANGES);
         }
 
         Optional<Lesson> existingLesson = model.getAddressBook().getLessonList().stream()

@@ -75,13 +75,13 @@ public class AddLessonCommandTest {
     }
 
     @Test
-    public void execute_otherLessonsExist_addedAtEnd() {
+    public void execute_otherLessonsExist_displaysTimetableOrder() {
         model.addLesson(PHYSICS);
         expectedModel.addLesson(PHYSICS);
         expectedModel.addLesson(A_MATH);
 
         assertCommandSuccess(new AddLessonCommand(A_MATH), model, getSuccessMessage(A_MATH), expectedModel);
-        assertEquals(List.of(PHYSICS, A_MATH), model.getFilteredLessonList());
+        assertEquals(List.of(A_MATH, PHYSICS), model.getFilteredLessonList());
     }
 
     @Test
@@ -280,7 +280,7 @@ public class AddLessonCommandTest {
 
         // otherwise a lesson on a hidden day would seem not to have been added
         assertCommandSuccess(new AddLessonCommand(A_MATH), model, getSuccessMessage(A_MATH), expectedModel);
-        assertEquals(List.of(PHYSICS, A_MATH), model.getFilteredLessonList());
+        assertEquals(List.of(A_MATH, PHYSICS), model.getFilteredLessonList());
     }
 
     @Test
