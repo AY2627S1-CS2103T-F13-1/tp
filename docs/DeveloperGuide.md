@@ -1014,11 +1014,14 @@ testers are expected to do more *exploratory* testing.
    1. Test case: `deletestudent 1`<br>
       Expected: The first student is deleted from the list and removed from every lesson card. The status message shows the deleted student's details.
 
-   1. Test case: `deletestudent 0`<br>
-      Expected: No student is deleted. The status message shows the invalid command format error.
+   1. Test case: `deletestudent 0`, followed by `deletestudent -1`<br>
+      Expected: No student is deleted. Both commands show `Index must be a positive integer.`
 
-   1. Other incorrect delete commands to try: `deletestudent`, `deletestudent abc`, `deletestudent 1 2`, `deletestudent x` (where x is larger than the list size)<br>
-      Expected: Similar to previous.
+   1. Other incorrect delete commands to try: `deletestudent`, `deletestudent abc`, `deletestudent 1 2`<br>
+      Expected: No student is deleted. The status message shows the invalid command format and usage instructions.
+
+   1. Test case: `deletestudent 99`, followed by `deletestudent 99999999999`<br>
+      Expected: No student is deleted. The status message shows `Student index exceeds the number of students in the displayed list.`
 
 1. Deleting a student while the students panel is filtered
 
@@ -1095,7 +1098,7 @@ testers are expected to do more *exploratory* testing.
       Expected: No lesson is deleted. The status message shows the invalid command format and usage instructions.
 
    1. Test case: `deletelesson 99`, followed by `deletelesson 99999999999`<br>
-      Expected: No lesson is deleted. The status message shows `The lesson index provided is invalid.`
+      Expected: No lesson is deleted. The status message shows `Lesson index exceeds the number of lessons in the displayed list.`
 
 ### Editing a lesson
 

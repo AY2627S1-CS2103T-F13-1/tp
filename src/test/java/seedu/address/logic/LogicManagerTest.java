@@ -85,9 +85,16 @@ public class LogicManagerTest {
     }
 
     @Test
-    public void execute_commandExecutionError_throwsCommandException() {
-        String deleteCommand = DeleteStudentCommand.COMMAND_WORD + " 9";
-        assertCommandException(deleteCommand, MESSAGE_INVALID_STUDENT_DISPLAYED_INDEX);
+    public void execute_deleteStudentInvalidIndices_throwsSpecificExceptions() {
+        assertParseException(DeleteStudentCommand.COMMAND_WORD + " 0", MESSAGE_INVALID_INDEX);
+        assertParseException(DeleteStudentCommand.COMMAND_WORD + " -1", MESSAGE_INVALID_INDEX);
+        assertCommandException(DeleteStudentCommand.COMMAND_WORD + " 99", MESSAGE_INVALID_STUDENT_DISPLAYED_INDEX);
+        assertParseException(DeleteStudentCommand.COMMAND_WORD + " 99999999999",
+                MESSAGE_INVALID_STUDENT_DISPLAYED_INDEX);
+        assertParseException(DeleteStudentCommand.COMMAND_WORD + " abc",
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteStudentCommand.MESSAGE_USAGE));
+        assertParseException(DeleteStudentCommand.COMMAND_WORD + " 1 2",
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteStudentCommand.MESSAGE_USAGE));
     }
 
     @Test

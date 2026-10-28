@@ -102,6 +102,7 @@ Deletes a student using their displayed index. The student is also removed from 
 Format: `deletestudent INDEX`
 
 * `INDEX` refers to the current displayed student list and must be a positive integer.
+* A zero or negative index is rejected with `Index must be a positive integer.` A positive integer outside the displayed student list, including one too large for TutorReach to store, is rejected with `Student index exceeds the number of students in the displayed list.`
 * The student filter stays active after the deletion.
 
 Example:
@@ -270,7 +271,7 @@ Deletes a lesson using its displayed index. Students are kept, but their enrolme
 Format: `deletelesson INDEX`
 
 * `INDEX` refers to the current displayed lesson list and must be a positive integer.
-* A zero or negative index is rejected with `Index must be a positive integer.` A positive integer outside the displayed lesson list, including one too large for TutorReach to store, is rejected with `The lesson index provided is invalid.`
+* A zero or negative index is rejected with `Index must be a positive integer.` A positive integer outside the displayed lesson list, including one too large for TutorReach to store, is rejected with `Lesson index exceeds the number of lessons in the displayed list.`
 * The result names the deleted lesson and lists the students who were unenrolled from it, if any.
 * If the students panel is showing only the students of that lesson (`liststudents l/INDEX`), all students are shown again.
 
