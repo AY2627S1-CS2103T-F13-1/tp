@@ -72,8 +72,8 @@ final class AddressBookRecovery {
     }
 
     /**
-     * Describes a skipped record so the user can find it in the file, e.g.
-     * {@code student 2 (Aiden Tan): Guardian name and phone must be given together.}
+     * Describes a skipped record so the user can tell which record it was, e.g.
+     * {@code student 2 (Aiden Tan): guardian name and phone must be given together}.
      * Records are numbered from 1 within their list.
      */
     private static String describe(String field, int index, JsonNode record, Exception e) {

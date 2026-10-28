@@ -293,42 +293,10 @@ this is normal and does not prevent reopening it.
 
 TutorReach automatically saves after commands that change data. Viewing, searching, help and exit commands do not rewrite the data file. You do not need to save manually.
 
-If saving fails, the data change is undone and the previous display filters are restored. Fix the reported storage problem before retrying the command. Saves use atomic file replacement; a filesystem that does not support this will report a save error instead of overwriting the existing file unsafely.
+### If some data cannot be loaded
 
-### Editing the data file
-
-TutorReach stores data in `data/addressbook.json` by default, relative to the folder from which you launch the app.
-Only edit this file while the app is closed.
-
-<div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-If individual records are invalid or duplicated, the app loads the valid records and skips the invalid ones.
-Enrolments referencing missing students or lessons are also skipped. The first valid duplicate is kept.
-A warning in the message box lists the skipped records (up to five), why each was skipped, and the name of the backup of the original file.
-Backups are saved beside the data file as `addressbook.json.recovery-<unique number>.bak`; older backups are preserved.
-These files remain on disk after closing the app and are not automatically deleted. Open a backup in a text editor
-to review the original data, including skipped records. A recovery backup contains the original problems too;
-repair those entries before using it as your data file.
-The source file is unchanged until a successful command that changes records saves the recovered data.<br>
-If the JSON cannot be read, its lists have an invalid structure, or a backup cannot be created, the app starts empty
-with a warning and **disables saving** to protect the source file. Fix the file or restore a backup while the app
-is closed, then restart. While saving is disabled, commands that change records are rejected before changing the data.
-Listing, searching, help, and exit remain available.<br>
-Only edit the file while the app is closed, and keep a backup before editing it.<br>
-Keep student and lesson IDs unchanged when editing details, as enrolments use those IDs to link records.
-</div>
-
-### Fixing skipped records
-
-If TutorReach finds a problem in your data file when it starts, it skips the records with problems and lists them in the message box, for example:
-
-```
-Warning: TutorReach skipped 1 record(s) in your data file because they had problems:
-- student 2 (Ben Koh): needs a phone number
-```
-
-Everything else works as usual, but the skipped records are removed from your data file the next time you make a change. To keep them, add them again manually with `addstudent` or `addlesson`, fixing the problem shown for each one, then `enrol` the students in their lessons again.
-
-The message box also shows where a copy of your original data file was saved, in case you need a skipped record's details.
+If TutorReach cannot load some or all of your saved data when it starts, the message box says what was skipped and shows the path of a file containing your original data.
+Open that file in a text editor to see the skipped details, then add them again with commands such as `addstudent`, `addlesson` and `enrol`.
 
 --------------------------------------------------------------------------------------------------------------------
 

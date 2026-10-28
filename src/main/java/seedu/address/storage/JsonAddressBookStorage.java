@@ -77,9 +77,9 @@ public class JsonAddressBookStorage {
                         + " record(s) in your data file because they had problems:\n"
                         + formatSkippedRecords(recovered.getSkippedRecords())
                         + "\nThese records will be removed from your data file the next time you make a change. "
-                        + "To keep them, add them again manually. Their original details are saved in:\n" + backup;
-                logger.warning(loadWarning + " Backup: " + backup + ". All skipped records: "
-                        + recovered.getSkippedRecords());
+                        + "To keep them, add them again in TutorReach. Their original details are saved in:\n"
+                        + backup;
+                logger.warning(loadWarning + "\nAll skipped records: " + recovered.getSkippedRecords());
             }
             blockedSavePaths.remove(normalizedPath);
             return Optional.of(recovered.getAddressBook());
@@ -87,7 +87,7 @@ public class JsonAddressBookStorage {
             blockedSavePaths.add(normalizedPath);
             loadWarning = "Warning: the data file could not be safely loaded or backed up. "
                     + "Saving is disabled to protect the original file: " + normalizedPath
-                    + ". Fix the file or restore a backup, then restart the app.";
+                    + ". Open this file to see your original data.";
             logger.warning(loadWarning + " " + e.getMessage());
             throw new DataLoadingException(e);
         }
@@ -102,7 +102,7 @@ public class JsonAddressBookStorage {
                 .map(record -> "- " + record)
                 .collect(Collectors.joining("\n"));
         int hidden = skippedRecords.size() - MAX_SKIPPED_RECORDS_SHOWN;
-        return shown + (hidden > 0 ? "\n- and " + hidden + " more, listed in the log file" : "");
+        return shown + (hidden > 0 ? "\n- and " + hidden + " more" : "");
     }
 
     /** Creates a unique backup of the exact bytes read, without replacing earlier backups. */
@@ -146,8 +146,7 @@ public class JsonAddressBookStorage {
 
     private void checkSaveAllowed(Path filePath) throws IOException {
         if (blockedSavePaths.contains(filePath.toAbsolutePath().normalize())) {
-            throw new IOException("Saving is disabled because the original data could not be safely loaded. "
-                    + "Fix the data file or restore a backup, then restart the app.");
+            throw new IOException("Saving is disabled because the original data could not be safely loaded.");
         }
     }
 

@@ -82,7 +82,7 @@ public class AddressBookRecoveryTest {
         assertTrue(warning.contains("\n- lesson 2 (Science): "));
         assertTrue(warning.contains("\n- enrolment 2: refers to a missing student or lesson"));
         assertFalse(warning.contains("enrolment 3"));
-        assertTrue(warning.contains("\n- and 1 more, listed in the log file"));
+        assertTrue(warning.contains("\n- and 1 more"));
     }
 
     @Test
