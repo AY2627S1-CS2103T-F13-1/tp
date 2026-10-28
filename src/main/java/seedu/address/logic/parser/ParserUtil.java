@@ -1,6 +1,9 @@
 package seedu.address.logic.parser;
 
 import static java.util.Objects.requireNonNull;
+import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_LESSON;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_STUDENT;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
@@ -9,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,6 +54,31 @@ public class ParserUtil {
             throw new ParseException(MESSAGE_INVALID_INDEX);
         }
         return Index.fromOneBased(Integer.parseInt(trimmedIndex));
+    }
+
+    /**
+     * Parses {@code args} of the form {@code s/STUDENT_INDEX l/LESSON_INDEX} and passes the two indices to
+     * {@code commandFactory} to create the command.
+     *
+     * @param messageUsage the usage message of the command, shown if {@code args} is invalid.
+     * @param commandFactory creates the command using the student index first and the lesson index second.
+     * @throws ParseException if a prefix is missing or repeated, there is text before the first prefix,
+     *     or either index is not a positive integer.
+     */
+    public static <T> T parseStudentAndLessonIndices(String args, String messageUsage,
+            BiFunction<Index, Index, T> commandFactory) throws ParseException {
+        ArgumentMultimap values = ArgumentTokenizer.tokenize(args, PREFIX_STUDENT, PREFIX_LESSON);
+        values.verifyNoDuplicatePrefixesFor(PREFIX_STUDENT, PREFIX_LESSON);
+        if (!values.getPreamble().isEmpty() || values.getValue(PREFIX_STUDENT).isEmpty()
+                || values.getValue(PREFIX_LESSON).isEmpty()) {
+            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, messageUsage));
+        }
+        try {
+            return commandFactory.apply(parseIndex(values.getValue(PREFIX_STUDENT).get()),
+                    parseIndex(values.getValue(PREFIX_LESSON).get()));
+        } catch (ParseException e) {
+            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, messageUsage), e);
+        }
     }
 
     /**

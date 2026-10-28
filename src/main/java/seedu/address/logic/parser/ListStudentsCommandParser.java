@@ -15,10 +15,10 @@ public class ListStudentsCommandParser implements Parser<ListStudentsCommand> {
         }
         ArgumentMultimap values = ArgumentTokenizer.tokenize(args, PREFIX_LESSON);
         values.verifyNoDuplicatePrefixesFor(PREFIX_LESSON);
+        if (!values.getPreamble().isEmpty() || values.getValue(PREFIX_LESSON).isEmpty()) {
+            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, ListStudentsCommand.MESSAGE_USAGE));
+        }
         try {
-            if (!values.getPreamble().isEmpty() || values.getValue(PREFIX_LESSON).isEmpty()) {
-                throw new ParseException("Missing lesson index");
-            }
             return new ListStudentsCommand(ParserUtil.parseIndex(values.getValue(PREFIX_LESSON).get()));
         } catch (ParseException e) {
             throw new ParseException(
