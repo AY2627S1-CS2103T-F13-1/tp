@@ -272,10 +272,11 @@ The `editstudent` and `editlesson` commands replace immutable domain objects wit
 1. The command parser reads a positive displayed-list index and one or more optional fields. It rejects repeated prefixes, missing edit fields and invalid values. For `editstudent`, a blank `p/` removes the student's phone, while blank `gn/ gp/` values remove the guardian. The guardian prefixes must be given together with either two values or two blanks because a guardian is replaced as one value.
 1. The command resolves the index against the corresponding filtered list, so it edits the item the user can see rather than the same position in the complete list.
 1. The command creates a replacement object using the supplied values, `null` for an optional contact being removed, the target's values for unspecified fields and the target's UUID. The student model rejects a replacement with no contact number.
-1. The model rejects a replacement that would duplicate another student or lesson, then replaces the target in the source list.
+1. If the replacement equals the target, the command throws a `CommandException` explaining that the incoming changes are identical and asking the user to change at least one field. It does not call `Model#setStudent()` or `Model#setLesson()`, so `LogicManager` does not save the address book.
+1. Otherwise, the command rejects a replacement that would duplicate another student or lesson, then asks the model to replace the target in the source list.
 1. The filtered list re-evaluates its predicate when the source item is replaced. An edited item therefore remains visible only if it still matches the active filter.
 
-The following sequence diagram shows the successful execution of `editstudent 1 p/92345678`. The `editlesson` command follows the same sequence using its lesson-specific parser, command, filtered list and model operation.
+The following sequence diagram shows a successful edit that changes data: `editstudent 1 p/92345678`. The `editlesson` command follows the same sequence using its lesson-specific parser, command, filtered list and model operation.
 
 ![Interactions for editing a student](images/EditStudentSequenceDiagram.png)
 
@@ -971,6 +972,12 @@ testers are expected to do more *exploratory* testing.
    1. Test case: `editstudent 1 gn/Lim Mei gp/91234567`<br>
       Expected: Only the first student's guardian details are replaced. Their own details and lesson enrolments remain unchanged.
 
+   1. Test case: Repeat `editstudent 1 p/92345678` after the preceding test case.<br>
+      Expected: No student is edited, and the data file is not rewritten. The status message shows an error stating that the incoming changes are identical to the current student details and asks the user to change at least one field.
+
+   1. Test case: `editstudent 1 p/92345678 gn/Lim Wei gp/98765432`<br>
+      Expected: The unchanged phone number is accepted, the guardian details change and the address book is saved because at least one resulting field is different.
+
    1. Test case: `editstudent 1 p/`<br>
       Expected: The first student's own phone is removed. Their guardian, identity and lesson enrolments remain unchanged.
 
@@ -1101,6 +1108,12 @@ testers are expected to do more *exploratory* testing.
 
    1. Test case: `editlesson 1 st/2200 et/0100`<br>
       Expected: The lesson is edited to run past midnight and retains its student enrolments.
+
+   1. Test case: Repeat `editlesson 1 d/tue` after the preceding test case.<br>
+      Expected: No lesson is edited, and the data file is not rewritten. The status message shows an error stating that the incoming changes are identical to the current lesson details and asks the user to change at least one field.
+
+   1. Test case: `editlesson 1 d/tue st/1700 et/1900`<br>
+      Expected: The unchanged day is accepted, the times change and the address book is saved because at least one resulting field is different.
 
    1. Test case: `editlesson 1 st/1700 et/1700`<br>
       Expected: No lesson is edited. The status message states that the end time must not be the same as the start time.

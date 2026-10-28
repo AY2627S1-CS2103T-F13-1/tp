@@ -130,6 +130,7 @@ Format: `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHON
 
 * `INDEX` must be a positive integer and refers to the index shown in the current student list.
 * At least one optional field must be provided. Fields that are not provided remain unchanged.
+* If every supplied value already matches the student, the command is rejected with an error asking you to change at least one field. The data file is not rewritten.
 * Use `p/` without a value to remove the student's phone number.
 * `gn/GUARDIAN_NAME` and `gp/GUARDIAN_PHONE` must be provided together. They replace the student's existing guardian details. Use `gn/ gp/` without values to remove the guardian.
 * The edited student must retain at least one contact number: their own phone or a guardian's phone.
@@ -142,8 +143,9 @@ Examples:
 
 * `editstudent 1 p/9234 5678` changes only the phone number of the first displayed student. The number is displayed and saved as `92345678`.
 * `editstudent 2 gn/Lim Mei gp/91234567` replaces only the guardian details of the second displayed student.
-* `editstudent 1 p/` removes the first displayed student's phone number if they have a guardian phone.
-* `editstudent 2 gn/ gp/` removes the second displayed student's guardian if they have their own phone.
+* If the first student's phone number is already `92345678`, `editstudent 1 p/92345678` is rejected because the incoming changes are identical to the current student details.
+* `editstudent 3 p/` removes the third displayed student's phone number if they have a guardian phone.
+* `editstudent 3 gn/ gp/` removes the third displayed student's guardian if they have their own phone.
 * `editstudent 1 n/O'Connor` changes the student's name to one containing an apostrophe.
 
 ### Finding students: `findstudent`
@@ -192,6 +194,7 @@ Format: `editlesson INDEX [n/NAME] [d/DAY] [st/START_TIME] [et/END_TIME]`
 
 * `INDEX` must be a positive integer and refers to the index shown in the current lesson list.
 * At least one optional field must be provided. Fields that are not provided remain unchanged.
+* If every supplied value already matches the lesson, the command is rejected with an error asking you to change at least one field. The data file is not rewritten.
 * `NAME` must be 1 to 50 characters long, start with a letter or digit, and contain only English letters, digits, spaces and `- ' . , & ( ) +`.
 * `DAY` is a day of the week, written in full or as at least its first three letters, in any letter case; for example, `mon`, `tues`, `weds`, `Thurs` and `friday` all work.
 * Times use the 24-hour clock, as `HHMM` or `HH:MM`, from `0000` to `2359`; for example, `1700` and `17:00` are both 5:00 PM. The start and end times cannot be equal. An end time earlier than the start time means that the lesson ends on the next day.
@@ -204,6 +207,7 @@ Examples:
 
 * `editlesson 1 d/tue st/1700 et/1900` changes only the day and times of the first displayed lesson.
 * `editlesson 2 n/Sec 3 Mathematics` changes only the name of the second displayed lesson.
+* If the first lesson is already on Tuesday, `editlesson 1 d/tue` is rejected because the incoming changes are identical to the current lesson details.
 
 
 ### Adding a lesson: `addlesson`
@@ -295,7 +299,7 @@ Only one TutorReach instance can use the same data folder at a time. If another 
 close it before starting a new one. The `data/addressbook.json.lock` file may remain after closing the app;
 this is normal and does not prevent reopening it.
 
-TutorReach automatically saves after commands that change data. Viewing, searching, help and exit commands do not rewrite the data file. You do not need to save manually.
+TutorReach automatically saves after commands that change data. Commands that leave the data unchanged, including edits whose supplied values already match the record, do not rewrite the data file. Viewing, searching, help and exit commands do not rewrite the data file. You do not need to save manually.
 
 If saving fails, the data change is undone and the previous display filters are restored. Fix the reported storage problem before retrying the command. Saves use atomic file replacement; a filesystem that does not support this will report a save error instead of overwriting the existing file unsafely.
 

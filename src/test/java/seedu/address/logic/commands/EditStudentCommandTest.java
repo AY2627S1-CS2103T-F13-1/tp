@@ -117,6 +117,22 @@ public class EditStudentCommandTest {
     }
 
     @Test
+    public void execute_unchangedAndChangedFields_success() {
+        Phone updatedPhone = new Phone("92345678");
+        EditStudentDescriptor descriptor = createDescriptor(AIDEN.getName(), updatedPhone,
+                AIDEN.getGuardian().orElseThrow());
+        EditStudentCommand command = new EditStudentCommand(INDEX_FIRST_PERSON, descriptor);
+        Student editedStudent = new Student(AIDEN.getId(), AIDEN.getName(), updatedPhone,
+                AIDEN.getGuardian().orElseThrow());
+        Model expectedModel = new ModelManager(getStudentAddressBook(), new UserPrefs());
+        expectedModel.setStudent(AIDEN, editedStudent);
+        String expectedMessage = String.format(EditStudentCommand.MESSAGE_EDIT_STUDENT_SUCCESS,
+                Messages.format(editedStudent));
+
+        assertCommandSuccess(command, model, expectedMessage, expectedModel);
+    }
+
+    @Test
     public void execute_clearPhone_guardianRetained() {
         EditStudentDescriptor descriptor = new EditStudentDescriptor();
         descriptor.setPhone(null);
@@ -174,15 +190,12 @@ public class EditStudentCommandTest {
     }
 
     @Test
-    public void execute_clearAlreadyAbsentPhone_success() {
+    public void execute_clearAlreadyAbsentPhone_throwsCommandException() {
         EditStudentDescriptor descriptor = new EditStudentDescriptor();
         descriptor.setPhone(null);
         EditStudentCommand command = new EditStudentCommand(INDEX_FIRST_PERSON, descriptor);
-        Model expectedModel = new ModelManager(getStudentAddressBook(), new UserPrefs());
-        String expectedMessage = String.format(EditStudentCommand.MESSAGE_EDIT_STUDENT_SUCCESS,
-                Messages.format(AIDEN));
 
-        assertCommandSuccess(command, model, expectedMessage, expectedModel);
+        assertEditFailure(command, EditStudentCommand.MESSAGE_IDENTICAL_CHANGES);
     }
 
     @Test
@@ -201,14 +214,19 @@ public class EditStudentCommandTest {
     }
 
     @Test
-    public void execute_sameDetails_success() {
+    public void execute_sameDetails_throwsCommandExceptionWithoutReplacingStudent() {
+        Model modelThatRejectsEdits = new ModelManager(getStudentAddressBook(), new UserPrefs()) {
+            @Override
+            public void setStudent(Student target, Student editedStudent) {
+                throw new AssertionError("An unchanged student must not be replaced");
+            }
+        };
         EditStudentDescriptor descriptor = createDescriptor(AIDEN.getName(), null, null);
         EditStudentCommand command = new EditStudentCommand(INDEX_FIRST_PERSON, descriptor);
-        Model expectedModel = new ModelManager(getStudentAddressBook(), new UserPrefs());
-        String expectedMessage = String.format(EditStudentCommand.MESSAGE_EDIT_STUDENT_SUCCESS,
-                Messages.format(AIDEN));
 
-        assertCommandSuccess(command, model, expectedMessage, expectedModel);
+        assertThrows(CommandException.class, EditStudentCommand.MESSAGE_IDENTICAL_CHANGES, () ->
+                command.execute(modelThatRejectsEdits));
+        assertEquals(getStudentAddressBook(), modelThatRejectsEdits.getAddressBook());
     }
 
     @Test
