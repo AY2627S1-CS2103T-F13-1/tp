@@ -1,6 +1,7 @@
 package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_LESSON_DISPLAYED_INDEX;
@@ -10,6 +11,7 @@ import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_GUARDIAN_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
+import static seedu.address.logic.parser.ParserUtil.MESSAGE_INVALID_INDEX;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.StudentTestUtil.assertStudentDetailsEqual;
 
@@ -83,9 +85,16 @@ public class LogicManagerTest {
     }
 
     @Test
-    public void execute_commandExecutionError_throwsCommandException() {
-        String deleteCommand = DeleteStudentCommand.COMMAND_WORD + " 9";
-        assertCommandException(deleteCommand, MESSAGE_INVALID_STUDENT_DISPLAYED_INDEX);
+    public void execute_deleteStudentInvalidIndices_throwsSpecificExceptions() {
+        assertParseException(DeleteStudentCommand.COMMAND_WORD + " 0", MESSAGE_INVALID_INDEX);
+        assertParseException(DeleteStudentCommand.COMMAND_WORD + " -1", MESSAGE_INVALID_INDEX);
+        assertCommandException(DeleteStudentCommand.COMMAND_WORD + " 99", MESSAGE_INVALID_STUDENT_DISPLAYED_INDEX);
+        assertParseException(DeleteStudentCommand.COMMAND_WORD + " 99999999999",
+                MESSAGE_INVALID_STUDENT_DISPLAYED_INDEX);
+        assertParseException(DeleteStudentCommand.COMMAND_WORD + " abc",
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteStudentCommand.MESSAGE_USAGE));
+        assertParseException(DeleteStudentCommand.COMMAND_WORD + " 1 2",
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteStudentCommand.MESSAGE_USAGE));
     }
 
     @Test
@@ -188,7 +197,8 @@ public class LogicManagerTest {
     }
 
     @Test
-    public void execute_editStudent_preservesIdentityEnrolmentAndSaves() throws Exception {
+    public void execute_editStudentWithUnchangedAndChangedFields_preservesIdentityEnrolmentAndSaves()
+            throws Exception {
         logic.execute(AddStudentCommand.COMMAND_WORD + " n/Aiden Tan p/91234567");
         logic.execute(AddLessonCommand.COMMAND_WORD + " n/Math d/mon st/1600 et/1800");
         logic.execute(EnrolCommand.COMMAND_WORD + " s/1 l/1");
@@ -196,13 +206,13 @@ public class LogicManagerTest {
         UUID lessonId = logic.getFilteredLessonList().getFirst().getId();
 
         CommandResult result = logic.execute(EditStudentCommand.COMMAND_WORD
-                + " 1 n/Aiden Lim p/92345678 gn/Lim Mei Ling gp/93456789");
+                + " 1 n/Aiden Tan p/92345678 gn/Lim Mei Ling gp/93456789");
 
         Student editedStudent = logic.getFilteredStudentList().getFirst();
-        assertEquals("Edited student: Aiden Lim; Phone: 92345678; Guardian: Lim Mei Ling (93456789)",
+        assertEquals("Edited student: Aiden Tan; Phone: 92345678; Guardian: Lim Mei Ling (93456789)",
                 result.getFeedbackToUser());
         assertEquals(originalStudentId, editedStudent.getId());
-        assertEquals(new Name("Aiden Lim"), editedStudent.getName());
+        assertEquals(new Name("Aiden Tan"), editedStudent.getName());
         assertEquals(new Phone("92345678"), editedStudent.getPhone().orElseThrow());
         assertEquals(new Guardian(new Name("Lim Mei Ling"), new Phone("93456789")),
                 editedStudent.getGuardian().orElseThrow());
@@ -213,6 +223,46 @@ public class LogicManagerTest {
         assertEquals(originalStudentId, savedStudent.getId());
         assertEquals(editedStudent, savedStudent);
         assertEquals(List.of(new Enrolment(originalStudentId, lessonId)), saved.getEnrolmentList());
+    }
+
+    @Test
+    public void execute_editStudentWithUnchangedDetails_throwsCommandExceptionWithoutSaving() {
+        Student aiden = new Student(new Name("Aiden Tan"), new Phone("91234567"), null);
+        model.addStudent(aiden);
+        setUpLogicWithStorageThatRejectsSaves();
+
+        assertCommandException(EditStudentCommand.COMMAND_WORD + " 1 p/91234567",
+                EditStudentCommand.MESSAGE_IDENTICAL_CHANGES);
+        assertEquals(List.of(aiden), logic.getFilteredStudentList());
+    }
+
+    @Test
+    public void execute_editStudentClearsContacts_preservesIdentityEnrolmentAndSaves() throws Exception {
+        logic.execute(AddStudentCommand.COMMAND_WORD
+                + " n/Aiden Tan p/91234567 gn/Tan Mei Ling gp/93456789");
+        logic.execute(AddLessonCommand.COMMAND_WORD + " n/Math d/mon st/1600 et/1800");
+        logic.execute(EnrolCommand.COMMAND_WORD + " s/1 l/1");
+        UUID originalStudentId = logic.getFilteredStudentList().getFirst().getId();
+        UUID lessonId = logic.getFilteredLessonList().getFirst().getId();
+
+        logic.execute(EditStudentCommand.COMMAND_WORD + " 1 p/    ");
+
+        Student studentWithoutPhone = logic.getFilteredStudentList().getFirst();
+        assertFalse(studentWithoutPhone.getPhone().isPresent());
+        assertEquals(new Guardian(new Name("Tan Mei Ling"), new Phone("93456789")),
+                studentWithoutPhone.getGuardian().orElseThrow());
+        assertEquals(originalStudentId, studentWithoutPhone.getId());
+        assertEquals(List.of(new Enrolment(originalStudentId, lessonId)), logic.getEnrolmentList());
+        assertEquals(studentWithoutPhone, readSavedAddressBook().getStudentList().getFirst());
+
+        logic.execute(EditStudentCommand.COMMAND_WORD + " 1 p/92345678 gn/    gp/    ");
+
+        Student studentWithoutGuardian = logic.getFilteredStudentList().getFirst();
+        assertEquals(new Phone("92345678"), studentWithoutGuardian.getPhone().orElseThrow());
+        assertFalse(studentWithoutGuardian.getGuardian().isPresent());
+        assertEquals(originalStudentId, studentWithoutGuardian.getId());
+        assertEquals(List.of(new Enrolment(originalStudentId, lessonId)), logic.getEnrolmentList());
+        assertEquals(studentWithoutGuardian, readSavedAddressBook().getStudentList().getFirst());
     }
 
     @Test
@@ -279,7 +329,8 @@ public class LogicManagerTest {
     }
 
     @Test
-    public void execute_editLesson_preservesIdentityEnrolmentAndSaves() throws Exception {
+    public void execute_editLessonWithUnchangedAndChangedFields_preservesIdentityEnrolmentAndSaves()
+            throws Exception {
         logic.execute(AddStudentCommand.COMMAND_WORD + " n/Aiden Tan p/91234567");
         logic.execute(AddLessonCommand.COMMAND_WORD + " n/Math d/mon st/1600 et/1800");
         logic.execute(EnrolCommand.COMMAND_WORD + " s/1 l/1");
@@ -287,12 +338,12 @@ public class LogicManagerTest {
         UUID originalLessonId = logic.getFilteredLessonList().getFirst().getId();
 
         CommandResult result = logic.execute(EditLessonCommand.COMMAND_WORD
-                + " 1 n/Advanced Math d/tue st/2200 et/0100");
+                + " 1 n/Math d/tue st/2200 et/0100");
 
         Lesson editedLesson = logic.getFilteredLessonList().getFirst();
-        assertEquals("Edited lesson: Advanced Math (Tue 2200-0100) (next day)", result.getFeedbackToUser());
+        assertEquals("Edited lesson: Math (Tue 2200-0100) (next day)", result.getFeedbackToUser());
         assertEquals(originalLessonId, editedLesson.getId());
-        assertEquals("Advanced Math", editedLesson.getName());
+        assertEquals("Math", editedLesson.getName());
         assertEquals(DayOfWeek.TUESDAY, editedLesson.getDay());
         assertEquals(LocalTime.of(22, 0), editedLesson.getStartTime());
         assertEquals(LocalTime.of(1, 0), editedLesson.getEndTime());
@@ -303,6 +354,17 @@ public class LogicManagerTest {
         assertEquals(originalLessonId, savedLesson.getId());
         assertEquals(editedLesson, savedLesson);
         assertEquals(List.of(new Enrolment(studentId, originalLessonId)), saved.getEnrolmentList());
+    }
+
+    @Test
+    public void execute_editLessonWithUnchangedDetails_throwsCommandExceptionWithoutSaving() {
+        Lesson math = new Lesson("Math", DayOfWeek.MONDAY, LocalTime.of(16, 0), LocalTime.of(18, 0));
+        model.addLesson(math);
+        setUpLogicWithStorageThatRejectsSaves();
+
+        assertCommandException(EditLessonCommand.COMMAND_WORD + " 1 d/mon",
+                EditLessonCommand.MESSAGE_IDENTICAL_CHANGES);
+        assertEquals(List.of(math), logic.getFilteredLessonList());
     }
 
     @Test
@@ -342,9 +404,15 @@ public class LogicManagerTest {
     }
 
     @Test
-    public void execute_deleteLessonInvalidIndex_throwsException() {
-        assertCommandException(DeleteLessonCommand.COMMAND_WORD + " 1", MESSAGE_INVALID_LESSON_DISPLAYED_INDEX);
-        assertParseException(DeleteLessonCommand.COMMAND_WORD + " 0",
+    public void execute_deleteLessonInvalidIndices_throwsSpecificExceptions() {
+        assertParseException(DeleteLessonCommand.COMMAND_WORD + " 0", MESSAGE_INVALID_INDEX);
+        assertParseException(DeleteLessonCommand.COMMAND_WORD + " -1", MESSAGE_INVALID_INDEX);
+        assertCommandException(DeleteLessonCommand.COMMAND_WORD + " 99", MESSAGE_INVALID_LESSON_DISPLAYED_INDEX);
+        assertParseException(DeleteLessonCommand.COMMAND_WORD + " 99999999999",
+                MESSAGE_INVALID_LESSON_DISPLAYED_INDEX);
+        assertParseException(DeleteLessonCommand.COMMAND_WORD + " abc",
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteLessonCommand.MESSAGE_USAGE));
+        assertParseException(DeleteLessonCommand.COMMAND_WORD + " 1 2",
                 String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteLessonCommand.MESSAGE_USAGE));
     }
 
@@ -437,6 +505,20 @@ public class LogicManagerTest {
     private ReadOnlyAddressBook readSavedAddressBook() throws DataLoadingException {
         return new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"))
                 .readAddressBook().orElseThrow();
+    }
+
+    /** Configures logic with storage that fails the test if a save is attempted. */
+    private void setUpLogicWithStorageThatRejectsSaves() {
+        JsonAddressBookStorage addressBookStorage =
+                new JsonAddressBookStorage(temporaryFolder.resolve("unchangedAddressBook.json")) {
+                    @Override
+                    public void saveAddressBook(ReadOnlyAddressBook addressBook) {
+                        throw new AssertionError("Unchanged data must not be saved");
+                    }
+                };
+        JsonUserPrefsStorage userPrefsStorage =
+                new JsonUserPrefsStorage(temporaryFolder.resolve("unchangedUserPrefs.json"));
+        logic = new LogicManager(model, new StorageManager(addressBookStorage, userPrefsStorage));
     }
 
     /**

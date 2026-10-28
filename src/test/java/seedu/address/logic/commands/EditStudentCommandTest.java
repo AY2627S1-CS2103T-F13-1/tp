@@ -117,6 +117,88 @@ public class EditStudentCommandTest {
     }
 
     @Test
+    public void execute_unchangedAndChangedFields_success() {
+        Phone updatedPhone = new Phone("92345678");
+        EditStudentDescriptor descriptor = createDescriptor(AIDEN.getName(), updatedPhone,
+                AIDEN.getGuardian().orElseThrow());
+        EditStudentCommand command = new EditStudentCommand(INDEX_FIRST_PERSON, descriptor);
+        Student editedStudent = new Student(AIDEN.getId(), AIDEN.getName(), updatedPhone,
+                AIDEN.getGuardian().orElseThrow());
+        Model expectedModel = new ModelManager(getStudentAddressBook(), new UserPrefs());
+        expectedModel.setStudent(AIDEN, editedStudent);
+        String expectedMessage = String.format(EditStudentCommand.MESSAGE_EDIT_STUDENT_SUCCESS,
+                Messages.format(editedStudent));
+
+        assertCommandSuccess(command, model, expectedMessage, expectedModel);
+    }
+
+    @Test
+    public void execute_clearPhone_guardianRetained() {
+        EditStudentDescriptor descriptor = new EditStudentDescriptor();
+        descriptor.setPhone(null);
+        EditStudentCommand command = new EditStudentCommand(INDEX_SECOND_PERSON, descriptor);
+        Student editedStudent = new Student(CHLOE.getId(), CHLOE.getName(), null,
+                CHLOE.getGuardian().orElseThrow());
+        Model expectedModel = new ModelManager(getStudentAddressBook(), new UserPrefs());
+        expectedModel.setStudent(CHLOE, editedStudent);
+        String expectedMessage = String.format(EditStudentCommand.MESSAGE_EDIT_STUDENT_SUCCESS,
+                Messages.format(editedStudent));
+
+        assertCommandSuccess(command, model, expectedMessage, expectedModel);
+    }
+
+    @Test
+    public void execute_clearGuardian_phoneRetained() {
+        EditStudentDescriptor descriptor = new EditStudentDescriptor();
+        descriptor.setGuardian(null);
+        EditStudentCommand command = new EditStudentCommand(INDEX_SECOND_PERSON, descriptor);
+        Student editedStudent = new Student(CHLOE.getId(), CHLOE.getName(), CHLOE.getPhone().orElseThrow(), null);
+        Model expectedModel = new ModelManager(getStudentAddressBook(), new UserPrefs());
+        expectedModel.setStudent(CHLOE, editedStudent);
+        String expectedMessage = String.format(EditStudentCommand.MESSAGE_EDIT_STUDENT_SUCCESS,
+                Messages.format(editedStudent));
+
+        assertCommandSuccess(command, model, expectedMessage, expectedModel);
+    }
+
+    @Test
+    public void execute_clearOnlyPhone_throwsCommandException() {
+        EditStudentDescriptor descriptor = new EditStudentDescriptor();
+        descriptor.setPhone(null);
+
+        assertEditFailure(new EditStudentCommand(Index.fromOneBased(3), descriptor),
+                Student.MESSAGE_CONTACT_REQUIRED);
+    }
+
+    @Test
+    public void execute_clearOnlyGuardian_throwsCommandException() {
+        EditStudentDescriptor descriptor = new EditStudentDescriptor();
+        descriptor.setGuardian(null);
+
+        assertEditFailure(new EditStudentCommand(INDEX_FIRST_PERSON, descriptor),
+                Student.MESSAGE_CONTACT_REQUIRED);
+    }
+
+    @Test
+    public void execute_clearAllContacts_throwsCommandException() {
+        EditStudentDescriptor descriptor = new EditStudentDescriptor();
+        descriptor.setPhone(null);
+        descriptor.setGuardian(null);
+
+        assertEditFailure(new EditStudentCommand(INDEX_SECOND_PERSON, descriptor),
+                Student.MESSAGE_CONTACT_REQUIRED);
+    }
+
+    @Test
+    public void execute_clearAlreadyAbsentPhone_throwsCommandException() {
+        EditStudentDescriptor descriptor = new EditStudentDescriptor();
+        descriptor.setPhone(null);
+        EditStudentCommand command = new EditStudentCommand(INDEX_FIRST_PERSON, descriptor);
+
+        assertEditFailure(command, EditStudentCommand.MESSAGE_IDENTICAL_CHANGES);
+    }
+
+    @Test
     public void execute_realNameCharacters_success() {
         Name updatedName = new Name("José Anne-Marie");
         Guardian updatedGuardian = new Guardian(new Name("Kumar s/o Ravi"), new Phone("93456789"));
@@ -132,14 +214,19 @@ public class EditStudentCommandTest {
     }
 
     @Test
-    public void execute_sameDetails_success() {
+    public void execute_sameDetails_throwsCommandExceptionWithoutReplacingStudent() {
+        Model modelThatRejectsEdits = new ModelManager(getStudentAddressBook(), new UserPrefs()) {
+            @Override
+            public void setStudent(Student target, Student editedStudent) {
+                throw new AssertionError("An unchanged student must not be replaced");
+            }
+        };
         EditStudentDescriptor descriptor = createDescriptor(AIDEN.getName(), null, null);
         EditStudentCommand command = new EditStudentCommand(INDEX_FIRST_PERSON, descriptor);
-        Model expectedModel = new ModelManager(getStudentAddressBook(), new UserPrefs());
-        String expectedMessage = String.format(EditStudentCommand.MESSAGE_EDIT_STUDENT_SUCCESS,
-                Messages.format(AIDEN));
 
-        assertCommandSuccess(command, model, expectedMessage, expectedModel);
+        assertThrows(CommandException.class, EditStudentCommand.MESSAGE_IDENTICAL_CHANGES, () ->
+                command.execute(modelThatRejectsEdits));
+        assertEquals(getStudentAddressBook(), modelThatRejectsEdits.getAddressBook());
     }
 
     @Test
@@ -234,8 +321,32 @@ public class EditStudentCommandTest {
         assertFalse(descriptor.equals(createDescriptor(name, new Phone("87654321"), guardian)));
         assertFalse(descriptor.equals(createDescriptor(name, phone,
                 new Guardian(new Name("Lee Mei Ling"), new Phone("87654321")))));
+
+        EditStudentDescriptor phoneRemovalDescriptor = new EditStudentDescriptor();
+        phoneRemovalDescriptor.setPhone(null);
+        assertFalse(new EditStudentDescriptor().equals(phoneRemovalDescriptor));
+
+        EditStudentDescriptor guardianRemovalDescriptor = new EditStudentDescriptor();
+        guardianRemovalDescriptor.setGuardian(null);
+        assertFalse(new EditStudentDescriptor().equals(guardianRemovalDescriptor));
+
         assertFalse(descriptor.equals(1));
         assertFalse(descriptor.equals(null));
+    }
+
+    @Test
+    public void editFlags() {
+        EditStudentDescriptor descriptor = new EditStudentDescriptor();
+        assertFalse(descriptor.isAnyFieldEdited());
+        assertFalse(descriptor.isPhoneEdited());
+        assertFalse(descriptor.isGuardianEdited());
+
+        descriptor.setPhone(null);
+        assertTrue(descriptor.isAnyFieldEdited());
+        assertTrue(descriptor.isPhoneEdited());
+
+        descriptor.setGuardian(null);
+        assertTrue(descriptor.isGuardianEdited());
     }
 
     @Test
@@ -250,9 +361,15 @@ public class EditStudentCommandTest {
 
     private static EditStudentDescriptor createDescriptor(Name name, Phone phone, Guardian guardian) {
         EditStudentDescriptor descriptor = new EditStudentDescriptor();
-        descriptor.setName(name);
-        descriptor.setPhone(phone);
-        descriptor.setGuardian(guardian);
+        if (name != null) {
+            descriptor.setName(name);
+        }
+        if (phone != null) {
+            descriptor.setPhone(phone);
+        }
+        if (guardian != null) {
+            descriptor.setGuardian(guardian);
+        }
         return descriptor;
     }
 

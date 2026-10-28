@@ -269,13 +269,14 @@ Because an end time earlier than the start time means a lesson past midnight, sw
 
 The `editstudent` and `editlesson` commands replace immutable domain objects without changing their stable UUIDs.
 
-1. The command parser reads a positive displayed-list index and one or more optional fields. It rejects repeated prefixes, missing edit fields and invalid values. For `editstudent`, `gn/` and `gp/` must be given together because a guardian is replaced as one value.
+1. The command parser reads a positive displayed-list index and one or more optional fields. It rejects repeated prefixes, missing edit fields and invalid values. For `editstudent`, a blank `p/` removes the student's phone, while blank `gn/ gp/` values remove the guardian. The guardian prefixes must be given together with either two values or two blanks because a guardian is replaced as one value.
 1. The command resolves the index against the corresponding filtered list, so it edits the item the user can see rather than the same position in the complete list.
-1. The command creates a replacement object using the supplied values, the target's values for unspecified fields and the target's UUID.
-1. The model rejects a replacement that would duplicate another student or lesson, then replaces the target in the source list.
+1. The command creates a replacement object using the supplied values, `null` for an optional contact being removed, the target's values for unspecified fields and the target's UUID. The student model rejects a replacement with no contact number.
+1. If the replacement equals the target, the command throws a `CommandException` explaining that the incoming changes are identical and asking the user to change at least one field. It does not call `Model#setStudent()` or `Model#setLesson()`, so `LogicManager` does not save the address book.
+1. Otherwise, the command rejects a replacement that would duplicate another student or lesson, then asks the model to replace the target in the source list.
 1. The filtered list re-evaluates its predicate when the source item is replaced. An edited item therefore remains visible only if it still matches the active filter.
 
-The following sequence diagram shows the successful execution of `editstudent 1 p/92345678`. The `editlesson` command follows the same sequence using its lesson-specific parser, command, filtered list and model operation.
+The following sequence diagram shows a successful edit that changes data: `editstudent 1 p/92345678`. The `editlesson` command follows the same sequence using its lesson-specific parser, command, filtered list and model operation.
 
 ![Interactions for editing a student](images/EditStudentSequenceDiagram.png)
 
@@ -287,7 +288,7 @@ Enrolments link the stable student and lesson UUIDs. Because an edit retains the
 
 ![Interactions inside the Logic and Model components for deletelesson](images/DeleteLessonSequenceDiagram.png)
 
-1. `DeleteLessonCommandParser` reads one positive index, and rejects anything else with the usage message.
+1. `DeleteLessonCommandParser` reads one positive index. It reports that an index must be positive for zero or negative integers, reports an invalid lesson index for positive integers too large to represent, and uses the command usage message for malformed input.
 1. `DeleteLessonCommand#execute()` looks the index up in the filtered lesson list, so it deletes the lesson the tutor sees at that position, even when `listlessons d/DAY` hides other lessons.
 1. Before deleting, it asks the address book for the students enrolled in the lesson, so that the result can name them.
 1. `ModelManager#deleteLesson()` calls `AddressBook#removeLesson()`, which removes the lesson's enrolments and then the lesson. If the student list shows only this lesson's students (`liststudents l/INDEX`), the model shows all students again, since that filter no longer refers to a lesson.
@@ -963,13 +964,28 @@ testers are expected to do more *exploratory* testing.
 
 1. Editing a student while all students are shown
 
-   1. Prerequisites: List all students using `liststudents`. The first student has a guardian and is enrolled in at least one lesson.
+   1. Prerequisites: List all students using `liststudents`. The first student has their own phone and a guardian, and is enrolled in at least one lesson.
 
    1. Test case: `editstudent 1 p/92345678`<br>
       Expected: Only the first student's phone number changes. Their name, guardian and lesson enrolments remain unchanged, and the status message shows the edited student's details.
 
    1. Test case: `editstudent 1 gn/Lim Mei gp/91234567`<br>
       Expected: Only the first student's guardian details are replaced. Their own details and lesson enrolments remain unchanged.
+
+   1. Test case: Repeat `editstudent 1 p/92345678` after the preceding test case.<br>
+      Expected: No student is edited, and the data file is not rewritten. The status message shows an error stating that the incoming changes are identical to the current student details and asks the user to change at least one field.
+
+   1. Test case: `editstudent 1 p/92345678 gn/Lim Wei gp/98765432`<br>
+      Expected: The unchanged phone number is accepted, the guardian details change and the address book is saved because at least one resulting field is different.
+
+   1. Test case: `editstudent 1 p/`<br>
+      Expected: The first student's own phone is removed. Their guardian, identity and lesson enrolments remain unchanged.
+
+   1. Test case: `editstudent 1 p/92345678 gn/ gp/`<br>
+      Expected: The first student's own phone is set to `92345678` and their guardian is removed. Their identity and lesson enrolments remain unchanged.
+
+   1. Test case: `editstudent 1 p/ gn/ gp/`<br>
+      Expected: No student is edited because the result would have no contact number. The status message states that at least one phone number is required.
 
    1. Test case: `editstudent 1 gn/Lim Mei`<br>
       Expected: No student is edited. The status message states that guardian name and guardian phone must be given together.
@@ -998,11 +1014,14 @@ testers are expected to do more *exploratory* testing.
    1. Test case: `deletestudent 1`<br>
       Expected: The first student is deleted from the list and removed from every lesson card. The status message shows the deleted student's details.
 
-   1. Test case: `deletestudent 0`<br>
-      Expected: No student is deleted. The status message shows the invalid command format error.
+   1. Test case: `deletestudent 0`, followed by `deletestudent -1`<br>
+      Expected: No student is deleted. Both commands show `Index must be a positive integer.`
 
-   1. Other incorrect delete commands to try: `deletestudent`, `deletestudent abc`, `deletestudent 1 2`, `deletestudent x` (where x is larger than the list size)<br>
-      Expected: Similar to previous.
+   1. Other incorrect delete commands to try: `deletestudent`, `deletestudent abc`, `deletestudent 1 2`<br>
+      Expected: No student is deleted. The status message shows the invalid command format and usage instructions.
+
+   1. Test case: `deletestudent 99`, followed by `deletestudent 99999999999`<br>
+      Expected: No student is deleted. The status message shows `Student index exceeds the number of students in the displayed list.`
 
 1. Deleting a student while the students panel is filtered
 
@@ -1072,14 +1091,14 @@ testers are expected to do more *exploratory* testing.
    1. Test case: `deletelesson 1`<br>
       Expected: The first lesson is deleted. Its enrolled students are kept, but the lesson is removed from their cards. The status message lists the students who were unenrolled.
 
-   1. Test case: `deletelesson 0`<br>
-      Expected: No lesson is deleted. The status message shows the invalid command format error.
+   1. Test case: `deletelesson 0`, followed by `deletelesson -1`<br>
+      Expected: No lesson is deleted. Both commands show `Index must be a positive integer.`
 
    1. Other incorrect delete commands to try: `deletelesson`, `deletelesson abc`, `deletelesson 1 2`<br>
-      Expected: Similar to previous.
+      Expected: No lesson is deleted. The status message shows the invalid command format and usage instructions.
 
-   1. Test case: `deletelesson x` (where x is larger than the number of lessons shown)<br>
-      Expected: No lesson is deleted. The status message shows `The lesson index provided is invalid.`
+   1. Test case: `deletelesson 99`, followed by `deletelesson 99999999999`<br>
+      Expected: No lesson is deleted. The status message shows `Lesson index exceeds the number of lessons in the displayed list.`
 
 ### Editing a lesson
 
@@ -1092,6 +1111,12 @@ testers are expected to do more *exploratory* testing.
 
    1. Test case: `editlesson 1 st/2200 et/0100`<br>
       Expected: The lesson is edited to run past midnight and retains its student enrolments.
+
+   1. Test case: Repeat `editlesson 1 d/tue` after the preceding test case.<br>
+      Expected: No lesson is edited, and the data file is not rewritten. The status message shows an error stating that the incoming changes are identical to the current lesson details and asks the user to change at least one field.
+
+   1. Test case: `editlesson 1 d/tue st/1700 et/1900`<br>
+      Expected: The unchanged day is accepted, the times change and the address book is saved because at least one resulting field is different.
 
    1. Test case: `editlesson 1 st/1700 et/1700`<br>
       Expected: No lesson is edited. The status message states that the end time must not be the same as the start time.

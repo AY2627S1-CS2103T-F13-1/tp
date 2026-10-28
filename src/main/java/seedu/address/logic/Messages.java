@@ -19,8 +19,10 @@ public class Messages {
     public static final String MESSAGE_UNKNOWN_COMMAND = "Unknown command.";
     public static final String MESSAGE_INVALID_COMMAND_FORMAT = "Invalid command format!\n%1$s";
     public static final String MESSAGE_INVALID_PERSON_DISPLAYED_INDEX = "The person index provided is invalid.";
-    public static final String MESSAGE_INVALID_STUDENT_DISPLAYED_INDEX = "The student index provided is invalid.";
-    public static final String MESSAGE_INVALID_LESSON_DISPLAYED_INDEX = "The lesson index provided is invalid.";
+    public static final String MESSAGE_INVALID_STUDENT_DISPLAYED_INDEX =
+            "Student index exceeds the number of students in the displayed list.";
+    public static final String MESSAGE_INVALID_LESSON_DISPLAYED_INDEX =
+            "Lesson index exceeds the number of lessons in the displayed list.";
     public static final String MESSAGE_CLASH_WARNING = "Warning: clashes with %1$s";
     public static final String MESSAGE_STUDENT_CLASH_WARNING = "Warning: %1$s already attends clashing lesson(s): %2$s";
     public static final String MESSAGE_LONG_LESSON_WARNING = "Warning: this lesson lasts %1$s and ends the next day."

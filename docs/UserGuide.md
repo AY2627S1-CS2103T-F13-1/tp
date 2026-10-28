@@ -80,7 +80,7 @@ Format: `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`
 
 * At least one phone number is required: the student's own `p/`, or a guardian's `gp/`.
 * `gn/` and `gp/` must be given together.
-* Names may contain letters from any language, digits and spaces. Apostrophes (`'` or `’`) and hyphens (`-`) are accepted between letters or digits. The connectors `s/o`, `d/o`, `a/l` and `a/p` are accepted between name parts. Names must not be blank. Phone numbers may contain only digits and must be at least 3 digits long.
+* Names may contain letters from any language, digits and spaces. Apostrophes (`'` or `’`) and hyphens (`-`) are accepted between letters or digits. The connectors `s/o`, `d/o`, `a/l` and `a/p` are accepted between name parts. Names must not be blank.
 * A Singapore phone number must contain eight digits. It may use spaces or hyphens between digit groups and may start with `+65`. TutorReach removes the formatting and Singapore country code before displaying or saving the number. For example, both `9123 4567` and `+65 9123-4567` are stored as `91234567`.
 * An international phone number must start with `+` and its country code, and contain between 3 and 15 digits. TutorReach removes spaces and hyphens but retains the leading `+` and country code. For example, `+44 7700-900123` is stored as `+447700900123`.
 * Student and guardian phone numbers saved by v1.4 remain available after upgrading. New or edited numbers must follow the rules above.
@@ -102,6 +102,7 @@ Deletes a student using their displayed index. The student is also removed from 
 Format: `deletestudent INDEX`
 
 * `INDEX` refers to the current displayed student list and must be a positive integer.
+* A zero or negative index is rejected with `Index must be a positive integer.` A positive integer outside the displayed student list, including one too large for TutorReach to store, is rejected with `Student index exceeds the number of students in the displayed list.`
 * The student filter stays active after the deletion.
 
 Example:
@@ -130,7 +131,10 @@ Format: `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHON
 
 * `INDEX` must be a positive integer and refers to the index shown in the current student list.
 * At least one optional field must be provided. Fields that are not provided remain unchanged.
-* `gn/GUARDIAN_NAME` and `gp/GUARDIAN_PHONE` must be provided together. They replace the student's existing guardian details.
+* If every supplied value already matches the student, the command is rejected with an error asking you to change at least one field. The data file is not rewritten.
+* Use `p/` without a value to remove the student's phone number.
+* `gn/GUARDIAN_NAME` and `gp/GUARDIAN_PHONE` must be provided together. They replace the student's existing guardian details. Use `gn/ gp/` without values to remove the guardian.
+* The edited student must retain at least one contact number: their own phone or a guardian's phone.
 * Names follow the same rules as for `addstudent`. Phone numbers follow the same formatting and normalization rules as for `addstudent`.
 * The edited student must not duplicate another student.
 * The student's identity and lesson enrolments are preserved.
@@ -140,6 +144,9 @@ Examples:
 
 * `editstudent 1 p/9234 5678` changes only the phone number of the first displayed student. The number is displayed and saved as `92345678`.
 * `editstudent 2 gn/Lim Mei gp/91234567` replaces only the guardian details of the second displayed student.
+* If the first student's phone number is already `92345678`, `editstudent 1 p/92345678` is rejected because the incoming changes are identical to the current student details.
+* `editstudent 3 p/` removes the third displayed student's phone number if they have a guardian phone.
+* `editstudent 3 gn/ gp/` removes the third displayed student's guardian if they have their own phone.
 * `editstudent 1 n/O'Connor` changes the student's name to one containing an apostrophe.
 
 ### Finding students: `findstudent`
@@ -190,6 +197,7 @@ Format: `editlesson INDEX [n/NAME] [d/DAY] [st/START_TIME] [et/END_TIME]`
 * `INDEX` must be a positive integer and refers to the index shown in the current lesson list.
 * At least one optional field must be provided. Fields that are not provided remain unchanged.
 * `NAME` must be 1 to 50 characters long, start with a letter or digit, and contain only English letters, digits, spaces and `- : # @ ' . , & / ( ) +`.
+* If every supplied value already matches the lesson, the command is rejected with an error asking you to change at least one field. The data file is not rewritten.
 * `DAY` is a day of the week, written in full or as at least its first three letters, in any letter case; for example, `mon`, `tues`, `weds`, `Thurs` and `friday` all work.
 * Times use the 24-hour clock, as `HHMM` or `HH:MM`, from `0000` to `2359`; for example, `1700` and `17:00` are both 5:00 PM. The start and end times cannot be equal. An end time earlier than the start time means that the lesson ends on the next day.
 * The edited lesson must not duplicate another lesson.
@@ -201,6 +209,7 @@ Examples:
 
 * `editlesson 1 d/tue st/1700 et/1900` changes only the day and times of the first displayed lesson.
 * `editlesson 2 n/Sec 3 Mathematics` changes only the name of the second displayed lesson.
+* If the first lesson is already on Tuesday, `editlesson 1 d/tue` is rejected because the incoming changes are identical to the current lesson details.
 
 
 ### Adding a lesson: `addlesson`
@@ -264,6 +273,7 @@ Deletes a lesson using its displayed index. Students are kept, but their enrolme
 Format: `deletelesson INDEX`
 
 * `INDEX` refers to the current displayed lesson list and must be a positive integer.
+* A zero or negative index is rejected with `Index must be a positive integer.` A positive integer outside the displayed lesson list, including one too large for TutorReach to store, is rejected with `Lesson index exceeds the number of lessons in the displayed list.`
 * The result names the deleted lesson and lists the students who were unenrolled from it, if any.
 * If the students panel is showing only the students of that lesson (`liststudents l/INDEX`), all students are shown again.
 
@@ -300,7 +310,7 @@ Only one TutorReach instance can use the same data folder at a time. If another 
 close it before starting a new one. The `data/addressbook.json.lock` file may remain after closing the app;
 this is normal and does not prevent reopening it.
 
-TutorReach automatically saves after commands that change data. Viewing, searching, help and exit commands do not rewrite the data file. You do not need to save manually.
+TutorReach automatically saves after commands that change data. Commands that leave the data unchanged, including edits whose supplied values already match the record, do not rewrite the data file. Viewing, searching, help and exit commands do not rewrite the data file. You do not need to save manually.
 
 If saving fails, the data change is undone and the previous display filters are restored. Fix the reported storage problem before retrying the command. Saves use atomic file replacement; a filesystem that does not support this will report a save error instead of overwriting the existing file unsafely.
 
@@ -351,7 +361,7 @@ Action | Format, Examples
 **Add lesson** | `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`<br> e.g., `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800`
 **Clear** | `clear [confirm]`<br> e.g., `clear confirm`
 **Delete lesson** | `deletelesson INDEX`<br> e.g., `deletelesson 2`
-**Edit student** | `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `editstudent 1 p/92345678`
+**Edit student** | `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `editstudent 1 p/92345678`; remove a phone with `editstudent 1 p/`
 **Edit lesson** | `editlesson INDEX [n/NAME] [d/DAY] [st/START_TIME] [et/END_TIME]`<br> e.g., `editlesson 1 d/tue st/1700 et/1900`
 **Find students** | `findstudent [n/NAME_KEYWORDS...] [gn/GUARDIAN_NAME_KEYWORDS...] [p/PHONE]`<br> e.g., `findstudent p/4567`
 **List students** | `liststudents [l/LESSON_INDEX]`<br> e.g., `liststudents l/1`
