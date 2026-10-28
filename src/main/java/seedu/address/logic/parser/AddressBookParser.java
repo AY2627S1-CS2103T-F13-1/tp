@@ -68,7 +68,16 @@ public class AddressBookParser {
             case AddLessonCommand.COMMAND_WORD -> new AddLessonCommandParser().parse(arguments);
             case DeleteLessonCommand.COMMAND_WORD -> new DeleteLessonCommandParser().parse(arguments);
             case EditLessonCommand.COMMAND_WORD -> new EditLessonCommandParser().parse(arguments);
-            case ClearCommand.COMMAND_WORD -> new ClearCommand();
+            case ClearCommand.COMMAND_WORD -> {
+                if (arguments.trim().equals(ClearCommand.CONFIRMATION_WORD)) {
+                    yield ClearCommand.confirmed();
+                }
+                if (!arguments.trim().isEmpty()) {
+                    throw new ParseException(String.format(
+                            MESSAGE_INVALID_COMMAND_FORMAT, ClearCommand.MESSAGE_USAGE));
+                }
+                yield new ClearCommand();
+            }
             case FindStudentCommand.COMMAND_WORD -> new FindStudentCommandParser().parse(arguments);
             case ListLessonsCommand.COMMAND_WORD -> new ListLessonsCommandParser().parse(arguments);
             case ListStudentsCommand.COMMAND_WORD -> new ListStudentsCommandParser().parse(arguments);

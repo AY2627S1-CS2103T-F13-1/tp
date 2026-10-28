@@ -58,7 +58,7 @@ public class SafetyRegressionTest {
         seed();
         model.filterStudentsByLesson(lesson);
         AddressBook before = new AddressBook(model.getAddressBook());
-        for (String command : List.of("deletestudent 1", "clear")) {
+        for (String command : List.of("deletestudent 1", "clear confirm")) {
             assertThrows(CommandException.class, () -> failingLogic().execute(command));
             assertEquals(before, model.getAddressBook());
             assertEquals(alice.getId(), model.getFilteredStudentList().getFirst().getId());
