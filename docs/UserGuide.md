@@ -314,28 +314,8 @@ TutorReach automatically saves after commands that change data. Commands that le
 
 ### If some data cannot be loaded
 
-### Editing the data file
-
-TutorReach stores data in `data/addressbook.json` by default, relative to the folder from which you launch the app.
-Only edit this file while the app is closed.
-
-<div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-If individual records are invalid or duplicated, the app loads the valid records and skips the invalid ones.
-Enrolments referencing missing students or lessons are also skipped. The first valid duplicate is kept.
-A warning in the message box reports how many records were skipped and where the original file was backed up.
-Backups are saved beside the data file as `addressbook.json.recovery-<unique number>.bak`; older backups are preserved.
-These files remain on disk after closing the app and are not automatically deleted. Open a backup in a text editor
-to review the original data, including skipped records. A recovery backup contains the original problems too;
-repair those entries before using it as your data file.
-The source file is unchanged until a successful command that changes records saves the recovered data.<br>
-If the JSON cannot be read, its lists have an invalid structure, or a backup cannot be created, the app starts empty
-with a warning and **disables saving** to protect the source file. Fix the file or restore a backup while the app
-is closed, then restart. While saving is disabled, commands that change records are rejected before changing the data.
-Listing, searching, help, and exit remain available.<br>
-Only edit the file while the app is closed, and keep a backup before editing it.<br>
-Keep student and lesson IDs unchanged when editing details, as enrolments use those IDs to link records.
-Lesson `day` and time values in the data file accept the same formats as the `addlesson` and `editlesson` commands.
-</div>
+If TutorReach cannot load some or all of your saved data when it starts, the message box says what was skipped and shows the path of a file containing your original data.
+Open that file in a text editor to see the skipped details, then add them again with commands such as `addstudent`, `addlesson` and `enrol`.
 
 --------------------------------------------------------------------------------------------------------------------
 
