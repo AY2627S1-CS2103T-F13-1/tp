@@ -270,7 +270,8 @@ public class DeleteLessonCommandTest {
             each.enrolStudent(RYAN, thursdayMath);
         }
         expectedModel.deleteLesson(thursdayMath);
-        Index thursdayMathIndex = Index.fromOneBased(model.getFilteredLessonList().size());
+        // Thursday comes after Wednesday but before Friday in timetable order
+        Index thursdayMathIndex = Index.fromOneBased(3);
 
         assertCommandSuccess(new DeleteLessonCommand(thursdayMathIndex), model,
                 getSuccessMessage(thursdayMath, RYAN), expectedModel);

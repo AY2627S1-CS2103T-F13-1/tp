@@ -36,7 +36,7 @@ public class HelpWindow extends UiPart<Stage> {
             "  unenrol s/STUDENT_INDEX l/LESSON_INDEX",
             "",
             "General",
-            "  clear",
+            "  clear [confirm]",
             "  help",
             "  exit",
             "",
