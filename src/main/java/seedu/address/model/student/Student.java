@@ -63,11 +63,16 @@ public final class Student {
      * not value equality; siblings with different names are allowed.
      */
     public boolean isSameStudent(Student other) {
-        if (other == null || !normalizedName().equals(other.normalizedName())) {
+        if (!hasSameName(other)) {
             return false;
         }
         return (phone != null && other.hasPhone(phone))
                 || (guardian != null && other.hasPhone(guardian.getPhone()));
+    }
+
+    /** Returns whether the names match ignoring case and extra spaces, whatever the phone numbers. */
+    public boolean hasSameName(Student other) {
+        return other != null && normalizedName().equals(other.normalizedName());
     }
 
     private String normalizedName() {

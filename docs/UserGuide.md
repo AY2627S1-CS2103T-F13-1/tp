@@ -86,13 +86,14 @@ Format: `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`
 * Student and guardian phone numbers saved by v1.4 remain available after upgrading. New or edited numbers must follow the rules above.
 * Extra spaces between the words of a name are removed, so `n/Ann   Lee` is saved as `Ann Lee`. This also applies to guardian names and to `editstudent`.
 * A student is a duplicate if another student has the same name, ignoring letter case and extra spaces, and shares at least one phone number with them (own or guardian's). Siblings with different names can share a guardian's number.
+* If another student has the same name but no shared phone number, the student is still added, with a warning naming the other student, in case it is the same child added twice.
   Formatted versions of the same number, including a Singapore number written with `+65`, are treated as the same number.
 * Adding a student clears the student filter, so all students are shown.
 
 Examples:
 
 * `addstudent n/Marcus Lim gn/Lim Hui Min gp/98761234` adds a student whose guardian is the only contact.
-* `addstudent n/Chloe Lim p/98765432` adds a student with their own phone number and no guardian.
+* `addstudent n/Daniel Ng p/98765432` adds a student with their own phone number and no guardian.
 * `addstudent n/José Anne-Marie p/91234567 gn/Kumar s/o Ravi gp/98765432` adds names containing accented letters, a hyphen and a local name connector.
 * `addstudent n/Chloe Lim p/+65 9876-5432` adds a student with their own phone number and no guardian. The number is displayed and saved as `98765432`.
 
@@ -137,7 +138,7 @@ Format: `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHON
 * `gn/GUARDIAN_NAME` and `gp/GUARDIAN_PHONE` must be provided together. They replace the student's existing guardian details. Use `gn/ gp/` without values to remove the guardian.
 * The edited student must retain at least one contact number: their own phone or a guardian's phone.
 * Names follow the same rules as for `addstudent`. Phone numbers follow the same formatting and normalization rules as for `addstudent`.
-* The edited student must not duplicate another student.
+* The edited student must not duplicate another student. If a renamed student has the same name as another student, the edit is still made, with a warning naming the other student.
 * The student's identity and lesson enrolments are preserved.
 * The active student filter remains in effect and is re-evaluated after the edit. For example, a renamed student may disappear from a name search that they no longer match.
 
