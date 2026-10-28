@@ -283,7 +283,7 @@ Examples:
 
 ### Clearing all entries: `clear`
 
-Deletes all students, lessons and enrolments.
+Deletes all students, lessons and enrolments. Confirmed deletion cannot be undone.
 
 Format: `clear [confirm]`
 
