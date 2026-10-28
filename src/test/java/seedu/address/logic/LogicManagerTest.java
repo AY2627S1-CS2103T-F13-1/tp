@@ -11,6 +11,7 @@ import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_GUARDIAN_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
+import static seedu.address.logic.parser.ParserUtil.MESSAGE_INVALID_INDEX;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.StudentTestUtil.assertStudentDetailsEqual;
 
@@ -84,9 +85,16 @@ public class LogicManagerTest {
     }
 
     @Test
-    public void execute_commandExecutionError_throwsCommandException() {
-        String deleteCommand = DeleteStudentCommand.COMMAND_WORD + " 9";
-        assertCommandException(deleteCommand, MESSAGE_INVALID_STUDENT_DISPLAYED_INDEX);
+    public void execute_deleteStudentInvalidIndices_throwsSpecificExceptions() {
+        assertParseException(DeleteStudentCommand.COMMAND_WORD + " 0", MESSAGE_INVALID_INDEX);
+        assertParseException(DeleteStudentCommand.COMMAND_WORD + " -1", MESSAGE_INVALID_INDEX);
+        assertCommandException(DeleteStudentCommand.COMMAND_WORD + " 99", MESSAGE_INVALID_STUDENT_DISPLAYED_INDEX);
+        assertParseException(DeleteStudentCommand.COMMAND_WORD + " 99999999999",
+                MESSAGE_INVALID_STUDENT_DISPLAYED_INDEX);
+        assertParseException(DeleteStudentCommand.COMMAND_WORD + " abc",
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteStudentCommand.MESSAGE_USAGE));
+        assertParseException(DeleteStudentCommand.COMMAND_WORD + " 1 2",
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteStudentCommand.MESSAGE_USAGE));
     }
 
     @Test
@@ -396,9 +404,15 @@ public class LogicManagerTest {
     }
 
     @Test
-    public void execute_deleteLessonInvalidIndex_throwsException() {
-        assertCommandException(DeleteLessonCommand.COMMAND_WORD + " 1", MESSAGE_INVALID_LESSON_DISPLAYED_INDEX);
-        assertParseException(DeleteLessonCommand.COMMAND_WORD + " 0",
+    public void execute_deleteLessonInvalidIndices_throwsSpecificExceptions() {
+        assertParseException(DeleteLessonCommand.COMMAND_WORD + " 0", MESSAGE_INVALID_INDEX);
+        assertParseException(DeleteLessonCommand.COMMAND_WORD + " -1", MESSAGE_INVALID_INDEX);
+        assertCommandException(DeleteLessonCommand.COMMAND_WORD + " 99", MESSAGE_INVALID_LESSON_DISPLAYED_INDEX);
+        assertParseException(DeleteLessonCommand.COMMAND_WORD + " 99999999999",
+                MESSAGE_INVALID_LESSON_DISPLAYED_INDEX);
+        assertParseException(DeleteLessonCommand.COMMAND_WORD + " abc",
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteLessonCommand.MESSAGE_USAGE));
+        assertParseException(DeleteLessonCommand.COMMAND_WORD + " 1 2",
                 String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteLessonCommand.MESSAGE_USAGE));
     }
 
