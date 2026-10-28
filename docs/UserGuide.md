@@ -334,6 +334,7 @@ is closed, then restart. While saving is disabled, commands that change records 
 Listing, searching, help, and exit remain available.<br>
 Only edit the file while the app is closed, and keep a backup before editing it.<br>
 Keep student and lesson IDs unchanged when editing details, as enrolments use those IDs to link records.
+Lesson `day` and time values in the data file accept the same formats as the `addlesson` and `editlesson` commands.
 </div>
 
 --------------------------------------------------------------------------------------------------------------------
