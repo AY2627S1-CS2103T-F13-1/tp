@@ -19,7 +19,7 @@ TutorReach is a **desktop app for independent private tutors who teach secondary
 
 1. Copy the file to the folder you want to use as the _home folder_ for TutorReach.
 
-1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar tutorReach.jar`.<br>
+1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar addressbook.jar`.<br>
    A GUI similar to the one below should appear in a few seconds. Note how the app contains some sample data.<br>
    ![Ui](images/Ui.png)
 
