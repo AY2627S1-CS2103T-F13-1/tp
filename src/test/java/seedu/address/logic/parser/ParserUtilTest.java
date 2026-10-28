@@ -76,6 +76,18 @@ public class ParserUtilTest {
     }
 
     @Test
+    public void parseName_longestAllowedName_returnsName() throws Exception {
+        String name = "A".repeat(ParserUtil.MAX_NAME_LENGTH);
+        assertEquals(new Name(name), ParserUtil.parseName(name));
+    }
+
+    @Test
+    public void parseName_tooLong_throwsParseException() {
+        String name = "A".repeat(ParserUtil.MAX_NAME_LENGTH + 1);
+        assertThrows(ParseException.class, ParserUtil.MESSAGE_NAME_TOO_LONG, () -> ParserUtil.parseName(name));
+    }
+
+    @Test
     public void parseName_validValueWithWhitespace_returnsTrimmedName() throws Exception {
         String nameWithWhitespace = WHITESPACE + VALID_NAME + WHITESPACE;
         Name expectedName = new Name(VALID_NAME);
