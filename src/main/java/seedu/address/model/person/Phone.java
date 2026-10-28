@@ -13,9 +13,7 @@ public class Phone {
             "Phone numbers should contain at least 3 digits, may use spaces or hyphens between digit groups, "
                     + "and may start with +";
     public static final String MESSAGE_STUDENT_PHONE_CONSTRAINTS =
-            "Singapore student and guardian phone numbers should contain 8 digits and may start with +65. "
-                    + "International phone numbers should start with + and contain 3 to 15 digits. "
-                    + "Spaces or hyphens may separate digit groups";
+            "Phone must be 8 local digits, +65 with 8 digits, or + with 3-15 digits.";
     private static final String SINGAPORE_COUNTRY_CODE = "65";
     private static final int SINGAPORE_PHONE_DIGIT_COUNT = 8;
     private static final int MINIMUM_PHONE_DIGIT_COUNT = 3;

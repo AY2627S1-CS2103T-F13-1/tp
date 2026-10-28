@@ -8,6 +8,7 @@ import static seedu.address.testutil.Assert.assertThrows;
 import org.junit.jupiter.api.Test;
 
 public class PhoneTest {
+    private static final int MAXIMUM_STATUS_MESSAGE_LENGTH = 82;
 
     @Test
     public void constructor_null_throwsNullPointerException() {
@@ -96,6 +97,11 @@ public class PhoneTest {
         String longPhone = "1 ".repeat(2_999) + "1";
 
         assertFalse(Phone.isValidStudentPhone(longPhone));
+    }
+
+    @Test
+    public void studentPhoneConstraintsMessage_fitsStatusBox() {
+        assertTrue(Phone.MESSAGE_STUDENT_PHONE_CONSTRAINTS.length() <= MAXIMUM_STATUS_MESSAGE_LENGTH);
     }
 
     @Test
