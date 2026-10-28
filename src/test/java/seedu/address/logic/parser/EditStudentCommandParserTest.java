@@ -53,8 +53,11 @@ public class EditStudentCommandParserTest {
     }
 
     @Test
-    public void parse_nameConnector_checkedAsName() {
-        assertParseFailure(parser, "1 n/Kumar s/o Ravi", Name.MESSAGE_CONSTRAINTS);
+    public void parse_nameConnector_returnsEditStudentCommand() {
+        EditStudentDescriptor descriptor = createDescriptor(new Name("Kumar s/o Ravi"), null, null);
+
+        assertParseSuccess(parser, "1 n/Kumar s/o Ravi", new EditStudentCommand(
+                Index.fromOneBased(1), descriptor));
     }
 
     @Test
@@ -125,6 +128,16 @@ public class EditStudentCommandParserTest {
         EditStudentDescriptor guardianDescriptor = createDescriptor(null, null, guardian);
         assertParseSuccess(parser, "1 gn/Tan Mei Ling gp/91234567",
                 new EditStudentCommand(index, guardianDescriptor));
+    }
+
+    @Test
+    public void parse_realNameCharacters_returnsEditStudentCommand() {
+        Index index = Index.fromOneBased(1);
+        Guardian guardian = new Guardian(new Name("O'Connor"), new Phone("91234567"));
+        EditStudentDescriptor descriptor = createDescriptor(new Name("José Anne-Marie"), null, guardian);
+
+        assertParseSuccess(parser, "1 n/José Anne-Marie gn/O'Connor gp/91234567",
+                new EditStudentCommand(index, descriptor));
     }
 
     private static EditStudentDescriptor createDescriptor(Name name, Phone phone, Guardian guardian) {
