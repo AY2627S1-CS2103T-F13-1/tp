@@ -83,6 +83,12 @@ public class ParserUtilTest {
     }
 
     @Test
+    public void parseName_validValueWithRepeatedSpaces_returnsCollapsedName() throws Exception {
+        Name expectedName = new Name(VALID_NAME);
+        assertEquals(expectedName, ParserUtil.parseName("Rachel   Walker"));
+    }
+
+    @Test
     public void parsePhone_null_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> ParserUtil.parsePhone((String) null));
     }

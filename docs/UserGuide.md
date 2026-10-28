@@ -81,6 +81,7 @@ Format: `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`
 * At least one phone number is required: the student's own `p/`, or a guardian's `gp/`.
 * `gn/` and `gp/` must be given together.
 * Names may contain only English letters, digits and spaces, so accented letters and symbols such as `-`, `'` and `/` (as in `s/o`) are not accepted. Phone numbers may contain only digits and must be at least 3 digits long.
+* Extra spaces between the words of a name are removed, so `n/Ann   Lee` is saved as `Ann Lee`. This also applies to guardian names and to `editstudent`.
 * A student is a duplicate if another student has the same name, ignoring letter case and extra spaces, and shares at least one phone number with them (own or guardian's). Siblings with different names can share a guardian's number.
 * Adding a student clears the student filter, so all students are shown.
 
