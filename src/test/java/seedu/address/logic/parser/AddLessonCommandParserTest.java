@@ -197,10 +197,18 @@ public class AddLessonCommandParserTest {
     @Test
     public void parse_invalidDay_throwsParseException() {
         // "funday" is the Developer Guide's example of an invalid day
-        for (String day : List.of("", "funday", "mo", "m", "mon tue", "1")) {
+        for (String day : List.of("", "funday", "mo", "m", "1")) {
             assertParseFailure(parser, NAME_DESC + " d/" + day + START_DESC + END_DESC,
                     ParserUtil.MESSAGE_INVALID_DAY);
         }
+    }
+
+    @Test
+    public void parse_validDayFollowedByText_throwsParseExceptionNamingText() {
+        assertParseFailure(parser, NAME_DESC + " d/mon tue" + START_DESC + END_DESC,
+                String.format(ParserUtil.MESSAGE_UNEXPECTED_TEXT_AFTER_DAY, "mon", "tue"));
+        assertParseFailure(parser, NAME_DESC + DAY_DESC + " st/1600 xyz" + END_DESC,
+                String.format(ParserUtil.MESSAGE_UNEXPECTED_TEXT_AFTER_TIME, "1600", "xyz"));
     }
 
     @Test
