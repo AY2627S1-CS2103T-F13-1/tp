@@ -41,6 +41,8 @@ public class EditStudentCommand extends Command {
             + PREFIX_PHONE + "92345678";
 
     public static final String MESSAGE_EDIT_STUDENT_SUCCESS = "Edited student: %1$s";
+    public static final String MESSAGE_IDENTICAL_CHANGES = "The incoming changes are identical to the current student "
+            + "details. Change at least one field and try again.";
     public static final String MESSAGE_NOT_EDITED = "At least one field to edit must be provided.";
     public static final String MESSAGE_DUPLICATE_STUDENT = "This student already exists";
 
@@ -71,6 +73,11 @@ public class EditStudentCommand extends Command {
 
         Student studentToEdit = lastShownList.get(index.getZeroBased());
         Student editedStudent = createEditedStudent(studentToEdit, editStudentDescriptor);
+
+        if (studentToEdit.equals(editedStudent)) {
+            logger.fine("Rejected unchanged student edit for ID: " + studentToEdit.getId());
+            throw new CommandException(MESSAGE_IDENTICAL_CHANGES);
+        }
 
         boolean hasDuplicate = model.getAddressBook().getStudentList().stream()
                 .filter(student -> !student.getId().equals(studentToEdit.getId()))

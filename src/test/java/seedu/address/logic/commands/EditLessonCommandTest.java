@@ -107,6 +107,19 @@ public class EditLessonCommandTest {
     }
 
     @Test
+    public void execute_unchangedAndChangedFields_success() {
+        EditLessonDescriptor descriptor = descriptor(
+                A_MATH.getName(), DayOfWeek.TUESDAY, "16:00", "18:00");
+        Lesson editedLesson = lessonWithId(
+                A_MATH, A_MATH.getName(), DayOfWeek.TUESDAY, "16:00", "18:00");
+        Model expectedModel = copyModel();
+        expectedModel.setLesson(A_MATH, editedLesson);
+
+        assertCommandSuccess(new EditLessonCommand(INDEX_FIRST_LESSON, descriptor), model,
+                getSuccessMessage(editedLesson), expectedModel);
+    }
+
+    @Test
     public void execute_overnightLesson_success() {
         EditLessonDescriptor descriptor = new EditLessonDescriptor();
         descriptor.setStartTime(LocalTime.parse("22:00"));
@@ -239,15 +252,20 @@ public class EditLessonCommandTest {
     }
 
     @Test
-    public void execute_sameValues_success() {
+    public void execute_sameValues_throwsCommandExceptionWithoutReplacingLesson() {
+        Model modelThatRejectsEdits = new ModelManager(getLessonAddressBook(), new UserPrefs()) {
+            @Override
+            public void setLesson(Lesson target, Lesson editedLesson) {
+                throw new AssertionError("An unchanged lesson must not be replaced");
+            }
+        };
         EditLessonDescriptor descriptor = descriptor(
                 A_MATH.getName(), A_MATH.getDay(), "16:00", "18:00");
-        Model expectedModel = copyModel();
-        Lesson editedLesson = lessonWithId(A_MATH, A_MATH.getName(), A_MATH.getDay(), "16:00", "18:00");
-        expectedModel.setLesson(A_MATH, editedLesson);
+        EditLessonCommand command = new EditLessonCommand(INDEX_FIRST_LESSON, descriptor);
 
-        assertCommandSuccess(new EditLessonCommand(INDEX_FIRST_LESSON, descriptor), model,
-                getSuccessMessage(editedLesson), expectedModel);
+        assertThrows(CommandException.class, EditLessonCommand.MESSAGE_IDENTICAL_CHANGES, () ->
+                command.execute(modelThatRejectsEdits));
+        assertEquals(getLessonAddressBook(), modelThatRejectsEdits.getAddressBook());
     }
 
     @Test
