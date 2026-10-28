@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.parser.ParserUtil.MESSAGE_INVALID_DAY;
 import static seedu.address.logic.parser.ParserUtil.MESSAGE_INVALID_INDEX;
 import static seedu.address.logic.parser.ParserUtil.MESSAGE_INVALID_TIME;
+import static seedu.address.logic.parser.ParserUtil.MESSAGE_UNEXPECTED_TEXT_AFTER_DAY;
+import static seedu.address.logic.parser.ParserUtil.MESSAGE_UNEXPECTED_TEXT_AFTER_TIME;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 
@@ -313,8 +315,8 @@ public class ParserUtilTest {
                 "", WHITESPACE, "m", "mo", "sa", "mons", "mondays", "monday1", "wends", "tuesdays",
                 // day numbers
                 "0", "1", "7",
-                // more than one day
-                "mon tue", "mon,tue", "mon-fri", "mon/tue",
+                // more than one day, without a space
+                "mon,tue", "mon-fri", "mon/tue",
                 // punctuation, or spaces inside a day
                 "mon.", "m o n",
                 // three characters that are not a day; the last is "Monday" in Chinese, written as escapes
@@ -325,6 +327,22 @@ public class ParserUtilTest {
         for (String day : invalidDays) {
             assertThrows(ParseException.class, MESSAGE_INVALID_DAY, () -> ParserUtil.parseDay(day));
         }
+    }
+
+    @Test
+    public void parseDay_validDayFollowedByText_throwsParseExceptionNamingText() {
+        assertThrows(ParseException.class, String.format(MESSAGE_UNEXPECTED_TEXT_AFTER_DAY, "mon", "xyz"), () ->
+                ParserUtil.parseDay("mon xyz"));
+        assertThrows(ParseException.class, String.format(MESSAGE_UNEXPECTED_TEXT_AFTER_DAY, "Monday", "tue"), () ->
+                ParserUtil.parseDay(WHITESPACE + "Monday\ttue" + WHITESPACE));
+        // a missing slash leaves the next prefix inside the day's value
+        assertThrows(ParseException.class, String.format(MESSAGE_UNEXPECTED_TEXT_AFTER_DAY, "mon", "st 1600"), () ->
+                ParserUtil.parseDay("mon st 1600"));
+    }
+
+    @Test
+    public void parseDay_invalidDayFollowedByText_throwsInvalidDay() {
+        assertThrows(ParseException.class, MESSAGE_INVALID_DAY, () -> ParserUtil.parseDay("xyz mon"));
     }
 
     @Test
@@ -402,6 +420,14 @@ public class ParserUtilTest {
         for (String time : invalidTimes) {
             assertThrows(ParseException.class, MESSAGE_INVALID_TIME, () -> ParserUtil.parseTime(time));
         }
+    }
+
+    @Test
+    public void parseTime_validTimeFollowedByText_throwsParseExceptionNamingText() {
+        assertThrows(ParseException.class, String.format(MESSAGE_UNEXPECTED_TEXT_AFTER_TIME, "1600", "xyz"), () ->
+                ParserUtil.parseTime("1600 xyz"));
+        assertThrows(ParseException.class, String.format(MESSAGE_UNEXPECTED_TEXT_AFTER_TIME, "16:00", "1800"), () ->
+                ParserUtil.parseTime("16:00 1800"));
     }
 
     @Test

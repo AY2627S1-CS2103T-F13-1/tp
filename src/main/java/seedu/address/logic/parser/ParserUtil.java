@@ -31,6 +31,10 @@ public class ParserUtil {
             "Day must be a day's name or at least its first 3 letters, e.g. mon, tues or friday.";
     public static final String MESSAGE_INVALID_TIME =
             "Times must be 24-hour HHmm or HH:mm, from 0000 to 2359, e.g. 1600 or 16:00.";
+    public static final String MESSAGE_UNEXPECTED_TEXT_AFTER_DAY =
+            "Unexpected text after the day %1$s: %2$s. Give one day only, and check for a missing prefix.";
+    public static final String MESSAGE_UNEXPECTED_TEXT_AFTER_TIME =
+            "Unexpected text after the time %1$s: %2$s. Give one time only, and check for a missing prefix.";
 
     private static final int MIN_DAY_PREFIX_LENGTH = 3;
     // a common abbreviation that is not the start of the day's name
@@ -161,11 +165,20 @@ public class ParserUtil {
      * at least three letters, such as {@code mon}, {@code tues} or {@code friday}, or {@code weds}, in any letter
      * case. Leading and trailing whitespaces will be trimmed.
      *
-     * @throws ParseException if the given {@code day} is invalid.
+     * @throws ParseException if the given {@code day} is invalid, or is a valid day followed by other text.
      */
     public static DayOfWeek parseDay(String day) throws ParseException {
         requireNonNull(day);
-        String normalizedDay = day.trim().toLowerCase(Locale.ROOT);
+        String[] words = splitFirstWord(day);
+        DayOfWeek dayOfWeek = parseSingleDay(words[0]);
+        if (words.length > 1) {
+            throw new ParseException(String.format(MESSAGE_UNEXPECTED_TEXT_AFTER_DAY, words[0], words[1]));
+        }
+        return dayOfWeek;
+    }
+
+    private static DayOfWeek parseSingleDay(String day) throws ParseException {
+        String normalizedDay = day.toLowerCase(Locale.ROOT);
         if (normalizedDay.equals(WEDNESDAY_ABBREVIATION)) {
             return DayOfWeek.WEDNESDAY;
         }
@@ -185,17 +198,33 @@ public class ParserUtil {
      * With a colon, the hour may be a single digit, as in {@code 9:30}. Leading and trailing whitespaces will be
      * trimmed.
      *
-     * @throws ParseException if the given {@code time} is invalid.
+     * @throws ParseException if the given {@code time} is invalid, or is a valid time followed by other text.
      */
     public static LocalTime parseTime(String time) throws ParseException {
         requireNonNull(time);
-        String trimmedTime = time.trim();
+        String[] words = splitFirstWord(time);
+        LocalTime localTime = parseSingleTime(words[0]);
+        if (words.length > 1) {
+            throw new ParseException(String.format(MESSAGE_UNEXPECTED_TEXT_AFTER_TIME, words[0], words[1]));
+        }
+        return localTime;
+    }
+
+    private static LocalTime parseSingleTime(String time) throws ParseException {
         for (Pattern format : List.of(TIME_WITHOUT_COLON, TIME_WITH_COLON)) {
-            Matcher matcher = format.matcher(trimmedTime);
+            Matcher matcher = format.matcher(time);
             if (matcher.matches()) {
                 return LocalTime.of(Integer.parseInt(matcher.group("hour")), Integer.parseInt(matcher.group("minute")));
             }
         }
         throw new ParseException(MESSAGE_INVALID_TIME);
+    }
+
+    /**
+     * Trims {@code value} and splits it into its first word and, if there is one, the rest of the text.
+     * A prefix's value runs until the next prefix, so a stray word typed after a day or time ends up here.
+     */
+    private static String[] splitFirstWord(String value) {
+        return value.trim().split("\\s+", 2);
     }
 }

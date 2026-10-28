@@ -149,9 +149,15 @@ public class EditLessonCommandParserTest {
 
     @Test
     public void parse_invalidDay_throwsParseException() {
-        for (String day : List.of("", "funday", "mo", "m", "mon tue", "1")) {
+        for (String day : List.of("", "funday", "mo", "m", "1")) {
             assertParseFailure(parser, "1 d/" + day, ParserUtil.MESSAGE_INVALID_DAY);
         }
+    }
+
+    @Test
+    public void parse_validDayFollowedByText_throwsParseExceptionNamingText() {
+        assertParseFailure(parser, "1 d/mon tue",
+                String.format(ParserUtil.MESSAGE_UNEXPECTED_TEXT_AFTER_DAY, "mon", "tue"));
     }
 
     @Test
