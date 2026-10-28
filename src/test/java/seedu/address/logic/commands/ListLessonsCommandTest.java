@@ -52,7 +52,7 @@ public class ListLessonsCommandTest {
     @Test
     public void execute_unfiltered_showsAllLessons() {
         assertCommandSuccess(new ListLessonsCommand(), model, ListLessonsCommand.MESSAGE_SUCCESS, expectedModel);
-        assertEquals(List.of(MONDAY_MATH, WEDNESDAY_PHYSICS, MONDAY_CHEMISTRY),
+        assertEquals(List.of(MONDAY_CHEMISTRY, MONDAY_MATH, WEDNESDAY_PHYSICS),
                 model.getFilteredLessonList());
     }
 
@@ -61,17 +61,17 @@ public class ListLessonsCommandTest {
         model.updateFilteredLessonList(lesson -> lesson.getDay() == DayOfWeek.WEDNESDAY);
 
         assertCommandSuccess(new ListLessonsCommand(), model, ListLessonsCommand.MESSAGE_SUCCESS, expectedModel);
-        assertEquals(List.of(MONDAY_MATH, WEDNESDAY_PHYSICS, MONDAY_CHEMISTRY),
+        assertEquals(List.of(MONDAY_CHEMISTRY, MONDAY_MATH, WEDNESDAY_PHYSICS),
                 model.getFilteredLessonList());
     }
 
     @Test
-    public void execute_withDay_showsMatchingLessonsInInsertionOrder() {
+    public void execute_withDay_showsMatchingLessonsInTimetableOrder() {
         expectedModel.updateFilteredLessonList(lesson -> lesson.getDay() == DayOfWeek.MONDAY);
 
         assertCommandSuccess(new ListLessonsCommand(DayOfWeek.MONDAY), model,
                 String.format(ListLessonsCommand.MESSAGE_SUCCESS_BY_DAY, "Monday"), expectedModel);
-        assertEquals(List.of(MONDAY_MATH, MONDAY_CHEMISTRY), model.getFilteredLessonList());
+        assertEquals(List.of(MONDAY_CHEMISTRY, MONDAY_MATH), model.getFilteredLessonList());
     }
 
     @Test

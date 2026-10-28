@@ -34,7 +34,7 @@ TutorReach is a **desktop app for independent private tutors who teach secondary
 
    * `deletestudent 3` : Deletes the 3rd student shown in the current list.
 
-   * `clear` : Deletes all students and lessons.
+   * `clear` : Shows how to confirm deletion of all students and lessons.
 
    * `exit` : Exits the app.
 
@@ -60,7 +60,7 @@ TutorReach is a **desktop app for independent private tutors who teach secondary
 * Parameters can be in any order.<br>
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
 
-* Extraneous parameters for commands that take no parameters, such as `help`, `exit`, and `clear`, are ignored.<br>
+* Extraneous parameters for commands that take no parameters, such as `help` and `exit`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
 
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
@@ -173,6 +173,7 @@ Format: `listlessons [d/DAY]`
 
 * `DAY` is a day of the week, written in full or as at least its first three letters, in any letter case; for example, `mon`, `tues`, `weds`, `Thurs` and `friday` all work.
 * A lesson that runs past midnight belongs to the day on which it starts.
+* Lessons are listed by day, then start time, so the panel reads like a timetable.
 * Running `listlessons` without `d/` clears the lesson filter.
 
 Examples:
@@ -188,7 +189,7 @@ Format: `editlesson INDEX [n/NAME] [d/DAY] [st/START_TIME] [et/END_TIME]`
 
 * `INDEX` must be a positive integer and refers to the index shown in the current lesson list.
 * At least one optional field must be provided. Fields that are not provided remain unchanged.
-* `NAME` must be 1 to 50 characters long, start with a letter or digit, and contain only English letters, digits, spaces and `- ' . , & ( ) +`.
+* `NAME` must be 1 to 50 characters long, start with a letter or digit, and contain only English letters, digits, spaces and `- : # @ ' . , & / ( ) +`.
 * `DAY` is a day of the week, written in full or as at least its first three letters, in any letter case; for example, `mon`, `tues`, `weds`, `Thurs` and `friday` all work.
 * Times use the 24-hour clock, as `HHMM` or `HH:MM`, from `0000` to `2359`; for example, `1700` and `17:00` are both 5:00 PM. The start and end times cannot be equal. An end time earlier than the start time means that the lesson ends on the next day.
 * The edited lesson must not duplicate another lesson.
@@ -212,7 +213,7 @@ Format: `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`
 * `START_TIME` and `END_TIME` use the 24-hour clock, as `HHMM` or `HH:MM`; for example, `1600` and `16:00` are both 4:00 PM.
 * If the end time is earlier than the start time, the lesson is treated as ending on the next day. If such a lesson lasts more than 12 hours, the result warns that the start and end times may be swapped.
 * The start and end times must be different.
-* `NAME` must be 1 to 50 characters long, start with a letter or digit, and contain only English letters, digits, spaces and `- ' . , & ( ) +`.
+* `NAME` must be 1 to 50 characters long, start with a letter or digit, and contain only English letters, digits, spaces and `- : # @ ' . , & / ( ) +`.
 * A lesson is not added if another lesson has the same name, ignoring letter case and extra spaces, on the same day with the same start and end times.
 * If the new lesson's time overlaps other lessons, it is still added, since you may teach overlapping groups on purpose, and the result warns which lessons it clashes with. Lessons hidden by `listlessons d/DAY` count too. A lesson that starts exactly when another ends does not clash with it.
 * Adding a lesson clears the lesson filter, so all lessons are shown.
@@ -220,6 +221,7 @@ Format: `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`
 
 Examples:
 * `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800` adds a Monday lesson from 4:00 PM to 6:00 PM.
+* `addlesson n/P5 Math: Fractions d/tue st/1400 et/1600` adds a Tuesday lesson whose name contains a colon.
 * `addlesson n/Late Physics d/fri st/2300 et/0100` adds a Friday lesson that ends on Saturday.
 * `addlesson n/Sec 3 E-Math d/mon st/1700 et/1900`, after the first example, adds the lesson and warns that it clashes with `Sec 3 A-Math (Mon 1600-1800)`.
 
@@ -271,13 +273,20 @@ Examples:
 
 ### Clearing all entries: `clear`
 
-Deletes all students and lessons.
+Deletes all students, lessons and enrolments.
 
-Format: `clear`
+Format: `clear [confirm]`
+
+`clear` does not delete anything immediately. It shows a warning and asks you to confirm.
+Run `clear confirm` to delete everything.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-`clear` deletes everything at once, with no confirmation, and cannot be undone. Any text after `clear` is ignored, so `clear 1` also deletes everything. To keep a copy, back up the data file first.
+`clear confirm` deletes everything at once and cannot be undone. It also overwrites the data file. To keep a copy, back up the data file first.
 </div>
+
+Examples:
+* `clear` shows the deletion warning.
+* `clear confirm`, after `clear`, deletes all students, lessons and enrolments.
 
 ### Exiting the program: `exit`
 
@@ -340,7 +349,7 @@ Action | Format, Examples
 **Add student** | `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `addstudent n/Marcus Lim gn/Lim Hui Min gp/98761234`
 **Delete student** | `deletestudent INDEX`<br> e.g., `deletestudent 3`
 **Add lesson** | `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`<br> e.g., `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800`
-**Clear** | `clear`
+**Clear** | `clear [confirm]`<br> e.g., `clear confirm`
 **Delete lesson** | `deletelesson INDEX`<br> e.g., `deletelesson 2`
 **Edit student** | `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `editstudent 1 p/92345678`
 **Edit lesson** | `editlesson INDEX [n/NAME] [d/DAY] [st/START_TIME] [et/END_TIME]`<br> e.g., `editlesson 1 d/tue st/1700 et/1900`
