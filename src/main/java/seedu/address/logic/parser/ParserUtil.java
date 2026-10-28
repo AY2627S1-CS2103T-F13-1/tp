@@ -70,7 +70,8 @@ public class ParserUtil {
 
     /**
      * Parses a {@code String phone} into a {@code Phone}.
-     * Leading and trailing whitespaces will be trimmed.
+     * Leading and trailing whitespaces will be trimmed. Spaces and hyphens within the phone number will be removed,
+     * and supported country codes will be normalized.
      *
      * @throws ParseException if the given {@code phone} is invalid.
      */
@@ -79,6 +80,22 @@ public class ParserUtil {
         String trimmedPhone = phone.trim();
         if (!Phone.isValidPhone(trimmedPhone)) {
             throw new ParseException(Phone.MESSAGE_CONSTRAINTS);
+        }
+        return new Phone(trimmedPhone);
+    }
+
+    /**
+     * Parses a student or guardian {@code String phone} into a {@code Phone}.
+     * Leading and trailing whitespaces will be trimmed. Accepted formatting will be removed, and a Singapore
+     * country code will be normalized to the corresponding local number.
+     *
+     * @throws ParseException if the given {@code phone} is invalid for a student or guardian.
+     */
+    public static Phone parseStudentPhone(String phone) throws ParseException {
+        requireNonNull(phone);
+        String trimmedPhone = phone.trim();
+        if (!Phone.isValidStudentPhone(trimmedPhone)) {
+            throw new ParseException(Phone.MESSAGE_STUDENT_PHONE_CONSTRAINTS);
         }
         return new Phone(trimmedPhone);
     }

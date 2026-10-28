@@ -41,7 +41,18 @@ public class AddStudentCommandTest {
     public void execute_duplicateStudent_throwsCommandException() {
         Model model = new ModelManager();
         model.addStudent(AIDEN);
-        Student duplicate = new Student(new Name("aiden  tan"), new Phone("91234567"), null);
+        Student duplicate = new Student(new Name("aiden  tan"), new Phone("9123-4567"), null);
+
+        assertThrows(CommandException.class, AddStudentCommand.MESSAGE_DUPLICATE_STUDENT, () ->
+                new AddStudentCommand(duplicate).execute(model));
+        assertEquals(List.of(AIDEN), model.getAddressBook().getStudentList());
+    }
+
+    @Test
+    public void execute_sameLocalDigitsWithCountryCode_throwsCommandException() {
+        Model model = new ModelManager();
+        model.addStudent(AIDEN);
+        Student duplicate = new Student(new Name("Aiden Tan"), new Phone("+65 9123-4567"), null);
 
         assertThrows(CommandException.class, AddStudentCommand.MESSAGE_DUPLICATE_STUDENT, () ->
                 new AddStudentCommand(duplicate).execute(model));
