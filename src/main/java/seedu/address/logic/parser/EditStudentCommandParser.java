@@ -60,7 +60,8 @@ public class EditStudentCommandParser implements Parser<EditStudentCommand> {
             editStudentDescriptor.setName(ParserUtil.parseName(argMultimap.getValue(PREFIX_NAME).orElseThrow()));
         }
         if (argMultimap.getValue(PREFIX_PHONE).isPresent()) {
-            editStudentDescriptor.setPhone(ParserUtil.parsePhone(argMultimap.getValue(PREFIX_PHONE).orElseThrow()));
+            editStudentDescriptor.setPhone(
+                    ParserUtil.parseStudentPhone(argMultimap.getValue(PREFIX_PHONE).orElseThrow()));
         }
         parseGuardian(guardianNameValue, guardianPhoneValue).ifPresent(editStudentDescriptor::setGuardian);
 
@@ -80,7 +81,7 @@ public class EditStudentCommandParser implements Parser<EditStudentCommand> {
             return Optional.empty();
         }
         Name name = ParserUtil.parseName(nameValue.orElseThrow());
-        Phone phone = ParserUtil.parsePhone(phoneValue.orElseThrow());
+        Phone phone = ParserUtil.parseStudentPhone(phoneValue.orElseThrow());
         return Optional.of(new Guardian(name, phone));
     }
 }

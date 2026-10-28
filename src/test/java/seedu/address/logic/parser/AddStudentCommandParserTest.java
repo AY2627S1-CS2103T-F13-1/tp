@@ -82,9 +82,9 @@ public class AddStudentCommandParserTest {
     @Test
     public void parse_invalidValues_throwsParseException() {
         assertParseFailure(parser, " n/Aiden! p/93210283", Name.MESSAGE_CONSTRAINTS);
-        assertParseFailure(parser, " n/Aiden p/phone", Phone.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, " n/Aiden p/phone", Phone.MESSAGE_STUDENT_PHONE_CONSTRAINTS);
         assertParseFailure(parser, " n/Aiden gn/Tan! gp/91234567", Name.MESSAGE_CONSTRAINTS);
-        assertParseFailure(parser, " n/Aiden gn/Tan gp/phone", Phone.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, " n/Aiden gn/Tan gp/phone", Phone.MESSAGE_STUDENT_PHONE_CONSTRAINTS);
     }
 
     @Test
@@ -116,6 +116,14 @@ public class AddStudentCommandParserTest {
         Student student = new Student(new Name("José Anne-Marie"), new Phone("92345678"), guardian);
 
         assertParsedStudent(" n/José Anne-Marie p/92345678 gn/O’Connor gp/91234567", student);
+    }
+
+    @Test
+    public void parse_formattedPhones_returnsAddStudentCommandWithNormalizedPhones() {
+        Guardian guardian = new Guardian(new Name("Tan Mei Ling"), new Phone("91234567"));
+        Student student = new Student(new Name("Aiden Tan"), new Phone("92345678"), guardian);
+
+        assertParsedStudent(" n/Aiden Tan p/9234 5678 gn/Tan Mei Ling gp/+65 9123-4567", student);
     }
 
     private void assertParsedStudent(String input, Student expected) {

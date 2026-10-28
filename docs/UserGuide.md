@@ -81,7 +81,11 @@ Format: `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`
 * At least one phone number is required: the student's own `p/`, or a guardian's `gp/`.
 * `gn/` and `gp/` must be given together.
 * Names may contain letters from any language, digits and spaces. Apostrophes (`'` or `’`) and hyphens (`-`) are accepted between letters or digits. The connectors `s/o`, `d/o`, `a/l` and `a/p` are accepted between name parts. Names must not be blank. Phone numbers may contain only digits and must be at least 3 digits long.
+* A Singapore phone number must contain eight digits. It may use spaces or hyphens between digit groups and may start with `+65`. TutorReach removes the formatting and Singapore country code before displaying or saving the number. For example, both `9123 4567` and `+65 9123-4567` are stored as `91234567`.
+* An international phone number must start with `+` and its country code, and contain between 3 and 15 digits. TutorReach removes spaces and hyphens but retains the leading `+` and country code. For example, `+44 7700-900123` is stored as `+447700900123`.
+* Student and guardian phone numbers saved by v1.4 remain available after upgrading. New or edited numbers must follow the rules above.
 * A student is a duplicate if another student has the same name, ignoring letter case and extra spaces, and shares at least one phone number with them (own or guardian's). Siblings with different names can share a guardian's number.
+  Formatted versions of the same number, including a Singapore number written with `+65`, are treated as the same number.
 * Adding a student clears the student filter, so all students are shown.
 
 Examples:
@@ -89,6 +93,7 @@ Examples:
 * `addstudent n/Marcus Lim gn/Lim Hui Min gp/98761234` adds a student whose guardian is the only contact.
 * `addstudent n/Chloe Lim p/98765432` adds a student with their own phone number and no guardian.
 * `addstudent n/José Anne-Marie p/91234567 gn/Kumar s/o Ravi gp/98765432` adds names containing accented letters, a hyphen and a local name connector.
+* `addstudent n/Chloe Lim p/+65 9876-5432` adds a student with their own phone number and no guardian. The number is displayed and saved as `98765432`.
 
 ### Deleting a student: `deletestudent`
 
@@ -126,14 +131,14 @@ Format: `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHON
 * `INDEX` must be a positive integer and refers to the index shown in the current student list.
 * At least one optional field must be provided. Fields that are not provided remain unchanged.
 * `gn/GUARDIAN_NAME` and `gp/GUARDIAN_PHONE` must be provided together. They replace the student's existing guardian details.
-* Names follow the same rules as for `addstudent`. Phone numbers must contain only digits and be at least three digits long.
+* Names follow the same rules as for `addstudent`. Phone numbers follow the same formatting and normalization rules as for `addstudent`.
 * The edited student must not duplicate another student.
 * The student's identity and lesson enrolments are preserved.
 * The active student filter remains in effect and is re-evaluated after the edit. For example, a renamed student may disappear from a name search that they no longer match.
 
 Examples:
 
-* `editstudent 1 p/92345678` changes only the phone number of the first displayed student.
+* `editstudent 1 p/9234 5678` changes only the phone number of the first displayed student. The number is displayed and saved as `92345678`.
 * `editstudent 2 gn/Lim Mei gp/91234567` replaces only the guardian details of the second displayed student.
 * `editstudent 1 n/O'Connor` changes the student's name to one containing an apostrophe.
 
