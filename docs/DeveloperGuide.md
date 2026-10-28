@@ -77,6 +77,8 @@ The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDi
 
 The `StudentListPanel` and `LessonListPanel` are shown side by side. Each holds one card per item in its list: a `StudentCard` shows a student's phone number, guardian and enrolled lessons, and a `LessonCard` shows a lesson's day, time and enrolled students.
 
+The `ResultDisplay` wraps command feedback and adjusts its preferred height to show up to nine rows immediately. Its height is capped to keep the student and lesson panels usable; feedback beyond the cap remains available by scrolling.
+
 The `UI` component uses the JavaFX UI framework. The layouts of these UI parts are defined in matching `.fxml` files in `src/main/resources/view`. For example, [`MainWindow.fxml`](https://github.com/AY2627S1-CS2103T-F13-1/tp/tree/master/src/main/resources/view/MainWindow.fxml) specifies the layout of [`MainWindow`](https://github.com/AY2627S1-CS2103T-F13-1/tp/tree/master/src/main/java/seedu/address/ui/MainWindow.java).
 
 The `UI` component,
