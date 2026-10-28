@@ -16,8 +16,12 @@ public class LessonTest {
     public void constructor_validatesNameAndTimes() {
         Lesson lesson = lesson("Sec 3  A-Math", 16, 18);
         assertEquals("Sec 3 A-Math (Mon 1600-1800)", lesson.toString());
-        for (String name : new String[] {"", " ", "Math/Science", "-Math", "a".repeat(51)}) {
+        for (String name : new String[] {"", " ", "-Math", "(Math)", "a".repeat(51)}) {
             assertThrows(IllegalArgumentException.class, () -> lesson(name, 16, 18));
+        }
+        for (String name : new String[] {"Math/Science", "P5 Math: Fractions", "Group #1",
+            "Sec 3 A-Math @ Bishan", "Sec 3 A/E Math"}) {
+            assertEquals(name, lesson(name, 16, 18).getName());
         }
         assertThrows(IllegalArgumentException.class, () -> lesson("Math", 16, 16));
         // an end time earlier than the start time means the lesson ends on the next day

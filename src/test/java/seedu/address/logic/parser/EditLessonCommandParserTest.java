@@ -142,7 +142,7 @@ public class EditLessonCommandParserTest {
     @Test
     public void parse_invalidName_throwsParseException() {
         String tooLongName = "A".repeat(51);
-        for (String name : List.of("", "-Math", "(Math)", "Math/Science", "Math@Home", tooLongName)) {
+        for (String name : List.of("", "-Math", "(Math)", "Math_1", tooLongName)) {
             assertParseFailure(parser, "1 n/" + name, Lesson.MESSAGE_NAME_CONSTRAINTS);
         }
     }
