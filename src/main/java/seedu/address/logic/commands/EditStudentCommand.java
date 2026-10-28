@@ -80,6 +80,13 @@ public class EditStudentCommand extends Command {
             throw new CommandException(MESSAGE_DUPLICATE_STUDENT);
         }
 
+        // only a renamed student is checked, so later edits of the same student do not repeat the warning
+        List<Student> sameNameStudents = studentToEdit.hasSameName(editedStudent)
+                ? List.of()
+                : model.getAddressBook().getStudentList().stream()
+                        .filter(student -> !student.getId().equals(studentToEdit.getId()))
+                        .filter(editedStudent::hasSameName)
+                        .toList();
         model.setStudent(studentToEdit, editedStudent);
         Student storedStudent = model.getAddressBook().getStudentList().stream()
                 .filter(student -> student.getId().equals(editedStudent.getId()))
@@ -87,7 +94,8 @@ public class EditStudentCommand extends Command {
                 .orElse(null);
         assert editedStudent.equals(storedStudent) : "Editing a student should update the address book";
         logger.info("Edited student with ID: " + editedStudent.getId());
-        return new CommandResult(String.format(MESSAGE_EDIT_STUDENT_SUCCESS, Messages.format(editedStudent)));
+        return new CommandResult(String.format(MESSAGE_EDIT_STUDENT_SUCCESS, Messages.format(editedStudent))
+                + Messages.formatSameNameWarning(sameNameStudents));
     }
 
     /**

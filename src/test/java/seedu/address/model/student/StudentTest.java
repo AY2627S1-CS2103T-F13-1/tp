@@ -28,6 +28,16 @@ public class StudentTest {
     }
 
     @Test
+    public void hasSameName_normalizedNameWhateverThePhones() {
+        Student student = new Student(name, phone, null);
+
+        assertTrue(student.hasSameName(new Student(new Name("aiden  tan "), new Phone("88888888"), null)));
+        assertTrue(student.hasSameName(new Student(name, null, guardian)));
+        assertFalse(student.hasSameName(new Student(new Name("Aiden Lim"), phone, null)));
+        assertFalse(student.hasSameName(null));
+    }
+
+    @Test
     public void isSameStudent_normalizedNameAndSharedNumber() {
         Student ownContact = new Student(name, phone, null);
         Student sameOwnContact = new Student(new Name("aiden  tan "), phone, null);

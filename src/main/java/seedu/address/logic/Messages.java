@@ -23,6 +23,8 @@ public class Messages {
     public static final String MESSAGE_INVALID_LESSON_DISPLAYED_INDEX = "The lesson index provided is invalid.";
     public static final String MESSAGE_CLASH_WARNING = "Warning: clashes with %1$s";
     public static final String MESSAGE_STUDENT_CLASH_WARNING = "Warning: %1$s already attends clashing lesson(s): %2$s";
+    public static final String MESSAGE_SAME_NAME_WARNING =
+            "Warning: another student has the same name: %1$s. Check that this is not the same student.";
     public static final String MESSAGE_LONG_LESSON_WARNING = "Warning: this lesson lasts %1$s and ends the next day."
             + " Check that the start and end times are not swapped.";
     public static final int LONG_OVERNIGHT_LESSON_MINUTES = 12 * 60;
@@ -116,6 +118,18 @@ public class Messages {
             return "";
         }
         return "\n" + String.format(MESSAGE_STUDENT_CLASH_WARNING, student.getName(), formatLessons(clashingLessons));
+    }
+
+    /**
+     * Returns a warning on a new line naming {@code sameNameStudents}, or an empty string if there are none.
+     * Two children may share a name, so this is not an error, but it is more often a student added twice.
+     */
+    public static String formatSameNameWarning(List<Student> sameNameStudents) {
+        if (sameNameStudents.isEmpty()) {
+            return "";
+        }
+        return "\n" + String.format(MESSAGE_SAME_NAME_WARNING,
+                sameNameStudents.stream().map(Messages::format).collect(Collectors.joining(" | ")));
     }
 
     /**
