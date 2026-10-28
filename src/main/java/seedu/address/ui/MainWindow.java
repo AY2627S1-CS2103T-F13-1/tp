@@ -137,6 +137,7 @@ public class MainWindow extends UiPart<Stage> {
     void showStartupMessage(String message) {
         if (!message.isEmpty()) {
             resultDisplay.setFeedbackToUser(message);
+            resultDisplay.scrollToTop();
         }
     }
 
