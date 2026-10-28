@@ -38,14 +38,49 @@ public class AddStudentCommandTest {
     }
 
     @Test
+    public void execute_realNameCharacters_addSuccessful() throws Exception {
+        Model model = new ModelManager();
+        Student student = new Student(new Name("José Anne-Marie"), null,
+                new Guardian(new Name("Kumar s/o Ravi"), new Phone("91234567")));
+
+        CommandResult result = new AddStudentCommand(student).execute(model);
+
+        assertEquals(String.format(AddStudentCommand.MESSAGE_SUCCESS, student), result.getFeedbackToUser());
+        assertEquals(List.of(student), model.getAddressBook().getStudentList());
+    }
+
+    @Test
     public void execute_duplicateStudent_throwsCommandException() {
         Model model = new ModelManager();
         model.addStudent(AIDEN);
-        Student duplicate = new Student(new Name("aiden  tan"), new Phone("91234567"), null);
+        Student duplicate = new Student(new Name("aiden  tan"), new Phone("9123-4567"), null);
 
         assertThrows(CommandException.class, AddStudentCommand.MESSAGE_DUPLICATE_STUDENT, () ->
                 new AddStudentCommand(duplicate).execute(model));
         assertEquals(List.of(AIDEN), model.getAddressBook().getStudentList());
+    }
+
+    @Test
+    public void execute_sameLocalDigitsWithCountryCode_throwsCommandException() {
+        Model model = new ModelManager();
+        model.addStudent(AIDEN);
+        Student duplicate = new Student(new Name("Aiden Tan"), new Phone("+65 9123-4567"), null);
+
+        assertThrows(CommandException.class, AddStudentCommand.MESSAGE_DUPLICATE_STUDENT, () ->
+                new AddStudentCommand(duplicate).execute(model));
+        assertEquals(List.of(AIDEN), model.getAddressBook().getStudentList());
+    }
+
+    @Test
+    public void execute_canonicallyEquivalentUnicodeName_throwsCommandException() {
+        Model model = new ModelManager();
+        Student existing = new Student(new Name("José Tan"), new Phone("91234567"), null);
+        model.addStudent(existing);
+        Student duplicate = new Student(new Name("Jose\u0301 Tan"), new Phone("91234567"), null);
+
+        assertThrows(CommandException.class, AddStudentCommand.MESSAGE_DUPLICATE_STUDENT, () ->
+                new AddStudentCommand(duplicate).execute(model));
+        assertEquals(List.of(existing), model.getAddressBook().getStudentList());
     }
 
     @Test
