@@ -50,6 +50,8 @@ public class AddStudentCommand extends Command {
             throw new CommandException(MESSAGE_DUPLICATE_STUDENT);
         }
 
+        StudentPhoneConflictValidator.validate(toAdd, model.getAddressBook());
+
         model.addStudent(toAdd);
         return new CommandResult(String.format(MESSAGE_SUCCESS, toAdd));
     }

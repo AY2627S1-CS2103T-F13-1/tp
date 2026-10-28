@@ -247,6 +247,70 @@ public class EditStudentCommandTest {
     }
 
     @Test
+    public void execute_studentPhoneUsedByHiddenGuardian_throwsCommandException() {
+        model.updateFilteredStudentList(student -> student.getId().equals(RYAN.getId()));
+        EditStudentDescriptor descriptor = createDescriptor(null, new Phone("+65 9123-4567"), null);
+
+        assertEditFailure(new EditStudentCommand(INDEX_FIRST_PERSON, descriptor),
+                StudentPhoneConflictValidator.MESSAGE_PHONE_USED_BY_GUARDIAN);
+    }
+
+    @Test
+    public void execute_studentPhoneUsedByHiddenStudent_throwsCommandException() {
+        model.updateFilteredStudentList(student -> student.getId().equals(AIDEN.getId()));
+        EditStudentDescriptor descriptor = createDescriptor(null, new Phone("+65 9321-0283"), null);
+
+        assertEditFailure(new EditStudentCommand(INDEX_FIRST_PERSON, descriptor),
+                StudentPhoneConflictValidator.MESSAGE_PHONE_USED_BY_STUDENT);
+    }
+
+    @Test
+    public void execute_guardianPhoneUsedByStudent_throwsCommandException() {
+        Guardian guardian = new Guardian(new Name("Lim Mei"), new Phone("93210283"));
+        EditStudentDescriptor descriptor = createDescriptor(null, null, guardian);
+
+        assertEditFailure(new EditStudentCommand(INDEX_FIRST_PERSON, descriptor),
+                StudentPhoneConflictValidator.MESSAGE_PHONE_USED_BY_STUDENT);
+    }
+
+    @Test
+    public void execute_sameStudentAndGuardianPhone_throwsCommandException() {
+        Guardian guardian = new Guardian(new Name("Tan Mei Ling"), CHLOE.getPhone().orElseThrow());
+        EditStudentDescriptor descriptor = createDescriptor(null, null, guardian);
+
+        assertEditFailure(new EditStudentCommand(INDEX_SECOND_PERSON, descriptor),
+                StudentPhoneConflictValidator.MESSAGE_SAME_STUDENT_GUARDIAN_PHONE);
+    }
+
+    @Test
+    public void execute_unchangedPhoneWhileEditingGuardian_success() {
+        Guardian guardian = new Guardian(new Name("Lim Mei"), new Phone("97654321"));
+        EditStudentDescriptor descriptor = createDescriptor(null, CHLOE.getPhone().orElseThrow(), guardian);
+        EditStudentCommand command = new EditStudentCommand(INDEX_SECOND_PERSON, descriptor);
+        Student editedStudent = new Student(CHLOE.getId(), CHLOE.getName(), CHLOE.getPhone().orElseThrow(), guardian);
+        Model expectedModel = new ModelManager(getStudentAddressBook(), new UserPrefs());
+        expectedModel.setStudent(CHLOE, editedStudent);
+        String expectedMessage = String.format(EditStudentCommand.MESSAGE_EDIT_STUDENT_SUCCESS,
+                Messages.format(editedStudent));
+
+        assertCommandSuccess(command, model, expectedMessage, expectedModel);
+    }
+
+    @Test
+    public void execute_guardianPhoneUsedByGuardian_success() {
+        Guardian guardian = new Guardian(new Name("Tan Mei Ling"), AIDEN.getGuardian().orElseThrow().getPhone());
+        EditStudentDescriptor descriptor = createDescriptor(null, null, guardian);
+        EditStudentCommand command = new EditStudentCommand(Index.fromOneBased(3), descriptor);
+        Student editedStudent = new Student(RYAN.getId(), RYAN.getName(), RYAN.getPhone().orElseThrow(), guardian);
+        Model expectedModel = new ModelManager(getStudentAddressBook(), new UserPrefs());
+        expectedModel.setStudent(RYAN, editedStudent);
+        String expectedMessage = String.format(EditStudentCommand.MESSAGE_EDIT_STUDENT_SUCCESS,
+                Messages.format(editedStudent));
+
+        assertCommandSuccess(command, model, expectedMessage, expectedModel);
+    }
+
+    @Test
     public void execute_invalidIndexUnfilteredList_throwsCommandException() {
         Index outOfBoundsIndex = Index.fromOneBased(model.getFilteredStudentList().size() + 1);
         EditStudentDescriptor descriptor = createDescriptor(new Name("Aiden Lee"), null, null);

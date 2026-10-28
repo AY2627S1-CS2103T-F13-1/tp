@@ -93,6 +93,8 @@ public class EditStudentCommand extends Command {
             throw new CommandException(MESSAGE_DUPLICATE_STUDENT);
         }
 
+        StudentPhoneConflictValidator.validate(editedStudent, model.getAddressBook());
+
         model.setStudent(studentToEdit, editedStudent);
         Student storedStudent = model.getAddressBook().getStudentList().stream()
                 .filter(student -> student.getId().equals(editedStudent.getId()))
