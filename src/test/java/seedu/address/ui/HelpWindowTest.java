@@ -49,7 +49,7 @@ public class HelpWindowTest {
     }
 
     @Test
-    public void handleHelp_afterMinimizing_reusesMinimizedWindow() throws Exception {
+    public void show_afterMinimizing_restoresWindow() throws Exception {
         JavaFxTestUtil.runOnFxThread(() -> {
             Stage stage = new Stage();
             try {
@@ -63,11 +63,11 @@ public class HelpWindowTest {
 
                 helpWindow.show();
                 assertTrue(stage.isShowing());
-                assertTrue(stage.isIconified(), "Calling show again must not restore a minimized window");
+                assertFalse(stage.isIconified(), "Calling show must restore a minimized window");
 
                 helpWindow.focus();
                 assertTrue(stage.isShowing());
-                assertTrue(stage.isIconified(), "Requesting focus must not restore a minimized window");
+                assertFalse(stage.isIconified(), "Requesting focus must keep a restored window visible");
             } finally {
                 stage.close();
             }
