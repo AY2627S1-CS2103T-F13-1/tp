@@ -40,8 +40,20 @@ public class StudentTest {
         assertTrue(guardianContact.isSameStudent(ownContact));
         assertTrue(guardianContact.isSameStudent(sameGuardianContact));
         assertFalse(ownContact.isSameStudent(new Student(name, new Phone("88888888"), null)));
+        assertFalse(guardianContact.isSameStudent(new Student(name, new Phone("88888888"), null)));
+        assertFalse(guardianContact.isSameStudent(new Student(name, new Phone("88888888"),
+                new Guardian(new Name("Other Guardian"), new Phone("99999999")))));
         assertFalse(ownContact.isSameStudent(new Student(new Name("Chloe Tan"), null, guardian)));
         assertFalse(ownContact.isSameStudent(null));
+    }
+
+    @Test
+    public void isSameStudent_canonicallyEquivalentUnicodeNameAndSharedNumber_returnsTrue() {
+        Student precomposedName = new Student(new Name("José Tan"), phone, null);
+        Student decomposedName = new Student(new Name("Jose\u0301 Tan"), phone, null);
+
+        assertTrue(precomposedName.isSameStudent(decomposedName));
+        assertTrue(decomposedName.isSameStudent(precomposedName));
     }
 
     @Test

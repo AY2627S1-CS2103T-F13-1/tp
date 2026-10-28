@@ -23,7 +23,7 @@ import seedu.address.model.student.Guardian;
 public class EditStudentCommandParser implements Parser<EditStudentCommand> {
 
     public static final String MESSAGE_INCOMPLETE_GUARDIAN =
-            "Guardian name and guardian phone must be provided together.";
+            "Guardian name and guardian phone must both have values, or both be blank to remove the guardian.";
 
     /**
      * Parses the given arguments in the context of {@code EditStudentCommand}.
@@ -49,6 +49,7 @@ public class EditStudentCommandParser implements Parser<EditStudentCommand> {
         argMultimap.verifyNoDuplicatePrefixesFor(
                 PREFIX_NAME, PREFIX_PHONE, PREFIX_GUARDIAN_NAME, PREFIX_GUARDIAN_PHONE);
 
+        Optional<String> phoneValue = argMultimap.getValue(PREFIX_PHONE);
         Optional<String> guardianNameValue = argMultimap.getValue(PREFIX_GUARDIAN_NAME);
         Optional<String> guardianPhoneValue = argMultimap.getValue(PREFIX_GUARDIAN_PHONE);
         if (guardianNameValue.isPresent() != guardianPhoneValue.isPresent()) {
@@ -59,10 +60,8 @@ public class EditStudentCommandParser implements Parser<EditStudentCommand> {
         if (argMultimap.getValue(PREFIX_NAME).isPresent()) {
             editStudentDescriptor.setName(ParserUtil.parseName(argMultimap.getValue(PREFIX_NAME).orElseThrow()));
         }
-        if (argMultimap.getValue(PREFIX_PHONE).isPresent()) {
-            editStudentDescriptor.setPhone(ParserUtil.parsePhone(argMultimap.getValue(PREFIX_PHONE).orElseThrow()));
-        }
-        parseGuardian(guardianNameValue, guardianPhoneValue).ifPresent(editStudentDescriptor::setGuardian);
+        parsePhone(phoneValue, editStudentDescriptor);
+        parseGuardian(guardianNameValue, guardianPhoneValue, editStudentDescriptor);
 
         if (!editStudentDescriptor.isAnyFieldEdited()) {
             throw new ParseException(EditStudentCommand.MESSAGE_NOT_EDITED);
@@ -72,15 +71,36 @@ public class EditStudentCommandParser implements Parser<EditStudentCommand> {
     }
 
     /**
-     * Parses a complete guardian edit, or returns an empty value when no guardian fields were supplied.
+     * Parses a phone edit, including an empty value that removes the student's phone.
      */
-    private static Optional<Guardian> parseGuardian(Optional<String> nameValue, Optional<String> phoneValue)
+    private static void parsePhone(Optional<String> phoneValue, EditStudentDescriptor editStudentDescriptor)
             throws ParseException {
-        if (nameValue.isEmpty()) {
-            return Optional.empty();
+        if (phoneValue.isPresent()) {
+            String value = phoneValue.orElseThrow();
+            editStudentDescriptor.setPhone(
+                    value.isEmpty() ? null : ParserUtil.parseStudentPhone(value));
         }
-        Name name = ParserUtil.parseName(nameValue.orElseThrow());
-        Phone phone = ParserUtil.parsePhone(phoneValue.orElseThrow());
-        return Optional.of(new Guardian(name, phone));
+    }
+
+    /**
+     * Parses a complete guardian edit, including empty values that remove the guardian.
+     */
+    private static void parseGuardian(Optional<String> nameValue, Optional<String> phoneValue,
+            EditStudentDescriptor editStudentDescriptor) throws ParseException {
+        if (nameValue.isEmpty()) {
+            return;
+        }
+        String name = nameValue.orElseThrow();
+        String phone = phoneValue.orElseThrow();
+        if (name.isEmpty() != phone.isEmpty()) {
+            throw new ParseException(MESSAGE_INCOMPLETE_GUARDIAN);
+        }
+        if (name.isEmpty()) {
+            editStudentDescriptor.setGuardian(null);
+            return;
+        }
+        Name guardianName = ParserUtil.parseName(name);
+        Phone guardianPhone = ParserUtil.parseStudentPhone(phone);
+        editStudentDescriptor.setGuardian(new Guardian(guardianName, guardianPhone));
     }
 }

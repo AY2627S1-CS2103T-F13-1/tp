@@ -13,7 +13,6 @@ import java.util.logging.Logger;
 
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.core.index.Index;
-import seedu.address.commons.util.CollectionUtil;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
@@ -37,6 +36,8 @@ public class EditStudentCommand extends Command {
             + "[" + PREFIX_PHONE + "PHONE] "
             + "[" + PREFIX_GUARDIAN_NAME + "GUARDIAN_NAME "
             + PREFIX_GUARDIAN_PHONE + "GUARDIAN_PHONE]\n"
+            + "Leave " + PREFIX_PHONE + " blank to remove the student's phone, or leave both "
+            + PREFIX_GUARDIAN_NAME + " and " + PREFIX_GUARDIAN_PHONE + " blank to remove the guardian.\n"
             + "Example: " + COMMAND_WORD + " 1 "
             + PREFIX_PHONE + "92345678";
 
@@ -72,7 +73,12 @@ public class EditStudentCommand extends Command {
         }
 
         Student studentToEdit = lastShownList.get(index.getZeroBased());
-        Student editedStudent = createEditedStudent(studentToEdit, editStudentDescriptor);
+        Student editedStudent;
+        try {
+            editedStudent = createEditedStudent(studentToEdit, editStudentDescriptor);
+        } catch (IllegalArgumentException e) {
+            throw new CommandException(e.getMessage());
+        }
 
         if (studentToEdit.equals(editedStudent)) {
             logger.fine("Rejected unchanged student edit for ID: " + studentToEdit.getId());
@@ -105,9 +111,12 @@ public class EditStudentCommand extends Command {
         requireNonNull(studentToEdit);
 
         Name updatedName = editStudentDescriptor.getName().orElse(studentToEdit.getName());
-        Phone updatedPhone = editStudentDescriptor.getPhone().orElse(studentToEdit.getPhone().orElse(null));
-        Guardian updatedGuardian = editStudentDescriptor.getGuardian()
-                .orElse(studentToEdit.getGuardian().orElse(null));
+        Phone updatedPhone = editStudentDescriptor.isPhoneEdited()
+                ? editStudentDescriptor.getPhone().orElse(null)
+                : studentToEdit.getPhone().orElse(null);
+        Guardian updatedGuardian = editStudentDescriptor.isGuardianEdited()
+                ? editStudentDescriptor.getGuardian().orElse(null)
+                : studentToEdit.getGuardian().orElse(null);
 
         return new Student(studentToEdit.getId(), updatedName, updatedPhone, updatedGuardian);
     }
@@ -136,12 +145,14 @@ public class EditStudentCommand extends Command {
     }
 
     /**
-     * Stores the replacement details for a student. Each non-empty field replaces its corresponding value.
+     * Stores the replacement details for a student. Optional contact fields can be set to {@code null} to remove them.
      */
     public static class EditStudentDescriptor {
         private Name name;
         private Phone phone;
         private Guardian guardian;
+        private boolean isPhoneEdited;
+        private boolean isGuardianEdited;
 
         public EditStudentDescriptor() {}
 
@@ -149,16 +160,18 @@ public class EditStudentCommand extends Command {
          * Creates a defensive copy of the specified descriptor.
          */
         public EditStudentDescriptor(EditStudentDescriptor toCopy) {
-            setName(toCopy.name);
-            setPhone(toCopy.phone);
-            setGuardian(toCopy.guardian);
+            name = toCopy.name;
+            phone = toCopy.phone;
+            guardian = toCopy.guardian;
+            isPhoneEdited = toCopy.isPhoneEdited;
+            isGuardianEdited = toCopy.isGuardianEdited;
         }
 
         /**
          * Returns true if at least one field is edited.
          */
         public boolean isAnyFieldEdited() {
-            return CollectionUtil.isAnyNonNull(name, phone, guardian);
+            return name != null || isPhoneEdited || isGuardianEdited;
         }
 
         public void setName(Name name) {
@@ -171,18 +184,30 @@ public class EditStudentCommand extends Command {
 
         public void setPhone(Phone phone) {
             this.phone = phone;
+            isPhoneEdited = true;
         }
 
         public Optional<Phone> getPhone() {
             return Optional.ofNullable(phone);
         }
 
+        /** Returns true if the student's phone should be replaced or removed. */
+        public boolean isPhoneEdited() {
+            return isPhoneEdited;
+        }
+
         public void setGuardian(Guardian guardian) {
             this.guardian = guardian;
+            isGuardianEdited = true;
         }
 
         public Optional<Guardian> getGuardian() {
             return Optional.ofNullable(guardian);
+        }
+
+        /** Returns true if the student's guardian should be replaced or removed. */
+        public boolean isGuardianEdited() {
+            return isGuardianEdited;
         }
 
         @Override
@@ -198,7 +223,9 @@ public class EditStudentCommand extends Command {
 
             return Objects.equals(name, otherEditStudentDescriptor.name)
                     && Objects.equals(phone, otherEditStudentDescriptor.phone)
-                    && Objects.equals(guardian, otherEditStudentDescriptor.guardian);
+                    && Objects.equals(guardian, otherEditStudentDescriptor.guardian)
+                    && isPhoneEdited == otherEditStudentDescriptor.isPhoneEdited
+                    && isGuardianEdited == otherEditStudentDescriptor.isGuardianEdited;
         }
 
         @Override
@@ -207,6 +234,8 @@ public class EditStudentCommand extends Command {
                     .add("name", name)
                     .add("phone", phone)
                     .add("guardian", guardian)
+                    .add("isPhoneEdited", isPhoneEdited)
+                    .add("isGuardianEdited", isGuardianEdited)
                     .toString();
         }
     }

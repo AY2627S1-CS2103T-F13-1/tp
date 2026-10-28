@@ -261,6 +261,16 @@ public class StudentContainsKeywordsPredicateTest {
     }
 
     @Test
+    public void test_storedInternationalPhone_containsKeywords() {
+        Student internationalStudent = new Student(
+                new Name("Alex Smith"), new Phone("+44 7700-900123"), null);
+
+        assertTrue(phonePredicate("447700900123").test(internationalStudent));
+        assertTrue(phonePredicate("7700").test(internationalStudent));
+        assertFalse(phonePredicate("447700900124").test(internationalStudent));
+    }
+
+    @Test
     public void test_storedNumberTooShortForCountryCodeMatch_returnsFalse() {
         // a short stored number, such as an extension, is not a full number with a country code in front of it
         Student withExtension = new Student(new Name("Short Num"), new Phone("567"), null);

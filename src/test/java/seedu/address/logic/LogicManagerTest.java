@@ -1,6 +1,7 @@
 package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_LESSON_DISPLAYED_INDEX;
@@ -115,8 +116,27 @@ public class LogicManagerTest {
     @Test
     public void execute_addDuplicateStudent_throwsCommandException() throws Exception {
         logic.execute(AddStudentCommand.COMMAND_WORD + " n/Aiden Tan gn/Tan Mei Ling gp/91234567");
-        assertCommandException(AddStudentCommand.COMMAND_WORD + " n/aiden  tan p/91234567",
+        assertCommandException(AddStudentCommand.COMMAND_WORD + " n/aiden  tan p/9123-4567",
                 AddStudentCommand.MESSAGE_DUPLICATE_STUDENT);
+    }
+
+    @Test
+    public void execute_addEditAndFindFormattedPhones_normalizesAndSaves() throws Exception {
+        logic.execute(AddStudentCommand.COMMAND_WORD
+                + " n/Aiden Tan p/+65 9123-4567 gn/Tan Mei Ling gp/9234 5678");
+        Student addedStudent = logic.getFilteredStudentList().getFirst();
+        assertEquals(new Phone("91234567"), addedStudent.getPhone().orElseThrow());
+        assertEquals(new Phone("92345678"), addedStudent.getGuardian().orElseThrow().getPhone());
+
+        logic.execute(EditStudentCommand.COMMAND_WORD
+                + " 1 p/9345-6789 gn/Tan Mei Ling gp/+65 9456-7890");
+        Student editedStudent = logic.getFilteredStudentList().getFirst();
+        assertEquals(new Phone("93456789"), editedStudent.getPhone().orElseThrow());
+        assertEquals(new Phone("94567890"), editedStudent.getGuardian().orElseThrow().getPhone());
+
+        logic.execute(FindStudentCommand.COMMAND_WORD + " p/+65 9345-6789");
+        assertEquals(List.of(editedStudent), logic.getFilteredStudentList());
+        assertEquals(List.of(editedStudent), readSavedAddressBook().getStudentList());
     }
 
     @Test
@@ -206,6 +226,35 @@ public class LogicManagerTest {
         assertCommandException(EditStudentCommand.COMMAND_WORD + " 1 p/91234567",
                 EditStudentCommand.MESSAGE_IDENTICAL_CHANGES);
         assertEquals(List.of(aiden), logic.getFilteredStudentList());
+    }
+  
+    @Test
+    public void execute_editStudentClearsContacts_preservesIdentityEnrolmentAndSaves() throws Exception {
+        logic.execute(AddStudentCommand.COMMAND_WORD
+                + " n/Aiden Tan p/91234567 gn/Tan Mei Ling gp/93456789");
+        logic.execute(AddLessonCommand.COMMAND_WORD + " n/Math d/mon st/1600 et/1800");
+        logic.execute(EnrolCommand.COMMAND_WORD + " s/1 l/1");
+        UUID originalStudentId = logic.getFilteredStudentList().getFirst().getId();
+        UUID lessonId = logic.getFilteredLessonList().getFirst().getId();
+
+        logic.execute(EditStudentCommand.COMMAND_WORD + " 1 p/    ");
+
+        Student studentWithoutPhone = logic.getFilteredStudentList().getFirst();
+        assertFalse(studentWithoutPhone.getPhone().isPresent());
+        assertEquals(new Guardian(new Name("Tan Mei Ling"), new Phone("93456789")),
+                studentWithoutPhone.getGuardian().orElseThrow());
+        assertEquals(originalStudentId, studentWithoutPhone.getId());
+        assertEquals(List.of(new Enrolment(originalStudentId, lessonId)), logic.getEnrolmentList());
+        assertEquals(studentWithoutPhone, readSavedAddressBook().getStudentList().getFirst());
+
+        logic.execute(EditStudentCommand.COMMAND_WORD + " 1 p/92345678 gn/    gp/    ");
+
+        Student studentWithoutGuardian = logic.getFilteredStudentList().getFirst();
+        assertEquals(new Phone("92345678"), studentWithoutGuardian.getPhone().orElseThrow());
+        assertFalse(studentWithoutGuardian.getGuardian().isPresent());
+        assertEquals(originalStudentId, studentWithoutGuardian.getId());
+        assertEquals(List.of(new Enrolment(originalStudentId, lessonId)), logic.getEnrolmentList());
+        assertEquals(studentWithoutGuardian, readSavedAddressBook().getStudentList().getFirst());
     }
 
     @Test
