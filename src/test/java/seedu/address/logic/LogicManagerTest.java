@@ -116,8 +116,27 @@ public class LogicManagerTest {
     @Test
     public void execute_addDuplicateStudent_throwsCommandException() throws Exception {
         logic.execute(AddStudentCommand.COMMAND_WORD + " n/Aiden Tan gn/Tan Mei Ling gp/91234567");
-        assertCommandException(AddStudentCommand.COMMAND_WORD + " n/aiden  tan p/91234567",
+        assertCommandException(AddStudentCommand.COMMAND_WORD + " n/aiden  tan p/9123-4567",
                 AddStudentCommand.MESSAGE_DUPLICATE_STUDENT);
+    }
+
+    @Test
+    public void execute_addEditAndFindFormattedPhones_normalizesAndSaves() throws Exception {
+        logic.execute(AddStudentCommand.COMMAND_WORD
+                + " n/Aiden Tan p/+65 9123-4567 gn/Tan Mei Ling gp/9234 5678");
+        Student addedStudent = logic.getFilteredStudentList().getFirst();
+        assertEquals(new Phone("91234567"), addedStudent.getPhone().orElseThrow());
+        assertEquals(new Phone("92345678"), addedStudent.getGuardian().orElseThrow().getPhone());
+
+        logic.execute(EditStudentCommand.COMMAND_WORD
+                + " 1 p/9345-6789 gn/Tan Mei Ling gp/+65 9456-7890");
+        Student editedStudent = logic.getFilteredStudentList().getFirst();
+        assertEquals(new Phone("93456789"), editedStudent.getPhone().orElseThrow());
+        assertEquals(new Phone("94567890"), editedStudent.getGuardian().orElseThrow().getPhone());
+
+        logic.execute(FindStudentCommand.COMMAND_WORD + " p/+65 9345-6789");
+        assertEquals(List.of(editedStudent), logic.getFilteredStudentList());
+        assertEquals(List.of(editedStudent), readSavedAddressBook().getStudentList());
     }
 
     @Test

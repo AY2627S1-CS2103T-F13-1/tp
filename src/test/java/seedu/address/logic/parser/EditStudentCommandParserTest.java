@@ -53,8 +53,11 @@ public class EditStudentCommandParserTest {
     }
 
     @Test
-    public void parse_nameConnector_checkedAsName() {
-        assertParseFailure(parser, "1 n/Kumar s/o Ravi", Name.MESSAGE_CONSTRAINTS);
+    public void parse_nameConnector_returnsEditStudentCommand() {
+        EditStudentDescriptor descriptor = createDescriptor(new Name("Kumar s/o Ravi"), null, null);
+
+        assertParseSuccess(parser, "1 n/Kumar s/o Ravi", new EditStudentCommand(
+                Index.fromOneBased(1), descriptor));
     }
 
     @Test
@@ -86,9 +89,9 @@ public class EditStudentCommandParserTest {
     @Test
     public void parse_invalidValues_throwsParseException() {
         assertParseFailure(parser, "1 n/Aiden!", Name.MESSAGE_CONSTRAINTS);
-        assertParseFailure(parser, "1 p/phone", Phone.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, "1 p/phone", Phone.MESSAGE_STUDENT_PHONE_CONSTRAINTS);
         assertParseFailure(parser, "1 gn/Tan! gp/91234567", Name.MESSAGE_CONSTRAINTS);
-        assertParseFailure(parser, "1 gn/Tan gp/phone", Phone.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, "1 gn/Tan gp/phone", Phone.MESSAGE_STUDENT_PHONE_CONSTRAINTS);
     }
 
     @Test
@@ -101,6 +104,17 @@ public class EditStudentCommandParserTest {
 
         assertParseSuccess(parser,
                 "2 gp/91234567 p/92345678 n/Ryan Lim gn/Lim Mei Ling",
+                new EditStudentCommand(index, descriptor));
+    }
+
+    @Test
+    public void parse_formattedPhones_returnsEditStudentCommandWithNormalizedPhones() {
+        Index index = Index.fromOneBased(2);
+        Phone phone = new Phone("92345678");
+        Guardian guardian = new Guardian(new Name("Lim Mei Ling"), new Phone("91234567"));
+        EditStudentDescriptor descriptor = createDescriptor(null, phone, guardian);
+
+        assertParseSuccess(parser, "2 p/9234 5678 gn/Lim Mei Ling gp/+65 9123-4567",
                 new EditStudentCommand(index, descriptor));
     }
 
@@ -137,6 +151,16 @@ public class EditStudentCommandParserTest {
         allContactsDescriptor.setGuardian(null);
         assertParseSuccess(parser, "1 p/    gn/    gp/    ",
                 new EditStudentCommand(index, allContactsDescriptor));
+    }
+  
+    @Test
+    public void parse_realNameCharacters_returnsEditStudentCommand() {
+        Index index = Index.fromOneBased(1);
+        Guardian guardian = new Guardian(new Name("O'Connor"), new Phone("91234567"));
+        EditStudentDescriptor descriptor = createDescriptor(new Name("José Anne-Marie"), null, guardian);
+
+        assertParseSuccess(parser, "1 n/José Anne-Marie gn/O'Connor gp/91234567",
+                new EditStudentCommand(index, descriptor));
     }
 
     private static EditStudentDescriptor createDescriptor(Name name, Phone phone, Guardian guardian) {

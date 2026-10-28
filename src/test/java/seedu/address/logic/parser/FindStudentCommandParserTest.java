@@ -71,14 +71,12 @@ public class FindStudentCommandParserTest {
     }
 
     @Test
-    public void parse_nonAlphanumericKeyword_throwsParseException() {
+    public void parse_invalidNameKeyword_throwsParseException() {
         assertParseFailure(parser, " n/Tan!", invalidKeyword("Tan!"));
-        assertParseFailure(parser, " gn/Mei-Ling", invalidKeyword("Mei-Ling"));
-        assertParseFailure(parser, " n/Aiden gn/O'Neil", invalidKeyword("O'Neil"));
+        assertParseFailure(parser, " gn/Anne--Marie", invalidKeyword("Anne--Marie"));
+        assertParseFailure(parser, " n/Aiden gn/O''Neil", invalidKeyword("O''Neil"));
         assertParseFailure(parser, " n/Aiden Tan*", invalidKeyword("Tan*"));
-
-        // s/o in a searched name is a keyword with a slash, not an unknown s/ prefix
-        assertParseFailure(parser, " n/kumar s/o", invalidKeyword("s/o"));
+        assertParseFailure(parser, " n/Kumar and/or Ravi", invalidKeyword("and/or"));
     }
 
     @Test
@@ -152,6 +150,14 @@ public class FindStudentCommandParserTest {
 
         // multiple whitespaces between keywords
         assertParseSuccess(parser, " \t gn/  Tan \n Lim ", expectedCommand);
+    }
+
+    @Test
+    public void parse_realNameCharacters_returnsFindStudentCommand() {
+        assertParseSuccess(parser, " n/José Anne-Marie s/o", new FindStudentCommand(
+                new StudentContainsKeywordsPredicate(List.of("José", "Anne-Marie", "s/o"), List.of())));
+        assertParseSuccess(parser, " gn/O'Neil", new FindStudentCommand(
+                new StudentContainsKeywordsPredicate(List.of(), List.of("O'Neil"))));
     }
 
     @Test

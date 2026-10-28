@@ -77,7 +77,8 @@ public class EditStudentCommandParser implements Parser<EditStudentCommand> {
             throws ParseException {
         if (phoneValue.isPresent()) {
             String value = phoneValue.orElseThrow();
-            editStudentDescriptor.setPhone(value.isEmpty() ? null : ParserUtil.parsePhone(value));
+            editStudentDescriptor.setPhone(
+                    value.isEmpty() ? null : ParserUtil.parseStudentPhone(value));
         }
     }
 
@@ -99,7 +100,7 @@ public class EditStudentCommandParser implements Parser<EditStudentCommand> {
             return;
         }
         Name guardianName = ParserUtil.parseName(name);
-        Phone guardianPhone = ParserUtil.parsePhone(phone);
+        Phone guardianPhone = ParserUtil.parseStudentPhone(phone);
         editStudentDescriptor.setGuardian(new Guardian(guardianName, guardianPhone));
     }
 }

@@ -213,6 +213,11 @@ an immediately usable restore point. Repair the file while the app is closed, th
 
 Older students without IDs receive UUIDs in memory. These IDs are written on the next successful save;
 reopening an unchanged legacy file before that save generates new IDs. Lessons and enrolments require IDs.
+
+Stored student and guardian phone numbers use the legacy validation rule when loading, so numbers accepted
+by v1.4 remain available after upgrading. The stricter student-phone rule is applied only to new values parsed
+from `addstudent` and `editstudent` commands.
+
 `JsonSerializableAddressBook.toModelType()` remains a strict conversion API; normal tutor-data loading
 uses `AddressBookRecovery` instead. Partial recovery applies to tutor data, not user preferences.
 

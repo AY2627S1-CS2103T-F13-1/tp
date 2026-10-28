@@ -20,7 +20,7 @@ public class FindStudentCommandParser implements Parser<FindStudentCommand> {
 
     public static final String MESSAGE_EMPTY_KEYWORDS = "The search text cannot be empty.";
     public static final String MESSAGE_INVALID_KEYWORD =
-            "Search keywords should only contain alphanumeric characters, as names do: %1$s";
+            "Search keywords should be a valid name part or supported name connector: %1$s";
     public static final String MESSAGE_INVALID_PHONE_KEYWORD =
             "Phone search should contain only digits, spaces, hyphens and a leading +: %1$s";
 
@@ -55,8 +55,8 @@ public class FindStudentCommandParser implements Parser<FindStudentCommand> {
     }
 
     /**
-     * Splits the value of a name prefix into keywords. A keyword is a single word, so it is valid exactly
-     * when it is a valid name. Returns an empty list if the prefix is absent.
+     * Splits the value of a name prefix into keywords. A keyword is a name part or supported name connector.
+     * Returns an empty list if the prefix is absent.
      * @throws ParseException if the prefix is present with no keywords, or a keyword is not a valid name
      */
     private static List<String> parseNameKeywords(Optional<String> value) throws ParseException {
@@ -66,7 +66,7 @@ public class FindStudentCommandParser implements Parser<FindStudentCommand> {
 
         List<String> keywords = List.of(requireSearchText(value.get()).split("\\s+"));
         for (String keyword : keywords) {
-            if (!Name.isValidName(keyword)) {
+            if (!Name.isValidSearchKeyword(keyword)) {
                 throw new ParseException(String.format(MESSAGE_INVALID_KEYWORD, keyword));
             }
         }

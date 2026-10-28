@@ -3,6 +3,7 @@ package seedu.address.model.student;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.AppUtil.checkArgument;
 
+import java.text.Normalizer;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
@@ -70,7 +71,8 @@ public final class Student {
     }
 
     private String normalizedName() {
-        return name.fullName.trim().replaceAll(" +", " ").toLowerCase(Locale.ROOT);
+        return Normalizer.normalize(name.fullName, Normalizer.Form.NFC)
+                .trim().replaceAll(" +", " ").toLowerCase(Locale.ROOT);
     }
 
     private boolean hasPhone(Phone number) {
