@@ -6,6 +6,7 @@ import static seedu.address.testutil.TypicalPersons.ALICE;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -43,6 +44,54 @@ public class StudentStorageTest {
         var loaded = new JsonAddressBookStorage(file).readAddressBook().orElseThrow();
         assertTrue(loaded.getStudentList().isEmpty());
         assertTrue(loaded.getPersonList().contains(ALICE));
+    }
+
+    @Test
+    public void readAndSave_v14StudentPhones_preservesStudentsAndEnrolments() throws Exception {
+        Path sourceFile = testFolder.resolve("v14.json");
+        Files.writeString(sourceFile, """
+                {
+                  "students": [
+                    {"id":"00000000-0000-0000-0000-000000000001","name":"Aiden",
+                     "guardianName":"Mei","guardianPhone":"911"},
+                    {"id":"00000000-0000-0000-0000-000000000002","name":"Ben","phone":"6591234567"},
+                    {"id":"00000000-0000-0000-0000-000000000003","name":"Chloe","phone":"447700900123"},
+                    {"id":"00000000-0000-0000-0000-000000000004","name":"Devi","phone":"91234567"}
+                  ],
+                  "lessons": [
+                    {"id":"00000000-0000-0000-0000-000000000005","name":"Math",
+                     "day":"MONDAY","startTime":"1600","endTime":"1800"}
+                  ],
+                  "enrolments": [
+                    {"studentId":"00000000-0000-0000-0000-000000000001",
+                     "lessonId":"00000000-0000-0000-0000-000000000005"},
+                    {"studentId":"00000000-0000-0000-0000-000000000002",
+                     "lessonId":"00000000-0000-0000-0000-000000000005"},
+                    {"studentId":"00000000-0000-0000-0000-000000000003",
+                     "lessonId":"00000000-0000-0000-0000-000000000005"},
+                    {"studentId":"00000000-0000-0000-0000-000000000004",
+                     "lessonId":"00000000-0000-0000-0000-000000000005"}
+                  ]
+                }
+                """);
+        JsonAddressBookStorage sourceStorage = new JsonAddressBookStorage(sourceFile);
+
+        AddressBook loadedBook = new AddressBook(sourceStorage.readAddressBook().orElseThrow());
+
+        List<Student> loadedStudents = loadedBook.getStudentList();
+        assertEquals(4, loadedStudents.size());
+        assertEquals("911", loadedStudents.getFirst().getGuardian().orElseThrow().getPhone().value);
+        assertEquals(List.of("6591234567", "447700900123", "91234567"),
+                loadedStudents.subList(1, 4).stream()
+                        .map(student -> student.getPhone().orElseThrow().value)
+                        .toList());
+        assertEquals(4, loadedBook.getEnrolmentList().size());
+        assertEquals("", sourceStorage.getLoadWarning());
+
+        Path savedFile = testFolder.resolve("savedV14.json");
+        JsonAddressBookStorage savedStorage = new JsonAddressBookStorage(savedFile);
+        savedStorage.saveAddressBook(loadedBook);
+        assertEquals(loadedBook, new AddressBook(savedStorage.readAddressBook().orElseThrow()));
     }
 
     @Test

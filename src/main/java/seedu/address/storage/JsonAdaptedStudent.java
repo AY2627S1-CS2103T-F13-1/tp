@@ -49,9 +49,11 @@ class JsonAdaptedStudent {
         if (phone == null && guardianPhone == null) {
             throw new IllegalValueException(Student.MESSAGE_CONTACT_REQUIRED);
         }
-        if ((phone != null && !Phone.isValidStudentPhone(phone))
-                || (guardianPhone != null && !Phone.isValidStudentPhone(guardianPhone))) {
-            throw new IllegalValueException(Phone.MESSAGE_STUDENT_PHONE_CONSTRAINTS);
+        // Stored data uses the legacy rule so students saved by older releases remain loadable.
+        // Strict student-phone rules are enforced when addstudent and editstudent parse new input.
+        if ((phone != null && !Phone.isValidPhone(phone))
+                || (guardianPhone != null && !Phone.isValidPhone(guardianPhone))) {
+            throw new IllegalValueException(Phone.MESSAGE_CONSTRAINTS);
         }
         if (guardianName != null && !Name.isValidName(guardianName)) {
             throw new IllegalValueException(Name.MESSAGE_CONSTRAINTS);

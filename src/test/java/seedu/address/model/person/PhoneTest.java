@@ -71,6 +71,7 @@ public class PhoneTest {
         assertFalse(Phone.isValidStudentPhone("91"));
         assertFalse(Phone.isValidStudentPhone("911"));
         assertFalse(Phone.isValidStudentPhone("6591234567")); // a country code requires a leading plus sign
+        assertFalse(Phone.isValidStudentPhone("447700900123"));
         assertFalse(Phone.isValidStudentPhone("+65 9123456"));
         assertFalse(Phone.isValidStudentPhone("+65 912345678"));
 
