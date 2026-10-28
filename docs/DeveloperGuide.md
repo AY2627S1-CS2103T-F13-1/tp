@@ -917,14 +917,14 @@ testers are expected to do more *exploratory* testing.
 
    1. Download the JAR file and copy it into an empty folder.
 
-   1. Open a terminal in that folder and run `java -jar addressbook.jar`.<br>
+   1. Open a terminal in that folder and run `java -jar tutorReach.jar`.<br>
       Expected: The GUI opens with a set of sample students. The window size may not be optimal.
 
 1. Saving window preferences
 
    1. Resize the window to an optimal size. Move the window to a different location. Close the window.
 
-   1. Relaunch the app with `java -jar addressbook.jar`.<br>
+   1. Relaunch the app with `java -jar tutorReach.jar`.<br>
        Expected: The most recent window size and location are retained.
 
 1. Shutting down
