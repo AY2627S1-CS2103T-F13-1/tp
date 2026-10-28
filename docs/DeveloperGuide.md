@@ -1220,3 +1220,19 @@ editing files, and retain a separate copy of the original data.
 1. Save failure: with valid data loaded, make the destination unwritable using filesystem permissions
    supported by your OS, then try adding a student. Expect a save error, unchanged stored data and
    restoration of the previous displayed lists. Restore permissions before retrying.
+
+### Clearing all data
+
+1. Clearing with confirmation
+
+   1. Test case: `clear`<br>
+      Expected: Nothing is deleted. The status message warns that all students, lessons and
+      enrolments will be deleted and asks for `clear confirm`.
+
+   1. Test case: `clear confirm`<br>
+      Expected: All students, lessons and enrolments are deleted. The data file is overwritten with
+      the empty data, so back up the file first if you want to retain a copy.
+
+   1. Other incorrect commands to try: `clear 3`, `clear yes`<br>
+      Expected: Nothing is deleted. The status message shows the invalid command format error and
+      the `clear` usage instructions.
