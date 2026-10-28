@@ -13,14 +13,14 @@ public class ClearCommand extends Command {
     public static final String COMMAND_WORD = "clear";
     public static final String CONFIRMATION_WORD = "confirm";
 
-    public static final String MESSAGE_SUCCESS = "Cleared all students and lessons.";
+    public static final String MESSAGE_SUCCESS = "Cleared all students, lessons and enrolments.";
     public static final String MESSAGE_CONFIRMATION_REQUIRED =
             "Clearing will delete all students, lessons and enrolments, and cannot be undone. "
             + "Type 'clear confirm' to continue.";
-    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Deletes all students and lessons.\n"
+    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Deletes all students, lessons and enrolments.\n"
             + "Format: " + COMMAND_WORD + " [" + CONFIRMATION_WORD + "]\n"
             + "Run " + COMMAND_WORD + " first to see the warning, then " + COMMAND_WORD + " " + CONFIRMATION_WORD
-            + " to delete everything.";
+            + " to delete everything. Deletion cannot be undone and overwrites the data file.";
 
     private final boolean isConfirmed;
 
