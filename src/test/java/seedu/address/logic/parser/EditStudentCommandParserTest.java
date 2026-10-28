@@ -82,9 +82,9 @@ public class EditStudentCommandParserTest {
     @Test
     public void parse_invalidValues_throwsParseException() {
         assertParseFailure(parser, "1 n/Aiden!", Name.MESSAGE_CONSTRAINTS);
-        assertParseFailure(parser, "1 p/phone", Phone.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, "1 p/phone", Phone.MESSAGE_STUDENT_PHONE_CONSTRAINTS);
         assertParseFailure(parser, "1 gn/Tan! gp/91234567", Name.MESSAGE_CONSTRAINTS);
-        assertParseFailure(parser, "1 gn/Tan gp/phone", Phone.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, "1 gn/Tan gp/phone", Phone.MESSAGE_STUDENT_PHONE_CONSTRAINTS);
     }
 
     @Test
@@ -97,6 +97,17 @@ public class EditStudentCommandParserTest {
 
         assertParseSuccess(parser,
                 "2 gp/91234567 p/92345678 n/Ryan Lim gn/Lim Mei Ling",
+                new EditStudentCommand(index, descriptor));
+    }
+
+    @Test
+    public void parse_formattedPhones_returnsEditStudentCommandWithNormalizedPhones() {
+        Index index = Index.fromOneBased(2);
+        Phone phone = new Phone("92345678");
+        Guardian guardian = new Guardian(new Name("Lim Mei Ling"), new Phone("91234567"));
+        EditStudentDescriptor descriptor = createDescriptor(null, phone, guardian);
+
+        assertParseSuccess(parser, "2 p/9234 5678 gn/Lim Mei Ling gp/+65 9123-4567",
                 new EditStudentCommand(index, descriptor));
     }
 

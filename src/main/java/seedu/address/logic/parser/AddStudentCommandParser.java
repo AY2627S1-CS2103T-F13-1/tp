@@ -54,7 +54,7 @@ public class AddStudentCommandParser implements Parser<AddStudentCommand> {
         }
 
         Name name = ParserUtil.parseName(argMultimap.getValue(PREFIX_NAME).orElseThrow());
-        Phone phone = phoneValue.isPresent() ? ParserUtil.parsePhone(phoneValue.get()) : null;
+        Phone phone = phoneValue.isPresent() ? ParserUtil.parseStudentPhone(phoneValue.get()) : null;
         Guardian guardian = parseGuardian(guardianNameValue, guardianPhoneValue);
 
         return new AddStudentCommand(new Student(name, phone, guardian));
@@ -66,7 +66,7 @@ public class AddStudentCommandParser implements Parser<AddStudentCommand> {
             return null;
         }
         Name name = ParserUtil.parseName(nameValue.get());
-        Phone phone = ParserUtil.parsePhone(phoneValue.orElseThrow());
+        Phone phone = ParserUtil.parseStudentPhone(phoneValue.orElseThrow());
         return new Guardian(name, phone);
     }
 }
