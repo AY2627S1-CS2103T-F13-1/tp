@@ -123,6 +123,14 @@ public class ParserUtilTest {
     }
 
     @Test
+    public void parseStudentPhone_manyFormattedGroups_throwsParseExceptionWithoutOverflow() {
+        String longPhone = "1 ".repeat(2_999) + "1";
+
+        assertThrows(ParseException.class, Phone.MESSAGE_STUDENT_PHONE_CONSTRAINTS, ()
+            -> ParserUtil.parseStudentPhone(longPhone));
+    }
+
+    @Test
     public void parseStudentPhone_validValue_returnsNormalizedPhone() throws Exception {
         assertEquals(new Phone("91234567"), ParserUtil.parseStudentPhone(" +65 9123-4567 "));
         assertEquals(new Phone("+447700900123"), ParserUtil.parseStudentPhone("+44 7700-900123"));

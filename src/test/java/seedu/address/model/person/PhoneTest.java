@@ -63,6 +63,7 @@ public class PhoneTest {
         assertTrue(Phone.isValidPhone("+44 7700-900123")); // international number
         assertTrue(Phone.isValidPhone("+123")); // minimum international length
         assertTrue(Phone.isValidPhone("1".repeat(10_000))); // legacy phone value without a length limit
+        assertTrue(Phone.isValidPhone("1 ".repeat(2_999) + "1")); // many formatted groups
     }
 
     @Test
@@ -88,6 +89,13 @@ public class PhoneTest {
         assertTrue(Phone.isValidStudentPhone("+123"));
         assertTrue(Phone.isValidStudentPhone("+44 7700-900123"));
         assertTrue(Phone.isValidStudentPhone("+" + "1".repeat(15)));
+    }
+
+    @Test
+    public void isValidStudentPhone_manyFormattedGroups_returnsFalseWithoutOverflow() {
+        String longPhone = "1 ".repeat(2_999) + "1";
+
+        assertFalse(Phone.isValidStudentPhone(longPhone));
     }
 
     @Test

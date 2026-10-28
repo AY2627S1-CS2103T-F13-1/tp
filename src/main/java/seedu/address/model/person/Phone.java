@@ -16,7 +16,6 @@ public class Phone {
             "Singapore student and guardian phone numbers should contain 8 digits and may start with +65. "
                     + "International phone numbers should start with + and contain 3 to 15 digits. "
                     + "Spaces or hyphens may separate digit groups";
-    public static final String VALIDATION_REGEX = "\\+?[0-9]+(?:[ -][0-9]+)*";
     private static final String SINGAPORE_COUNTRY_CODE = "65";
     private static final int SINGAPORE_PHONE_DIGIT_COUNT = 8;
     private static final int MINIMUM_PHONE_DIGIT_COUNT = 3;
@@ -40,8 +39,25 @@ public class Phone {
      * Returns true if a given string is a valid phone number.
      */
     public static boolean isValidPhone(String test) {
-        return test.matches(VALIDATION_REGEX)
-                && removeFormatting(test).length() >= MINIMUM_PHONE_DIGIT_COUNT;
+        requireNonNull(test);
+        int currentIndex = test.startsWith("+") ? 1 : 0;
+        int digitCount = 0;
+        boolean previousCharacterIsDigit = false;
+
+        while (currentIndex < test.length()) {
+            char currentCharacter = test.charAt(currentIndex);
+            if (isAsciiDigit(currentCharacter)) {
+                digitCount++;
+                previousCharacterIsDigit = true;
+            } else if ((currentCharacter == ' ' || currentCharacter == '-') && previousCharacterIsDigit) {
+                previousCharacterIsDigit = false;
+            } else {
+                return false;
+            }
+            currentIndex++;
+        }
+
+        return previousCharacterIsDigit && digitCount >= MINIMUM_PHONE_DIGIT_COUNT;
     }
 
     /**
@@ -74,7 +90,18 @@ public class Phone {
     }
 
     private static String removeFormatting(String phone) {
-        return phone.replace("+", "").replace(" ", "").replace("-", "");
+        StringBuilder digits = new StringBuilder(phone.length());
+        for (int i = 0; i < phone.length(); i++) {
+            char currentCharacter = phone.charAt(i);
+            if (isAsciiDigit(currentCharacter)) {
+                digits.append(currentCharacter);
+            }
+        }
+        return digits.toString();
+    }
+
+    private static boolean isAsciiDigit(char character) {
+        return character >= '0' && character <= '9';
     }
 
     @Override

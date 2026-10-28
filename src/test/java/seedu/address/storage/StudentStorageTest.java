@@ -95,6 +95,17 @@ public class StudentStorageTest {
     }
 
     @Test
+    public void read_phoneWithManyFormattedGroups_loadsWithoutOverflow() throws Exception {
+        String longPhone = "1 ".repeat(2_999) + "1";
+        Path file = testFolder.resolve("longPhone.json");
+        Files.writeString(file, "{\"students\":[{\"name\":\"Aiden\",\"phone\":\"" + longPhone + "\"}]}");
+
+        var loaded = new JsonAddressBookStorage(file).readAddressBook().orElseThrow();
+
+        assertEquals("1".repeat(3_000), loaded.getStudentList().getFirst().getPhone().orElseThrow().value);
+    }
+
+    @Test
     public void read_invalidStudent_skipsRecord() throws Exception {
         String[] invalidRecords = {
             "null",
