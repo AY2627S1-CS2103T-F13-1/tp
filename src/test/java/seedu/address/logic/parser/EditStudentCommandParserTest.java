@@ -152,7 +152,7 @@ public class EditStudentCommandParserTest {
         assertParseSuccess(parser, "1 p/    gn/    gp/    ",
                 new EditStudentCommand(index, allContactsDescriptor));
     }
-  
+
     @Test
     public void parse_realNameCharacters_returnsEditStudentCommand() {
         Index index = Index.fromOneBased(1);

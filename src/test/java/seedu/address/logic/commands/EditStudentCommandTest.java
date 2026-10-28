@@ -184,7 +184,7 @@ public class EditStudentCommandTest {
 
         assertCommandSuccess(command, model, expectedMessage, expectedModel);
     }
-  
+
     @Test
     public void execute_realNameCharacters_success() {
         Name updatedName = new Name("José Anne-Marie");
@@ -199,8 +199,6 @@ public class EditStudentCommandTest {
 
         assertCommandSuccess(command, model, expectedMessage, expectedModel);
     }
-  
-  
 
     @Test
     public void execute_sameDetails_success() {
@@ -367,14 +365,14 @@ public class EditStudentCommandTest {
         assertThrows(CommandException.class, expectedMessage, () -> command.execute(model));
         assertEquals(expectedAddressBook, model.getAddressBook());
         assertEquals(expectedFilteredList, model.getFilteredStudentList());
-  }
+    }
 
-  /** Returns an address book containing the students used by these tests. */
-  private static AddressBook getStudentAddressBook() {
-      AddressBook addressBook = new AddressBook();
-      for (Student student : List.of(AIDEN, CHLOE, RYAN)) {
-          addressBook.addStudent(student);
-      }
-      return addressBook;
-  }
+    /** Returns an address book containing the students used by these tests. */
+    private static AddressBook getStudentAddressBook() {
+        AddressBook addressBook = new AddressBook();
+        for (Student student : List.of(AIDEN, CHLOE, RYAN)) {
+            addressBook.addStudent(student);
+        }
+        return addressBook;
+    }
 }
