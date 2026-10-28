@@ -27,6 +27,8 @@ import seedu.address.model.tag.Tag;
 public class ParserUtil {
 
     public static final String MESSAGE_INVALID_INDEX = "Index must be a positive integer.";
+    public static final int MAX_NAME_LENGTH = 70;
+    public static final String MESSAGE_NAME_TOO_LONG = "Names must be at most " + MAX_NAME_LENGTH + " characters long.";
     public static final String MESSAGE_INVALID_DAY =
             "Day must be a day's name or at least its first 3 letters, e.g. mon, tues or friday.";
     public static final String MESSAGE_INVALID_TIME =
@@ -63,6 +65,10 @@ public class ParserUtil {
         String trimmedName = name.trim();
         if (!Name.isValidName(trimmedName)) {
             throw new ParseException(Name.MESSAGE_CONSTRAINTS);
+        }
+        // only typed names are limited, so longer names saved by older releases still load
+        if (trimmedName.length() > MAX_NAME_LENGTH) {
+            throw new ParseException(MESSAGE_NAME_TOO_LONG);
         }
         return new Name(trimmedName);
     }
