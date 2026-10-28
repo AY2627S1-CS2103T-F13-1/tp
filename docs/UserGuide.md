@@ -270,6 +270,7 @@ Deletes a lesson using its displayed index. Students are kept, but their enrolme
 Format: `deletelesson INDEX`
 
 * `INDEX` refers to the current displayed lesson list and must be a positive integer.
+* A zero or negative index is rejected with `Index must be a positive integer.` A positive integer outside the displayed lesson list, including one too large for TutorReach to store, is rejected with `The lesson index provided is invalid.`
 * The result names the deleted lesson and lists the students who were unenrolled from it, if any.
 * If the students panel is showing only the students of that lesson (`liststudents l/INDEX`), all students are shown again.
 
