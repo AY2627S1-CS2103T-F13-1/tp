@@ -8,11 +8,14 @@ import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.BENSON;
 
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.GuiSettings;
+import seedu.address.model.lesson.Lesson;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
 import seedu.address.testutil.AddressBookBuilder;
 
@@ -71,6 +74,34 @@ public class ModelManagerTest {
     @Test
     public void getFilteredPersonList_modifyList_throwsUnsupportedOperationException() {
         assertThrows(UnsupportedOperationException.class, () -> modelManager.getFilteredPersonList().remove(0));
+    }
+
+    @Test
+    public void getFilteredLessonList_displaysTimetableOrder() {
+        Lesson physics = new Lesson("Physics", DayOfWeek.TUESDAY, LocalTime.of(17, 0), LocalTime.of(19, 0));
+        Lesson lateChemistry = new Lesson("Chemistry", DayOfWeek.MONDAY, LocalTime.of(16, 0),
+                LocalTime.of(18, 0));
+        Lesson chemistry = new Lesson("Chemistry", DayOfWeek.MONDAY, LocalTime.of(14, 0), LocalTime.of(16, 0));
+
+        modelManager.addLesson(physics);
+        modelManager.addLesson(lateChemistry);
+        modelManager.addLesson(chemistry);
+
+        assertEquals(List.of(chemistry, lateChemistry, physics), modelManager.getFilteredLessonList());
+    }
+
+    @Test
+    public void getFilteredLessonList_dayFilterKeepsTimetableOrder() {
+        Lesson biology = new Lesson("Biology", DayOfWeek.MONDAY, LocalTime.of(16, 0), LocalTime.of(18, 0));
+        Lesson chemistry = new Lesson("Chemistry", DayOfWeek.MONDAY, LocalTime.of(14, 0), LocalTime.of(16, 0));
+        Lesson physics = new Lesson("Physics", DayOfWeek.TUESDAY, LocalTime.of(17, 0), LocalTime.of(19, 0));
+
+        modelManager.addLesson(biology);
+        modelManager.addLesson(physics);
+        modelManager.addLesson(chemistry);
+        modelManager.updateFilteredLessonList(lesson -> lesson.getDay() == DayOfWeek.MONDAY);
+
+        assertEquals(List.of(chemistry, biology), modelManager.getFilteredLessonList());
     }
 
     @Test

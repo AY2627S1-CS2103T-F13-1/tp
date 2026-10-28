@@ -81,10 +81,12 @@ public class HandEditedDataFileTest {
             new Edit("empty file", text -> "", Outcome.UNREADABLE),
             new Edit("top-level array", text -> "[" + text + "]", Outcome.UNREADABLE));
 
-    // Formats the commands accept but the data file may not. The app may load or refuse them, but must keep data safe.
+    // Formats the commands accept, as a PE tester might hand-write them. Loading them keeps the data safe.
     private static final List<Edit> FORMAT_EDITS = List.of(
-            new Edit("day in lower case", json(root -> lesson(root, 0).put("day", "monday")), Outcome.SAFE),
-            new Edit("time with a colon", json(root -> lesson(root, 0).put("startTime", "10:00")), Outcome.SAFE),
+            new Edit("day as a command abbreviation", json(root -> lesson(root, 0).put("day", "mon")),
+                    Outcome.loadsWithoutWarning(3, 2, 2)),
+            new Edit("time with a colon", json(root -> lesson(root, 0).put("startTime", "10:00")),
+                    Outcome.loadsWithoutWarning(3, 2, 2)),
             new Edit("byte order mark", text -> "﻿" + text, Outcome.SAFE));
 
     @TempDir

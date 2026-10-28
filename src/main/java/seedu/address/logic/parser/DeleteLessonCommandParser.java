@@ -13,6 +13,7 @@ import seedu.address.logic.parser.exceptions.ParseException;
 public class DeleteLessonCommandParser implements Parser<DeleteLessonCommand> {
 
     private static final String POSITIVE_INTEGER_REGEX = "0*[1-9][0-9]*";
+    private static final String NON_POSITIVE_INTEGER_REGEX = "-[0-9]+|0+";
 
     /**
      * Parses the given {@code String} of arguments in the context of the DeleteLessonCommand
@@ -24,9 +25,13 @@ public class DeleteLessonCommandParser implements Parser<DeleteLessonCommand> {
             Index index = ParserUtil.parseIndex(args);
             return new DeleteLessonCommand(index);
         } catch (ParseException pe) {
-            if (args.trim().matches(POSITIVE_INTEGER_REGEX)) {
+            String trimmedArgs = args.trim();
+            if (trimmedArgs.matches(POSITIVE_INTEGER_REGEX)) {
                 // a well-formed index too large to parse is beyond any displayed list
                 throw new ParseException(Messages.MESSAGE_INVALID_LESSON_DISPLAYED_INDEX, pe);
+            }
+            if (trimmedArgs.matches(NON_POSITIVE_INTEGER_REGEX)) {
+                throw new ParseException(ParserUtil.MESSAGE_INVALID_INDEX, pe);
             }
             throw new ParseException(
                     String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteLessonCommand.MESSAGE_USAGE), pe);

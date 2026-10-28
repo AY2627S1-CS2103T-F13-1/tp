@@ -63,6 +63,8 @@ public class EditLessonCommandParser implements Parser<EditLessonCommand> {
         if (!editLessonDescriptor.isAnyFieldEdited()) {
             throw new ParseException(EditLessonCommand.MESSAGE_NOT_EDITED);
         }
+        ArgumentTokenizer.verifyNoUnknownPrefixes(args, EditLessonCommand.COMMAND_WORD,
+                PREFIX_NAME, PREFIX_DAY, PREFIX_START_TIME, PREFIX_END_TIME);
         if (editLessonDescriptor.getStartTime().isPresent()
                 && editLessonDescriptor.getStartTime().equals(editLessonDescriptor.getEndTime())) {
             throw new ParseException(Lesson.MESSAGE_TIME_CONSTRAINTS);

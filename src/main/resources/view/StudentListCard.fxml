@@ -15,13 +15,13 @@
       <Insets top="10" right="12" bottom="10" left="12" />
     </padding>
 
-    <HBox alignment="CENTER_LEFT" spacing="0.5">
+    <HBox alignment="TOP_LEFT" spacing="0.5">
       <Label fx:id="id" styleClass="cell_big_label">
         <minWidth>
           <Region fx:constant="USE_PREF_SIZE" />
         </minWidth>
       </Label>
-      <Label fx:id="studentName" styleClass="cell_big_label" text="\$studentName" />
+      <Label fx:id="studentName" styleClass="cell_big_label" text="\$studentName" wrapText="true" />
     </HBox>
 
     <Label styleClass="contact_section_label" text="Student" />
@@ -46,7 +46,7 @@
         <ColumnConstraints hgrow="ALWAYS" />
       </columnConstraints>
       <Label styleClass="contact_field_label" text="Name" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-      <Label fx:id="guardianName" styleClass="cell_small_label" text="\$guardianName"
+      <Label fx:id="guardianName" styleClass="cell_small_label" text="\$guardianName" wrapText="true"
              GridPane.columnIndex="1" GridPane.rowIndex="0" />
       <Label styleClass="contact_field_label" text="Phone" GridPane.columnIndex="0" GridPane.rowIndex="1" />
       <Label fx:id="guardianPhone" styleClass="cell_small_label" text="\$guardianPhone"

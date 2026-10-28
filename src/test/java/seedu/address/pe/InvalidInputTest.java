@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.io.TempDir;
 
+import seedu.address.logic.parser.ParserUtil;
 import seedu.address.storage.JsonAddressBookStorage;
 
 /**
@@ -54,12 +55,20 @@ public class InvalidInputTest {
     }
 
     @Test
-    public void execute_veryLongName_addsSearchesAndSavesWithoutCrash() throws Exception {
+    public void execute_veryLongName_rejectedWithoutCrash() throws Exception {
         PeTestHarness harness = PeTestHarness.withSampleData(temporaryFolder);
-        String name = "A".repeat(10_000);
+
+        harness.assertRejectedWithoutChange("addstudent n/" + "A".repeat(10_000) + " p/90000000");
+        harness.execute("findstudent n/" + "a".repeat(5_000));
+    }
+
+    @Test
+    public void execute_longestAllowedName_addsSearchesAndSaves() throws Exception {
+        PeTestHarness harness = PeTestHarness.withSampleData(temporaryFolder);
+        String name = "A".repeat(ParserUtil.MAX_NAME_LENGTH);
 
         harness.execute("addstudent n/" + name + " p/90000000");
-        harness.execute("findstudent n/" + "a".repeat(5_000));
+        harness.execute("findstudent n/" + "a".repeat(ParserUtil.MAX_NAME_LENGTH));
 
         assertEquals(1, harness.getModel().getFilteredStudentList().size());
         assertTrue(new JsonAddressBookStorage(harness.getDataFile()).readAddressBook().orElseThrow()

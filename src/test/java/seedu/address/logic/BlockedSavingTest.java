@@ -52,7 +52,8 @@ public class BlockedSavingTest {
         var displayedStudents = List.copyOf(model.getFilteredStudentList());
         var displayedLessons = List.copyOf(model.getFilteredLessonList());
         for (String command : List.of("addstudent n/Ben p/92345678", "deletestudent 1",
-                "addlesson n/Science d/tue st/1600 et/1800", "deletelesson 1", "enrol s/1 l/1", "clear")) {
+                "addlesson n/Science d/tue st/1600 et/1800", "deletelesson 1", "enrol s/1 l/1",
+                "clear confirm")) {
             CommandException error = assertThrows(CommandException.class, () -> logic.execute(command));
             assertTrue(error.getMessage().contains("Saving is disabled"));
             assertEquals(before, model.getAddressBook());
@@ -91,7 +92,7 @@ public class BlockedSavingTest {
     }
 
     @Test
-    public void clearEmptyBook_doesNotAttemptUnnecessaryWrite() throws Exception {
+    public void clearUnconfirmed_doesNotClearOrAttemptWrite() throws Exception {
         JsonAddressBookStorage storage = new JsonAddressBookStorage(folder.resolve("data.json")) {
             @Override
             public void saveAddressBook(ReadOnlyAddressBook data) throws IOException {
@@ -99,8 +100,9 @@ public class BlockedSavingTest {
             }
         };
         ModelManager model = new ModelManager();
+        model.addStudent(new Student(new Name("Aiden"), new Phone("91234567"), null));
         logic(model, storage).execute("clear");
-        assertEquals(new AddressBook(), model.getAddressBook());
+        assertEquals(1, model.getFilteredStudentList().size());
     }
 
     private LogicManager logic(ModelManager model, JsonAddressBookStorage storage) {

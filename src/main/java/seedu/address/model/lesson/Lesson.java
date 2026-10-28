@@ -20,7 +20,7 @@ import java.util.UUID;
 public final class Lesson {
     public static final String MESSAGE_NAME_CONSTRAINTS =
             "Lesson names must be 1 to 50 characters, start with a letter or digit, "
-            + "and contain only English letters, digits, spaces and - ' . , & ( ) +.";
+            + "and contain only English letters, digits, spaces and - : # @ ' . , & / ( ) +.";
     public static final String MESSAGE_TIME_CONSTRAINTS = "End time must not be the same as start time.";
     public static final String MESSAGE_TIME_PRECISION = "Times must be whole minutes, with no seconds.";
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HHmm");
@@ -42,7 +42,8 @@ public final class Lesson {
     public Lesson(UUID id, String name, DayOfWeek day, LocalTime startTime, LocalTime endTime) {
         requireAllNonNull(id, name, day, startTime, endTime);
         String normalizedName = name.trim().replaceAll(" +", " ");
-        checkArgument(normalizedName.matches("[A-Za-z0-9][A-Za-z0-9 '\\-.,&()+]{0,49}"), MESSAGE_NAME_CONSTRAINTS);
+        checkArgument(normalizedName.matches("[A-Za-z0-9][A-Za-z0-9 :#@'.\\-.,&/()+]{0,49}"),
+                MESSAGE_NAME_CONSTRAINTS);
         checkArgument(isWholeMinute(startTime) && isWholeMinute(endTime), MESSAGE_TIME_PRECISION);
         checkArgument(!endTime.equals(startTime), MESSAGE_TIME_CONSTRAINTS);
         this.id = id;
