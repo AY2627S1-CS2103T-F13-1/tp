@@ -80,7 +80,7 @@ Format: `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`
 
 * At least one phone number is required: the student's own `p/`, or a guardian's `gp/`.
 * `gn/` and `gp/` must be given together.
-* Names may contain letters from any language, digits and spaces. Apostrophes (`'` or `’`) and hyphens (`-`) are accepted between letters or digits. The connectors `s/o`, `d/o`, `a/l` and `a/p` are accepted between name parts. Names must not be blank. Phone numbers may contain only digits and must be at least 3 digits long.
+* Names may contain letters from any language, digits and spaces. Apostrophes (`'` or `’`) and hyphens (`-`) are accepted between letters or digits. The connectors `s/o`, `d/o`, `a/l` and `a/p` are accepted between name parts. Names must not be blank.
 * A Singapore phone number must contain eight digits. It may use spaces or hyphens between digit groups and may start with `+65`. TutorReach removes the formatting and Singapore country code before displaying or saving the number. For example, both `9123 4567` and `+65 9123-4567` are stored as `91234567`.
 * An international phone number must start with `+` and its country code, and contain between 3 and 15 digits. TutorReach removes spaces and hyphens but retains the leading `+` and country code. For example, `+44 7700-900123` is stored as `+447700900123`.
 * Student and guardian phone numbers saved by v1.4 remain available after upgrading. New or edited numbers must follow the rules above.
@@ -130,7 +130,9 @@ Format: `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHON
 
 * `INDEX` must be a positive integer and refers to the index shown in the current student list.
 * At least one optional field must be provided. Fields that are not provided remain unchanged.
-* `gn/GUARDIAN_NAME` and `gp/GUARDIAN_PHONE` must be provided together. They replace the student's existing guardian details.
+* Use `p/` without a value to remove the student's phone number.
+* `gn/GUARDIAN_NAME` and `gp/GUARDIAN_PHONE` must be provided together. They replace the student's existing guardian details. Use `gn/ gp/` without values to remove the guardian.
+* The edited student must retain at least one contact number: their own phone or a guardian's phone.
 * Names follow the same rules as for `addstudent`. Phone numbers follow the same formatting and normalization rules as for `addstudent`.
 * The edited student must not duplicate another student.
 * The student's identity and lesson enrolments are preserved.
@@ -140,6 +142,8 @@ Examples:
 
 * `editstudent 1 p/9234 5678` changes only the phone number of the first displayed student. The number is displayed and saved as `92345678`.
 * `editstudent 2 gn/Lim Mei gp/91234567` replaces only the guardian details of the second displayed student.
+* `editstudent 1 p/` removes the first displayed student's phone number if they have a guardian phone.
+* `editstudent 2 gn/ gp/` removes the second displayed student's guardian if they have their own phone.
 * `editstudent 1 n/O'Connor` changes the student's name to one containing an apostrophe.
 
 ### Finding students: `findstudent`
@@ -342,7 +346,7 @@ Action | Format, Examples
 **Add lesson** | `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`<br> e.g., `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800`
 **Clear** | `clear`
 **Delete lesson** | `deletelesson INDEX`<br> e.g., `deletelesson 2`
-**Edit student** | `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `editstudent 1 p/92345678`
+**Edit student** | `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `editstudent 1 p/92345678`; remove a phone with `editstudent 1 p/`
 **Edit lesson** | `editlesson INDEX [n/NAME] [d/DAY] [st/START_TIME] [et/END_TIME]`<br> e.g., `editlesson 1 d/tue st/1700 et/1900`
 **Find students** | `findstudent [n/NAME_KEYWORDS...] [gn/GUARDIAN_NAME_KEYWORDS...] [p/PHONE]`<br> e.g., `findstudent p/4567`
 **List students** | `liststudents [l/LESSON_INDEX]`<br> e.g., `liststudents l/1`

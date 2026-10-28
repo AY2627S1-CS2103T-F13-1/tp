@@ -269,9 +269,9 @@ Because an end time earlier than the start time means a lesson past midnight, sw
 
 The `editstudent` and `editlesson` commands replace immutable domain objects without changing their stable UUIDs.
 
-1. The command parser reads a positive displayed-list index and one or more optional fields. It rejects repeated prefixes, missing edit fields and invalid values. For `editstudent`, `gn/` and `gp/` must be given together because a guardian is replaced as one value.
+1. The command parser reads a positive displayed-list index and one or more optional fields. It rejects repeated prefixes, missing edit fields and invalid values. For `editstudent`, a blank `p/` removes the student's phone, while blank `gn/ gp/` values remove the guardian. The guardian prefixes must be given together with either two values or two blanks because a guardian is replaced as one value.
 1. The command resolves the index against the corresponding filtered list, so it edits the item the user can see rather than the same position in the complete list.
-1. The command creates a replacement object using the supplied values, the target's values for unspecified fields and the target's UUID.
+1. The command creates a replacement object using the supplied values, `null` for an optional contact being removed, the target's values for unspecified fields and the target's UUID. The student model rejects a replacement with no contact number.
 1. The model rejects a replacement that would duplicate another student or lesson, then replaces the target in the source list.
 1. The filtered list re-evaluates its predicate when the source item is replaced. An edited item therefore remains visible only if it still matches the active filter.
 
@@ -963,13 +963,22 @@ testers are expected to do more *exploratory* testing.
 
 1. Editing a student while all students are shown
 
-   1. Prerequisites: List all students using `liststudents`. The first student has a guardian and is enrolled in at least one lesson.
+   1. Prerequisites: List all students using `liststudents`. The first student has their own phone and a guardian, and is enrolled in at least one lesson.
 
    1. Test case: `editstudent 1 p/92345678`<br>
       Expected: Only the first student's phone number changes. Their name, guardian and lesson enrolments remain unchanged, and the status message shows the edited student's details.
 
    1. Test case: `editstudent 1 gn/Lim Mei gp/91234567`<br>
       Expected: Only the first student's guardian details are replaced. Their own details and lesson enrolments remain unchanged.
+
+   1. Test case: `editstudent 1 p/`<br>
+      Expected: The first student's own phone is removed. Their guardian, identity and lesson enrolments remain unchanged.
+
+   1. Test case: `editstudent 1 p/92345678 gn/ gp/`<br>
+      Expected: The first student's own phone is set to `92345678` and their guardian is removed. Their identity and lesson enrolments remain unchanged.
+
+   1. Test case: `editstudent 1 p/ gn/ gp/`<br>
+      Expected: No student is edited because the result would have no contact number. The status message states that at least one phone number is required.
 
    1. Test case: `editstudent 1 gn/Lim Mei`<br>
       Expected: No student is edited. The status message states that guardian name and guardian phone must be given together.
