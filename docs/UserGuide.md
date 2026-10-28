@@ -303,7 +303,7 @@ Only edit this file while the app is closed.
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
 If individual records are invalid or duplicated, the app loads the valid records and skips the invalid ones.
 Enrolments referencing missing students or lessons are also skipped. The first valid duplicate is kept.
-A warning in the message box reports how many records were skipped and where the original file was backed up.
+A warning in the message box lists the skipped records (up to five), why each was skipped, and the name of the backup of the original file.
 Backups are saved beside the data file as `addressbook.json.recovery-<unique number>.bak`; older backups are preserved.
 These files remain on disk after closing the app and are not automatically deleted. Open a backup in a text editor
 to review the original data, including skipped records. A recovery backup contains the original problems too;
@@ -316,6 +316,19 @@ Listing, searching, help, and exit remain available.<br>
 Only edit the file while the app is closed, and keep a backup before editing it.<br>
 Keep student and lesson IDs unchanged when editing details, as enrolments use those IDs to link records.
 </div>
+
+### Fixing skipped records
+
+If TutorReach finds a problem in your data file when it starts, it skips the records with problems and lists them in the message box, for example:
+
+```
+Warning: TutorReach skipped 1 record(s) in your data file because they had problems:
+- student 2 (Ben Koh): needs a phone number
+```
+
+Everything else works as usual, but the skipped records are removed from your data file the next time you make a change. To keep them, add them again manually with `addstudent` or `addlesson`, fixing the problem shown for each one, then `enrol` the students in their lessons again.
+
+The message box also shows where a copy of your original data file was saved, in case you need a skipped record's details.
 
 --------------------------------------------------------------------------------------------------------------------
 

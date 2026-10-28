@@ -7,9 +7,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.exceptions.DataLoadingException;
@@ -22,6 +24,7 @@ import seedu.address.model.ReadOnlyAddressBook;
 public class JsonAddressBookStorage {
 
     private static final Logger logger = LogsCenter.getLogger(JsonAddressBookStorage.class);
+    private static final int MAX_SKIPPED_RECORDS_SHOWN = 5;
 
     private final Path filePath;
     private final Set<Path> blockedSavePaths = new HashSet<>();
@@ -70,12 +73,13 @@ public class JsonAddressBookStorage {
             AddressBookRecovery recovered = AddressBookRecovery.read(new String(original, StandardCharsets.UTF_8));
             if (!recovered.getSkippedRecords().isEmpty()) {
                 Path backup = backupOriginal(normalizedPath, original);
-                loadWarning = "Warning: skipped " + recovered.getSkippedRecords().size()
-                        + " invalid or duplicate record(s), including any enrolments with missing references. "
-                        + "Valid records were loaded. The original data, including skipped records, is saved in: "
-                        + backup + "\nOpen this backup in a text editor to review the skipped information. "
-                        + "The backup remains on disk after closing the app and is not automatically deleted.";
-                logger.warning(loadWarning + " Skipped: " + recovered.getSkippedRecords());
+                loadWarning = "Warning: TutorReach skipped " + recovered.getSkippedRecords().size()
+                        + " record(s) in your data file because they had problems:\n"
+                        + formatSkippedRecords(recovered.getSkippedRecords())
+                        + "\nThese records will be removed from your data file the next time you make a change. "
+                        + "To keep them, add them again manually. Their original details are saved in:\n" + backup;
+                logger.warning(loadWarning + " Backup: " + backup + ". All skipped records: "
+                        + recovered.getSkippedRecords());
             }
             blockedSavePaths.remove(normalizedPath);
             return Optional.of(recovered.getAddressBook());
@@ -87,6 +91,18 @@ public class JsonAddressBookStorage {
             logger.warning(loadWarning + " " + e.getMessage());
             throw new DataLoadingException(e);
         }
+    }
+
+    /**
+     * Lists the first few skipped records, one per line, so the message box stays readable when many are skipped.
+     */
+    private static String formatSkippedRecords(List<String> skippedRecords) {
+        String shown = skippedRecords.stream()
+                .limit(MAX_SKIPPED_RECORDS_SHOWN)
+                .map(record -> "- " + record)
+                .collect(Collectors.joining("\n"));
+        int hidden = skippedRecords.size() - MAX_SKIPPED_RECORDS_SHOWN;
+        return shown + (hidden > 0 ? "\n- and " + hidden + " more, listed in the log file" : "");
     }
 
     /** Creates a unique backup of the exact bytes read, without replacing earlier backups. */
