@@ -85,8 +85,8 @@ Format: `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`
 * An international phone number must start with `+` and its country code, and contain between 3 and 15 digits. TutorReach removes spaces and hyphens but retains the leading `+` and country code. For example, `+44 7700-900123` is stored as `+447700900123`.
 * Student and guardian phone numbers saved by v1.4 remain available after upgrading. New or edited numbers must follow the rules above.
 * A student is a duplicate if another student has the same name, ignoring letter case and extra spaces, and shares at least one phone number with them (own or guardian's). Siblings with different names can share a guardian's number.
-* A student's own phone number cannot be used as any other student's or guardian's number, including their own guardian's number. A guardian's number can be shared by multiple guardians, such as for siblings.
-  Formatted versions of the same number, including a Singapore number written with `+65`, are treated as the same number.
+* A student's own phone number cannot be used as any other student's or guardian's number, including their own guardian's number. A guardian's number can be shared by multiple guardians, such as for siblings. Formatted versions of the same number, including a Singapore number written with `+65`, are treated as the same number.
+* A phone-number conflict rejects the entire command. The error message states whether the number belongs to another student, a guardian, or both contacts in the same record.
 * Adding a student clears the student filter, so all students are shown.
 
 Examples:

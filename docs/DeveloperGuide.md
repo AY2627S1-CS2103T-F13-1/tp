@@ -218,6 +218,9 @@ Stored student and guardian phone numbers use the legacy validation rule when lo
 by v1.4 remain available after upgrading. The stricter student-phone rule is applied only to new values parsed
 from `addstudent` and `editstudent` commands.
 
+Phone-role conflict validation is also command-only. Loading does not reject a legacy record merely because
+its phone number is reused in another contact role. New and edited records must follow the conflict rules below.
+
 `JsonSerializableAddressBook.toModelType()` remains a strict conversion API; normal tutor-data loading
 uses `AddressBookRecovery` instead. Partial recovery applies to tutor data, not user preferences.
 
@@ -273,14 +276,28 @@ The `editstudent` and `editlesson` commands replace immutable domain objects wit
 1. The command resolves the index against the corresponding filtered list, so it edits the item the user can see rather than the same position in the complete list.
 1. The command creates a replacement object using the supplied values, `null` for an optional contact being removed, the target's values for unspecified fields and the target's UUID. The student model rejects a replacement with no contact number.
 1. If the replacement equals the target, the command throws a `CommandException` explaining that the incoming changes are identical and asking the user to change at least one field. It does not call `Model#setStudent()` or `Model#setLesson()`, so `LogicManager` does not save the address book.
-1. Otherwise, the command rejects a replacement that would duplicate another student or lesson, then asks the model to replace the target in the source list.
+1. Otherwise, the command rejects a replacement that would duplicate another student or lesson. For a student, it also validates the final phone roles against the complete student list before asking the model to replace the target in the source list.
 1. The filtered list re-evaluates its predicate when the source item is replaced. An edited item therefore remains visible only if it still matches the active filter.
 
-The following sequence diagram shows a successful edit that changes data: `editstudent 1 p/92345678`. The `editlesson` command follows the same sequence using its lesson-specific parser, command, filtered list and model operation.
+The following sequence diagram shows a successful edit that changes data: `editstudent 1 p/97654321`. The `editlesson` command follows the same sequence using its lesson-specific parser, command, filtered list and model operation, but without the student phone-conflict validation.
 
 ![Interactions for editing a student](images/EditStudentSequenceDiagram.png)
 
 Enrolments link the stable student and lesson UUIDs. Because an edit retains the target UUID, existing enrolments continue to refer to the edited record without being recreated. This also keeps a student list filtered by lesson valid when that lesson is edited.
+
+### Preventing conflicting phone-number reuse
+
+`StudentPhoneConflictValidator` checks the complete candidate record before `addstudent` or `editstudent` changes the model. It compares the canonical `Phone` values created by the parser, so local Singapore formats such as `91234567`, `9123-4567` and `+65 9123 4567` are treated as the same number without another normalization step.
+
+The validator applies these rules:
+
+* A student phone must not match another student phone, any guardian phone or the guardian phone in the same record.
+* A guardian phone must not match any student phone.
+* Guardian phones may match other guardian phones because siblings may share a guardian.
+
+For an edit, the validator reads the source student list rather than the filtered display list, so hidden records still participate. It excludes the record with the candidate's UUID, which allows an unchanged phone to remain on that record. The duplicate-student check remains separate and runs first, preserving its existing error message.
+
+Validation finishes before `Model#addStudent()` or `Model#setStudent()` is called. A conflict therefore rejects the whole command without changing stored data or causing the active student filter to re-evaluate.
 
 ### Deleting a lesson
 
@@ -597,6 +614,12 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
+* 1d. A student phone would be reused by a student or guardian, a guardian phone would be reused by a student, or the student and guardian would have the same phone.
+
+    * 1d1. TutorReach shows an error message identifying the conflicting contact role.
+
+      Use case ends.
+
 **Use case: UC02 - Delete a student**
 
 **MSS**
@@ -827,6 +850,12 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
+* 3d. The final edited details would introduce a phone-number conflict.
+
+    * 3d1. TutorReach shows an error message identifying the conflicting contact role.
+
+      Use case ends.
+
 * 4a. The edited student no longer matches the active student filter.
 
   TutorReach removes the student from the displayed list after completing the edit.
@@ -898,6 +927,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 * **Enrol**: To link a student to a lesson, recording that the student attends that lesson
 * **Index**: The number shown next to a student or lesson in the currently displayed list, used in commands to refer to that student or lesson
 * **Duplicate student**: A student whose name matches an existing student's (ignoring case and extra spaces) and who shares at least one phone number with them, counting both student and guardian phone numbers
+* **Phone-number conflict**: Reuse of a phone number as more than one student contact or as both a student and guardian contact; guardian contacts may share a number
 * **Duplicate lesson**: A lesson whose name (ignoring case and extra spaces), day, start time and end time all match an existing lesson's
 
 --------------------------------------------------------------------------------------------------------------------
@@ -960,6 +990,34 @@ testers are expected to do more *exploratory* testing.
    1. Test case: `addstudent n/Marcus Lim p/88887777`<br>
       Expected: The student is added, since no phone number is shared.
 
+1. Preventing conflicting phone-number reuse
+
+   1. Prerequisites: Start with an empty address book. Execute `addstudent n/Aiden Tan p/91234567 gn/Tan Mei gp/92345678`.
+
+   1. Test case: `addstudent n/Ben Lim p/+65 9123-4567`<br>
+      Expected: No student is added. The status message shows `This phone number is already used by another student.`
+
+   1. Test case: `addstudent n/Ben Lim p/9234-5678`<br>
+      Expected: No student is added. The status message shows `This phone number is already used as a guardian contact.`
+
+   1. Test case: `addstudent n/Ben Lim gn/Lim Mei gp/+65 9123 4567`<br>
+      Expected: No student is added. The status message shows `This phone number is already used by another student.`
+
+   1. Test case: `addstudent n/Ben Lim p/93456789 gn/Lim Mei gp/+65 9345-6789`<br>
+      Expected: No student is added. The status message shows `A student and their guardian cannot use the same phone number.`
+
+   1. Test case: `addstudent n/Ben Lim gn/Lim Mei gp/94567890`, followed by `addstudent n/Chloe Lim gn/Mei Lim gp/+65 9456-7890`<br>
+      Expected: Both students are added because guardian phone numbers may be shared even when the guardian names differ.
+
+   1. Test case: `findstudent n/ben`, followed by `editstudent 1 p/91234567`<br>
+      Expected: No student is edited even though Aiden is hidden by the filter. The status message shows `This phone number is already used by another student.`
+
+   1. Test case: `editstudent 1 p/92345678`<br>
+      Expected: No student is edited. The status message shows `This phone number is already used as a guardian contact.`
+
+   1. Test case: `editstudent 1 p/94567890`<br>
+      Expected: No student is edited. The status message shows `A student and their guardian cannot use the same phone number.`
+
 ### Editing a student
 
 1. Editing a student while all students are shown
@@ -1002,7 +1060,7 @@ testers are expected to do more *exploratory* testing.
 
    1. Prerequisites: List the students in a lesson using `liststudents l/1`, with at least one student shown.
 
-   1. Test case: `editstudent 1 p/93456789`<br>
+   1. Test case: `editstudent 1 p/97654321`<br>
       Expected: The first displayed student is edited and remains in the list because the lesson enrolment is preserved.
 
 ### Deleting a student
