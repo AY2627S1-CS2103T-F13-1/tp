@@ -212,16 +212,6 @@ public class EditStudentCommandTest {
 
         assertCommandSuccess(command, model, expectedMessage, expectedModel);
     }
-        EditStudentCommand command = new EditStudentCommand(INDEX_FIRST_PERSON, descriptor);
-        Student editedStudent = new Student(AIDEN.getId(), AIDEN.getName(), updatedPhone,
-                AIDEN.getGuardian().orElseThrow());
-        Model expectedModel = new ModelManager(getStudentAddressBook(), new UserPrefs());
-        expectedModel.setStudent(AIDEN, editedStudent);
-        String expectedMessage = String.format(EditStudentCommand.MESSAGE_EDIT_STUDENT_SUCCESS,
-                Messages.format(editedStudent));
-
-        assertCommandSuccess(command, model, expectedMessage, expectedModel);
-    }
 
     @Test
     public void execute_sameDetails_throwsCommandExceptionWithoutReplacingStudent() {

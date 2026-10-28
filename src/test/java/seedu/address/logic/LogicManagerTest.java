@@ -227,7 +227,7 @@ public class LogicManagerTest {
                 EditStudentCommand.MESSAGE_IDENTICAL_CHANGES);
         assertEquals(List.of(aiden), logic.getFilteredStudentList());
     }
-  
+
     @Test
     public void execute_editStudentClearsContacts_preservesIdentityEnrolmentAndSaves() throws Exception {
         logic.execute(AddStudentCommand.COMMAND_WORD

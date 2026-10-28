@@ -144,8 +144,8 @@ Examples:
 * `editstudent 1 p/9234 5678` changes only the phone number of the first displayed student. The number is displayed and saved as `92345678`.
 * `editstudent 2 gn/Lim Mei gp/91234567` replaces only the guardian details of the second displayed student.
 * If the first student's phone number is already `92345678`, `editstudent 1 p/92345678` is rejected because the incoming changes are identical to the current student details.
-* `editstudent 1 p/` removes the first displayed student's phone number if they have a guardian phone.
-* `editstudent 2 gn/ gp/` removes the second displayed student's guardian if they have their own phone.
+* `editstudent 3 p/` removes the third displayed student's phone number if they have a guardian phone.
+* `editstudent 3 gn/ gp/` removes the third displayed student's guardian if they have their own phone.
 * `editstudent 1 n/O'Connor` changes the student's name to one containing an apostrophe.
 
 ### Finding students: `findstudent`

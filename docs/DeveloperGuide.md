@@ -977,6 +977,7 @@ testers are expected to do more *exploratory* testing.
 
    1. Test case: `editstudent 1 p/92345678 gn/Lim Wei gp/98765432`<br>
       Expected: The unchanged phone number is accepted, the guardian details change and the address book is saved because at least one resulting field is different.
+
    1. Test case: `editstudent 1 p/`<br>
       Expected: The first student's own phone is removed. Their guardian, identity and lesson enrolments remain unchanged.
 
