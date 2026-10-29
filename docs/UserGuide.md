@@ -51,6 +51,9 @@ TutorReach is a **desktop app for independent private tutors who teach secondary
 * Words in `UPPER_CASE` are the parameters to be supplied by the user.<br>
   For example, in `addstudent n/NAME`, replace `NAME` with a value such as `Aiden Tan`.
 
+* Command words can be typed in any letter case, but prefixes such as `n/` must be in lower case.<br>
+  For example, `AddLesson` and `ADDLESSON` work like `addlesson`.
+
 * Items in square brackets are optional.<br>
   For example, `listlessons [d/DAY]` can be used as `listlessons` or as `listlessons d/mon`.
 
