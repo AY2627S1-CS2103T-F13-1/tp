@@ -87,14 +87,15 @@ Format: `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`
 * Extra spaces between the words of a name are removed, so `n/Ann   Lee` is saved as `Ann Lee`. This also applies to guardian names and to `editstudent`.
 * A student is a duplicate if another student has the same name, ignoring letter case and extra spaces, and shares at least one phone number with them (own or guardian's). Siblings with different names can share a guardian's number.
 * If another student has the same name but no shared phone number, the student is still added, with a warning naming the other student, in case it is the same child added twice.
-  Formatted versions of the same number, including a Singapore number written with `+65`, are treated as the same number.
+* A student's own phone number cannot be used as any other student's or guardian's number, including their own guardian's number. A guardian's number can be shared by multiple guardians, such as for siblings. Formatted versions of the same number, including a Singapore number written with `+65`, are treated as the same number.
+* A phone-number conflict rejects the entire command. The error message states whether the number belongs to another student, a guardian, or both contacts in the same record.
 * Adding a student clears the student filter, so all students are shown.
 
 Examples:
 
 * `addstudent n/Marcus Lim gn/Lim Hui Min gp/98761234` adds a student whose guardian is the only contact.
 * `addstudent n/Daniel Ng p/98765432` adds a student with their own phone number and no guardian.
-* `addstudent n/José Anne-Marie p/91234567 gn/Kumar s/o Ravi gp/98765432` adds names containing accented letters, a hyphen and a local name connector.
+* `addstudent n/José Anne-Marie p/97654321 gn/Kumar s/o Ravi gp/98765432` adds names containing accented letters, a hyphen and a local name connector.
 * `addstudent n/Chloe Lim p/+65 9876-5432` adds a student with their own phone number and no guardian. The number is displayed and saved as `98765432`.
 
 ### Deleting a student: `deletestudent`
@@ -138,15 +139,16 @@ Format: `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHON
 * `gn/GUARDIAN_NAME` and `gp/GUARDIAN_PHONE` must be provided together. They replace the student's existing guardian details. Use `gn/ gp/` without values to remove the guardian.
 * The edited student must retain at least one contact number: their own phone or a guardian's phone.
 * Names follow the same rules as for `addstudent`. Phone numbers follow the same formatting and normalization rules as for `addstudent`.
+* The final edited contact details must follow the same phone-number sharing rules as for `addstudent`. An unchanged number on the edited student is allowed.
 * The edited student must not duplicate another student. If a renamed student has the same name as another student, the edit is still made, with a warning naming the other student.
 * The student's identity and lesson enrolments are preserved.
 * The active student filter remains in effect and is re-evaluated after the edit. For example, a renamed student may disappear from a name search that they no longer match.
 
 Examples:
 
-* `editstudent 1 p/9234 5678` changes only the phone number of the first displayed student. The number is displayed and saved as `92345678`.
+* `editstudent 1 p/9765 4321` changes only the phone number of the first displayed student. The number is displayed and saved as `97654321`.
 * `editstudent 2 gn/Lim Mei gp/91234567` replaces only the guardian details of the second displayed student.
-* If the first student's phone number is already `92345678`, `editstudent 1 p/92345678` is rejected because the incoming changes are identical to the current student details.
+* If the first student's phone number is already `97654321`, `editstudent 1 p/97654321` is rejected because the incoming changes are identical to the current student details.
 * `editstudent 3 p/` removes the third displayed student's phone number if they have a guardian phone.
 * `editstudent 3 gn/ gp/` removes the third displayed student's guardian if they have their own phone.
 * `editstudent 1 n/O'Connor` changes the student's name to one containing an apostrophe.
@@ -344,7 +346,7 @@ Action | Format, Examples
 **Add lesson** | `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`<br> e.g., `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800`
 **Clear** | `clear [confirm]`<br> e.g., `clear confirm`
 **Delete lesson** | `deletelesson INDEX`<br> e.g., `deletelesson 2`
-**Edit student** | `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `editstudent 1 p/92345678`; remove a phone with `editstudent 1 p/`
+**Edit student** | `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `editstudent 1 p/97654321`; remove a phone with `editstudent 1 p/`
 **Edit lesson** | `editlesson INDEX [n/NAME] [d/DAY] [st/START_TIME] [et/END_TIME]`<br> e.g., `editlesson 1 d/tue st/1700 et/1900`
 **Find students** | `findstudent [n/NAME_KEYWORDS...] [gn/GUARDIAN_NAME_KEYWORDS...] [p/PHONE]`<br> e.g., `findstudent p/4567`
 **List students** | `liststudents [l/LESSON_INDEX]`<br> e.g., `liststudents l/1`

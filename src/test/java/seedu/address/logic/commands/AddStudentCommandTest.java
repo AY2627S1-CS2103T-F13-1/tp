@@ -100,6 +100,63 @@ public class AddStudentCommandTest {
     }
 
     @Test
+    public void execute_sameStudentAndGuardianPhone_throwsCommandException() {
+        Model model = new ModelManager();
+        Student student = new Student(new Name("Chloe Tan"), new Phone("+65 9123-4567"),
+                new Guardian(new Name("Tan Mei Ling"), new Phone("91234567")));
+        String expectedMessage = StudentPhoneConflictValidator.MESSAGE_SAME_STUDENT_GUARDIAN_PHONE;
+
+        assertThrows(CommandException.class, expectedMessage, () -> new AddStudentCommand(student).execute(model));
+        assertTrue(model.getAddressBook().getStudentList().isEmpty());
+    }
+
+    @Test
+    public void execute_studentPhoneUsedByAnotherStudent_throwsCommandException() {
+        Model model = new ModelManager();
+        model.addStudent(RYAN);
+        Student student = new Student(new Name("Chloe Tan"), new Phone("+65 9321-0283"), null);
+        String expectedMessage = StudentPhoneConflictValidator.MESSAGE_PHONE_USED_BY_STUDENT;
+
+        assertThrows(CommandException.class, expectedMessage, () -> new AddStudentCommand(student).execute(model));
+        assertEquals(List.of(RYAN), model.getAddressBook().getStudentList());
+    }
+
+    @Test
+    public void execute_studentPhoneUsedByGuardian_throwsCommandException() {
+        Model model = new ModelManager();
+        model.addStudent(AIDEN);
+        Student student = new Student(new Name("Chloe Tan"), new Phone("91234567"), null);
+        String expectedMessage = StudentPhoneConflictValidator.MESSAGE_PHONE_USED_BY_GUARDIAN;
+
+        assertThrows(CommandException.class, expectedMessage, () -> new AddStudentCommand(student).execute(model));
+        assertEquals(List.of(AIDEN), model.getAddressBook().getStudentList());
+    }
+
+    @Test
+    public void execute_guardianPhoneUsedByStudent_throwsCommandException() {
+        Model model = new ModelManager();
+        model.addStudent(RYAN);
+        Student student = new Student(new Name("Chloe Tan"), null,
+                new Guardian(new Name("Tan Mei Ling"), new Phone("93210283")));
+        String expectedMessage = StudentPhoneConflictValidator.MESSAGE_PHONE_USED_BY_STUDENT;
+
+        assertThrows(CommandException.class, expectedMessage, () -> new AddStudentCommand(student).execute(model));
+        assertEquals(List.of(RYAN), model.getAddressBook().getStudentList());
+    }
+
+    @Test
+    public void execute_guardianPhoneUsedByGuardian_addSuccessful() throws Exception {
+        Model model = new ModelManager();
+        model.addStudent(AIDEN);
+        Student sibling = new Student(new Name("Chloe Tan"), null,
+                new Guardian(new Name("Tan Mei Ling"), new Phone("+65 9123-4567")));
+
+        new AddStudentCommand(sibling).execute(model);
+
+        assertEquals(List.of(AIDEN, sibling), model.getAddressBook().getStudentList());
+    }
+
+    @Test
     public void equals() {
         AddStudentCommand addAidenCommand = new AddStudentCommand(AIDEN);
         AddStudentCommand addRyanCommand = new AddStudentCommand(RYAN);

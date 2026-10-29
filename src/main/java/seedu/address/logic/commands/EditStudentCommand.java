@@ -93,6 +93,8 @@ public class EditStudentCommand extends Command {
             throw new CommandException(MESSAGE_DUPLICATE_STUDENT);
         }
 
+        StudentPhoneConflictValidator.validate(editedStudent, model.getAddressBook());
+
         // only a renamed student is checked, so later edits of the same student do not repeat the warning
         List<Student> sameNameStudents = studentToEdit.hasSameName(editedStudent)
                 ? List.of()

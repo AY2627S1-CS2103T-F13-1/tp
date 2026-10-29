@@ -53,6 +53,8 @@ public class AddStudentCommand extends Command {
             throw new CommandException(MESSAGE_DUPLICATE_STUDENT);
         }
 
+        StudentPhoneConflictValidator.validate(toAdd, model.getAddressBook());
+
         List<Student> sameNameStudents = model.getAddressBook().getStudentList().stream()
                 .filter(toAdd::hasSameName)
                 .toList();

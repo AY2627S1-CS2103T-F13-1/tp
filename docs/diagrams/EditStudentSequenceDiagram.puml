@@ -7,6 +7,7 @@ participant ":LogicManager" as LogicManager LOGIC_COLOR
 participant ":AddressBookParser" as AddressBookParser LOGIC_COLOR
 participant ":EditStudentCommandParser" as EditStudentCommandParser LOGIC_COLOR
 participant "e:EditStudentCommand" as EditStudentCommand LOGIC_COLOR
+participant ":StudentPhoneConflictValidator" as StudentPhoneConflictValidator LOGIC_COLOR
 participant "r:CommandResult" as CommandResult LOGIC_COLOR
 end box
 
@@ -15,10 +16,10 @@ participant "m:ModelManager" as ModelManager MODEL_COLOR
 participant "ab:AddressBook" as AddressBook MODEL_COLOR
 end box
 
-[-> LogicManager : execute("editstudent 1 p/92345678")
+[-> LogicManager : execute("editstudent 1 p/97654321")
 activate LogicManager
 
-LogicManager -> AddressBookParser : parseCommand("editstudent 1 p/92345678")
+LogicManager -> AddressBookParser : parseCommand("editstudent 1 p/97654321")
 activate AddressBookParser
 
 create EditStudentCommandParser
@@ -27,7 +28,7 @@ activate EditStudentCommandParser
 EditStudentCommandParser --> AddressBookParser
 deactivate EditStudentCommandParser
 
-AddressBookParser -> EditStudentCommandParser : parse("1 p/92345678")
+AddressBookParser -> EditStudentCommandParser : parse("1 p/97654321")
 activate EditStudentCommandParser
 
 create EditStudentCommand
@@ -67,6 +68,20 @@ activate AddressBook
 AddressBook --> EditStudentCommand : allStudents
 deactivate AddressBook
 EditStudentCommand -> EditStudentCommand : check for a duplicate student
+
+EditStudentCommand -> StudentPhoneConflictValidator : validate(editedStudent, ab)
+activate StudentPhoneConflictValidator
+StudentPhoneConflictValidator -> AddressBook : getStudentList()
+activate AddressBook
+AddressBook --> StudentPhoneConflictValidator : allStudents
+deactivate AddressBook
+StudentPhoneConflictValidator -> StudentPhoneConflictValidator : compare canonical phone roles
+note right of StudentPhoneConflictValidator
+  Exclude the edited student's UUID.
+  Allow guardian-to-guardian sharing.
+end note
+StudentPhoneConflictValidator --> EditStudentCommand
+deactivate StudentPhoneConflictValidator
 
 EditStudentCommand -> ModelManager : setStudent(target, editedStudent)
 activate ModelManager
