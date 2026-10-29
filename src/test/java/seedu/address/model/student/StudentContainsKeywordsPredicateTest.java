@@ -205,6 +205,41 @@ public class StudentContainsKeywordsPredicateTest {
     }
 
     @Test
+    public void test_nameKeywordsWithOtherAccentsOrApostrophes_returnsTrue() {
+        Student jose = new Student(new Name("José O'Connor"), new Phone("97654321"),
+                new Guardian(new Name("Zoë Núñez"), new Phone("98765432")));
+
+        // a keyword typed without accents matches an accented name, and the other way round
+        assertTrue(new StudentContainsKeywordsPredicate(List.of("jose"), List.of()).test(jose));
+        assertTrue(new StudentContainsKeywordsPredicate(List.of(), List.of("zoe", "nunez")).test(jose));
+        assertTrue(new StudentContainsKeywordsPredicate(List.of("Aidén"), List.of()).test(aiden));
+
+        // an accent typed as a separate combining mark matches the same accented letter
+        assertTrue(new StudentContainsKeywordsPredicate(List.of("José"), List.of()).test(jose));
+
+        // a curly apostrophe, as pasted from a document, matches a straight one, and the other way round
+        assertTrue(new StudentContainsKeywordsPredicate(List.of("O’Connor"), List.of()).test(jose));
+        Student liam = new Student(new Name("Liam O’Brien"), new Phone("81234567"), null);
+        assertTrue(new StudentContainsKeywordsPredicate(List.of("o'brien"), List.of()).test(liam));
+
+        // a different letter still does not match
+        assertFalse(new StudentContainsKeywordsPredicate(List.of("josa"), List.of()).test(jose));
+    }
+
+    @Test
+    public void test_nameKeywordsInOtherScripts_matchOnlyAsStored() {
+        // only Latin accents are ignored, so a name in another script is matched letter for letter
+        Student chen = new Student(new Name("陈小明"), new Phone("81234567"), null);
+        assertTrue(new StudentContainsKeywordsPredicate(List.of("小明"), List.of()).test(chen));
+        assertFalse(new StudentContainsKeywordsPredicate(List.of("小红"), List.of()).test(chen));
+
+        // a Tamil vowel sign is part of the letter, not an accent, so dropping it does not match
+        Student kumar = new Student(new Name("குமார்"), new Phone("82345678"), null);
+        assertTrue(new StudentContainsKeywordsPredicate(List.of("குமார்"), List.of()).test(kumar));
+        assertFalse(new StudentContainsKeywordsPredicate(List.of("கமர"), List.of()).test(kumar));
+    }
+
+    @Test
     public void test_studentAndGuardianKeywords_mustBothMatch() {
         assertTrue(new StudentContainsKeywordsPredicate(List.of("Aiden"), List.of("Ling")).test(aiden));
 
