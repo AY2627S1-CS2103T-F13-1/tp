@@ -137,6 +137,7 @@ public class MainWindow extends UiPart<Stage> {
     void showStartupMessage(String message) {
         if (!message.isEmpty()) {
             resultDisplay.setFeedbackToUser(message);
+            resultDisplay.scrollToTop();
         }
     }
 
@@ -144,8 +145,10 @@ public class MainWindow extends UiPart<Stage> {
      * Sets the default size based on {@code guiSettings}.
      */
     private void setWindowDefaultSize(GuiSettings guiSettings) {
-        primaryStage.setHeight(guiSettings.getWindowHeight());
-        primaryStage.setWidth(guiSettings.getWindowWidth());
+        double width = Math.max(primaryStage.getMinWidth(), guiSettings.getWindowWidth());
+        double height = Math.max(primaryStage.getMinHeight(), guiSettings.getWindowHeight());
+        primaryStage.setHeight(height);
+        primaryStage.setWidth(width);
         if (guiSettings.getWindowCoordinates() != null) {
             primaryStage.setX(guiSettings.getWindowCoordinates().getX());
             primaryStage.setY(guiSettings.getWindowCoordinates().getY());

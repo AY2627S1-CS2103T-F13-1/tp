@@ -30,6 +30,8 @@ import seedu.address.commons.exceptions.DataLoadingException;
 public class JsonUtil {
 
     private static final Logger logger = LogsCenter.getLogger(JsonUtil.class);
+    private static final String TEMPORARY_FILE_PREFIX = ".tutorreach-";
+    private static final String TEMPORARY_FILE_SUFFIX = ".tmp";
 
     private static ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules()
             .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
@@ -45,7 +47,7 @@ public class JsonUtil {
             throw new AccessDeniedException(target.toString());
         }
         Files.createDirectories(target.getParent());
-        Path temporary = Files.createTempFile(target.getParent(), ".tutorreach-", ".tmp");
+        Path temporary = Files.createTempFile(target.getParent(), TEMPORARY_FILE_PREFIX, TEMPORARY_FILE_SUFFIX);
         try {
             try (FileChannel channel = FileChannel.open(temporary, StandardOpenOption.WRITE)) {
                 ByteBuffer buffer = ByteBuffer.wrap(content);

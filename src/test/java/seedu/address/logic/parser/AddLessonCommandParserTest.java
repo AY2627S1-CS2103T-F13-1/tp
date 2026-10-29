@@ -104,7 +104,8 @@ public class AddLessonCommandParserTest {
     public void parse_validNames_returnsAddLessonCommand() {
         String longestName = "A".repeat(50);
         List<String> names = List.of("M", "3E Math", longestName, "Sec 3 A-Math (Group 2)",
-                "P5 English & Science", "O'Level Prep", "Math, Sec 4", "E.Math+");
+                "P5 English & Science", "O'Level Prep", "Math, Sec 4", "E.Math+",
+                "P5 Math: Fractions", "Group #1", "Sec 3 A-Math @ Bishan", "Sec 3 A/E Math");
 
         for (String name : names) {
             assertParseSuccess(parser, " n/" + name + DAY_DESC + START_DESC + END_DESC,
@@ -184,8 +185,8 @@ public class AddLessonCommandParserTest {
     public void parse_invalidName_throwsParseException() {
         String tooLongName = "A".repeat(51);
         // the last two are Chinese characters and an accented letter, written as escapes
-        List<String> names = List.of("", "-Math", "(Math)", "Math/Science", "Math@Home", "Math_1", "Math: Sec 3",
-                tooLongName, "\u6570\u5B66", "Caf\u00E9 Math");
+        List<String> names = List.of("", "-Math", "(Math)", "Math_1", tooLongName,
+                "\u6570\u5B66", "Caf\u00E9 Math");
 
         for (String name : names) {
             assertParseFailure(parser, " n/" + name + DAY_DESC + START_DESC + END_DESC,
@@ -196,10 +197,18 @@ public class AddLessonCommandParserTest {
     @Test
     public void parse_invalidDay_throwsParseException() {
         // "funday" is the Developer Guide's example of an invalid day
-        for (String day : List.of("", "funday", "mo", "m", "mon tue", "1")) {
+        for (String day : List.of("", "funday", "mo", "m", "1")) {
             assertParseFailure(parser, NAME_DESC + " d/" + day + START_DESC + END_DESC,
                     ParserUtil.MESSAGE_INVALID_DAY);
         }
+    }
+
+    @Test
+    public void parse_validDayFollowedByText_throwsParseExceptionNamingText() {
+        assertParseFailure(parser, NAME_DESC + " d/mon tue" + START_DESC + END_DESC,
+                String.format(ParserUtil.MESSAGE_UNEXPECTED_TEXT_AFTER_DAY, "mon", "tue"));
+        assertParseFailure(parser, NAME_DESC + DAY_DESC + " st/1600 xyz" + END_DESC,
+                String.format(ParserUtil.MESSAGE_UNEXPECTED_TEXT_AFTER_TIME, "1600", "xyz"));
     }
 
     @Test
@@ -275,11 +284,11 @@ public class AddLessonCommandParserTest {
     }
 
     @Test
-    public void parse_slashInLessonName_reportsNameRule() {
-        // a slash word inside a name is not a prefix, so the error is the lesson-name rule
+    public void parse_slashInLessonName_doesNotBecomePrefix() {
+        // a slash inside a name is not a prefix, so the whole value stays in the lesson name
         for (String name : List.of("Sec 3 Physics/Chem", "Sec 3 A/E Math", "Math and/or Science", "Physics/Chem")) {
-            assertParseFailure(parser, " n/" + name + DAY_DESC + START_DESC + END_DESC,
-                    Lesson.MESSAGE_NAME_CONSTRAINTS);
+            assertParseSuccess(parser, " n/" + name + DAY_DESC + START_DESC + END_DESC,
+                    addCommand(name, DayOfWeek.MONDAY, "16:00", "18:00"));
         }
     }
 

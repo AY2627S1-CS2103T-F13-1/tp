@@ -69,6 +69,23 @@ public class AddressBookRecoveryTest {
     }
 
     @Test
+    public void recover_skippedRecords_warningNamesFirstFiveWithReasons() throws Exception {
+        Path file = folder.resolve("addressbook.json");
+        Files.writeString(file, MIXED_DATA);
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(file);
+        storage.readAddressBook();
+        String warning = storage.getLoadWarning();
+
+        assertTrue(warning.contains("\n- student 2 (Ben): invalid phone number"));
+        assertTrue(warning.contains("\n- student 3: a value has the wrong type or format"));
+        assertTrue(warning.contains("\n- student 4 (aiden): duplicate student"));
+        assertTrue(warning.contains("\n- lesson 2 (Science): "));
+        assertTrue(warning.contains("\n- enrolment 2: refers to a missing student or lesson"));
+        assertFalse(warning.contains("enrolment 3"));
+        assertTrue(warning.contains("\n- and 1 more"));
+    }
+
+    @Test
     public void repeatedRecovery_neverOverwritesPreviousBackup() throws Exception {
         Path file = folder.resolve("addressbook.json");
         Files.writeString(file, MIXED_DATA);
@@ -166,7 +183,8 @@ public class AddressBookRecoveryTest {
                 "{\"persons\":[" + person + "," + person + "," + invalid + "," + bob + "]}");
         assertEquals(List.of("Alice", "Bob"), recovered.getAddressBook().getPersonList().stream()
                 .map(value -> value.getName().fullName).toList());
-        assertEquals(List.of("persons[2]", "persons[3]"), recovered.getSkippedRecords());
+        assertEquals(List.of("person 2 (Alice): duplicate person", "person 3 (Alice): a value is missing"),
+                recovered.getSkippedRecords());
         assertThrows(UnsupportedOperationException.class, () -> recovered.getSkippedRecords().clear());
     }
 

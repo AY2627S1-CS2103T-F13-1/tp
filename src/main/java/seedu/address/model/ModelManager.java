@@ -3,6 +3,7 @@ package seedu.address.model;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -11,6 +12,7 @@ import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.lesson.Enrolment;
@@ -30,6 +32,8 @@ public class ModelManager implements Model {
     private final FilteredList<Student> filteredStudents;
     private final ObservableList<Student> readOnlyFilteredStudents;
     private final FilteredList<Lesson> filteredLessons;
+    private final SortedList<Lesson> sortedLessons;
+    private final FilteredList<Lesson> sortedFilteredLessons;
     private final ObservableList<Lesson> readOnlyFilteredLessons;
     private UUID studentLessonFilter;
 
@@ -47,7 +51,13 @@ public class ModelManager implements Model {
         filteredStudents = new FilteredList<>(this.addressBook.getStudentList());
         readOnlyFilteredStudents = FXCollections.unmodifiableObservableList(filteredStudents);
         filteredLessons = new FilteredList<>(this.addressBook.getLessonList());
-        readOnlyFilteredLessons = FXCollections.unmodifiableObservableList(filteredLessons);
+        sortedLessons = new SortedList<>(filteredLessons, Comparator
+                .comparingInt((Lesson lesson) -> lesson.getDay().getValue())
+                .thenComparing(Lesson::getStartTime)
+                .thenComparing(Lesson::getEndTime)
+                .thenComparing(Lesson::getName, String.CASE_INSENSITIVE_ORDER));
+        sortedFilteredLessons = new FilteredList<>(sortedLessons, predicate -> true);
+        readOnlyFilteredLessons = FXCollections.unmodifiableObservableList(sortedFilteredLessons);
     }
 
     public ModelManager() {
@@ -213,6 +223,7 @@ public class ModelManager implements Model {
     @Override
     public void updateFilteredLessonList(Predicate<Lesson> predicate) {
         filteredLessons.setPredicate(requireNonNull(predicate));
+        sortedFilteredLessons.setPredicate(lesson -> true);
     }
 
     @Override

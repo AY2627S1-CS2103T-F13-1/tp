@@ -58,7 +58,7 @@ public class SafetyRegressionTest {
         seed();
         model.filterStudentsByLesson(lesson);
         AddressBook before = new AddressBook(model.getAddressBook());
-        for (String command : List.of("deletestudent 1", "clear")) {
+        for (String command : List.of("deletestudent 1", "clear confirm")) {
             assertThrows(CommandException.class, () -> failingLogic().execute(command));
             assertEquals(before, model.getAddressBook());
             assertEquals(alice.getId(), model.getFilteredStudentList().getFirst().getId());
@@ -94,6 +94,7 @@ public class SafetyRegressionTest {
 
     @Test
     public void execute_queries_doNotAttemptSave() throws Exception {
+        // Every save fails, so any of these commands throws if it tries to save
         seed();
         Logic logic = failingLogic();
         logic.execute("liststudents");

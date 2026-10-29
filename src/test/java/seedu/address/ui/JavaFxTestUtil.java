@@ -18,10 +18,15 @@ final class JavaFxTestUtil {
      * Initializes the JavaFX toolkit once for the UI test suite.
      */
     static synchronized void initializeToolkit() {
-        if (!isToolkitInitialized) {
-            Platform.startup(() -> Platform.setImplicitExit(false));
-            isToolkitInitialized = true;
+        if (isToolkitInitialized) {
+            return;
         }
+        try {
+            Platform.startup(() -> Platform.setImplicitExit(false));
+        } catch (IllegalStateException e) {
+            // Another test class has already started the shared toolkit.
+        }
+        isToolkitInitialized = true;
     }
 
     /**

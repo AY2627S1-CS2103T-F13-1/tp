@@ -290,7 +290,7 @@ Enrolments link the stable student and lesson UUIDs. Because an edit retains the
 
 ![Interactions inside the Logic and Model components for deletelesson](images/DeleteLessonSequenceDiagram.png)
 
-1. `DeleteLessonCommandParser` reads one positive index, and rejects anything else with the usage message.
+1. `DeleteLessonCommandParser` reads one positive index. It reports that an index must be positive for zero or negative integers, reports an invalid lesson index for positive integers too large to represent, and uses the command usage message for malformed input.
 1. `DeleteLessonCommand#execute()` looks the index up in the filtered lesson list, so it deletes the lesson the tutor sees at that position, even when `listlessons d/DAY` hides other lessons.
 1. Before deleting, it asks the address book for the students enrolled in the lesson, so that the result can name them.
 1. `ModelManager#deleteLesson()` calls `AddressBook#removeLesson()`, which removes the lesson's enrolments and then the lesson. If the student list shows only this lesson's students (`liststudents l/INDEX`), the model shows all students again, since that filter no longer refers to a lesson.
@@ -1016,11 +1016,14 @@ testers are expected to do more *exploratory* testing.
    1. Test case: `deletestudent 1`<br>
       Expected: The first student is deleted from the list and removed from every lesson card. The status message shows the deleted student's details.
 
-   1. Test case: `deletestudent 0`<br>
-      Expected: No student is deleted. The status message shows the invalid command format error.
+   1. Test case: `deletestudent 0`, followed by `deletestudent -1`<br>
+      Expected: No student is deleted. Both commands show `Index must be a positive integer.`
 
-   1. Other incorrect delete commands to try: `deletestudent`, `deletestudent abc`, `deletestudent 1 2`, `deletestudent x` (where x is larger than the list size)<br>
-      Expected: Similar to previous.
+   1. Other incorrect delete commands to try: `deletestudent`, `deletestudent abc`, `deletestudent 1 2`<br>
+      Expected: No student is deleted. The status message shows the invalid command format and usage instructions.
+
+   1. Test case: `deletestudent 99`, followed by `deletestudent 99999999999`<br>
+      Expected: No student is deleted. The status message shows `Student index exceeds the number of students in the displayed list.`
 
 1. Deleting a student while the students panel is filtered
 
@@ -1090,14 +1093,14 @@ testers are expected to do more *exploratory* testing.
    1. Test case: `deletelesson 1`<br>
       Expected: The first lesson is deleted. Its enrolled students are kept, but the lesson is removed from their cards. The status message lists the students who were unenrolled.
 
-   1. Test case: `deletelesson 0`<br>
-      Expected: No lesson is deleted. The status message shows the invalid command format error.
+   1. Test case: `deletelesson 0`, followed by `deletelesson -1`<br>
+      Expected: No lesson is deleted. Both commands show `Index must be a positive integer.`
 
    1. Other incorrect delete commands to try: `deletelesson`, `deletelesson abc`, `deletelesson 1 2`<br>
-      Expected: Similar to previous.
+      Expected: No lesson is deleted. The status message shows the invalid command format and usage instructions.
 
-   1. Test case: `deletelesson x` (where x is larger than the number of lessons shown)<br>
-      Expected: No lesson is deleted. The status message shows `The lesson index provided is invalid.`
+   1. Test case: `deletelesson 99`, followed by `deletelesson 99999999999`<br>
+      Expected: No lesson is deleted. The status message shows `Lesson index exceeds the number of lessons in the displayed list.`
 
 ### Editing a lesson
 
@@ -1219,3 +1222,19 @@ editing files, and retain a separate copy of the original data.
 1. Save failure: with valid data loaded, make the destination unwritable using filesystem permissions
    supported by your OS, then try adding a student. Expect a save error, unchanged stored data and
    restoration of the previous displayed lists. Restore permissions before retrying.
+
+### Clearing all data
+
+1. Clearing with confirmation
+
+   1. Test case: `clear`<br>
+      Expected: Nothing is deleted. The status message warns that all students, lessons and
+      enrolments will be deleted and asks for `clear confirm`.
+
+   1. Test case: `clear confirm`<br>
+      Expected: All students, lessons and enrolments are deleted. The data file is overwritten with
+      the empty data, so back up the file first if you want to retain a copy.
+
+   1. Other incorrect commands to try: `clear 3`, `clear yes`<br>
+      Expected: Nothing is deleted. The status message shows the invalid command format error and
+      the `clear` usage instructions.

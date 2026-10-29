@@ -2,6 +2,7 @@ package seedu.address.ui;
 
 import static java.util.Objects.requireNonNull;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.Region;
@@ -35,6 +36,19 @@ public class ResultDisplay extends UiPart<Region> {
     }
 
     /**
+     * Shows the start of the feedback, as setting the text leaves it scrolled to the end.
+     * Runs after the pending layout pass, which would otherwise scroll the wrapped text back down.
+     */
+    public void scrollToTop() {
+        Platform.runLater(() -> {
+            resultDisplay.applyCss();
+            resultDisplay.layout();
+            resultDisplay.positionCaret(0);
+            resultDisplay.setScrollTop(0);
+        });
+    }
+
+    /**
      * Adjusts the preferred height to reveal short feedback while keeping long feedback scrollable.
      */
     private void updatePreferredRowCount() {
@@ -50,11 +64,13 @@ public class ResultDisplay extends UiPart<Region> {
             Text singleLine = new Text("Ag");
             singleLine.setFont(resultDisplay.getFont());
             double lineHeight = singleLine.getLayoutBounds().getHeight();
-            int wrappedRows = (int) Math.ceil(renderedFeedback.getLayoutBounds().getHeight() / lineHeight);
+            int wrappedRows =
+                    (int) Math.ceil(renderedFeedback.getLayoutBounds().getHeight() / lineHeight);
             requiredRows = Math.max(requiredRows, wrappedRows);
         }
 
-        resultDisplay.setPrefRowCount(Math.max(MIN_VISIBLE_ROWS, Math.min(requiredRows, MAX_VISIBLE_ROWS)));
+        resultDisplay.setPrefRowCount(
+                Math.max(MIN_VISIBLE_ROWS, Math.min(requiredRows, MAX_VISIBLE_ROWS)));
     }
 
     private static int countExplicitLines(String feedback) {

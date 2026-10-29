@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.commons.core.index.Index;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.AddressBookParser;
@@ -111,9 +112,20 @@ public class UnenrolCommandTest {
         var command = parser.parseCommand("unenrol s/1 l/2");
         assertEquals(command, command);
         assertEquals(command, parser.parseCommand("unenrol l/2 s/1"));
+        assertEquals(command.hashCode(), parser.parseCommand("unenrol l/2 s/1").hashCode());
         assertNotEquals(command, parser.parseCommand("unenrol s/2 l/2"));
         assertNotEquals(command, parser.parseCommand("unenrol s/1 l/1"));
         assertNotEquals(command, parser.parseCommand("enrol s/1 l/2"));
         assertNotEquals(command, null);
+    }
+
+    @Test
+    public void toStringMethod() {
+        Index studentIndex = Index.fromOneBased(1);
+        Index lessonIndex = Index.fromOneBased(2);
+        UnenrolCommand command = new UnenrolCommand(studentIndex, lessonIndex);
+        String expected = UnenrolCommand.class.getCanonicalName()
+                + "{studentIndex=" + studentIndex + ", lessonIndex=" + lessonIndex + "}";
+        assertEquals(expected, command.toString());
     }
 }
