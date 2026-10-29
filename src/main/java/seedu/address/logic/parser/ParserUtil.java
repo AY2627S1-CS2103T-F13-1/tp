@@ -36,7 +36,7 @@ public class ParserUtil {
     public static final String MESSAGE_INVALID_DAY =
             "Day must be a day's name or at least its first 3 letters, e.g. mon, tues or friday.";
     public static final String MESSAGE_INVALID_TIME =
-            "Times must be 24-hour HHmm or HH:mm, from 0000 to 2359, e.g. 1600 or 16:00.";
+            "Times must be 24-hour HHMM or HH:MM, from 0000 to 2359, e.g. 1600 or 16:00.";
     public static final String MESSAGE_UNEXPECTED_TEXT_AFTER_DAY =
             "Unexpected text after the day %1$s: %2$s. Give one day only, and check for a missing prefix.";
     public static final String MESSAGE_UNEXPECTED_TEXT_AFTER_TIME =
