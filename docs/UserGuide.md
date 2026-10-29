@@ -26,7 +26,7 @@ TutorReach is a **desktop app for independent private tutors who teach secondary
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
    Some example commands you can try:
 
-   * `addstudent n/Ben Koh gn/Koh Siew Lan gp/98765432` : Adds a student named `Ben Koh` with a guardian.
+   * `addstudent n/Ben Koh gn/Koh Siew Lan gp/96543210` : Adds a student named `Ben Koh` with a guardian.
 
    * `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800` : Adds a weekly Monday lesson from 4:00 PM to 6:00 PM.
 
@@ -328,7 +328,7 @@ Open that file in a text editor to see the skipped details, then add them again 
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?<br>
-**A**: Install the app on the other computer and overwrite the data file it creates with the data file from your previous TutorReach home folder.
+**A**: Close TutorReach. Copy the `data` folder from your TutorReach home folder to the folder holding `tutorReach.jar` on the other computer, replacing any `data` folder there. The `data` folder holds your data file, `addressbook.json`. Then start TutorReach on the other computer.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -343,16 +343,17 @@ Open that file in a text editor to see the skipped details, then add them again 
 
 Action | Format, Examples
 --------|------------------
-**Add student** | `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `addstudent n/Marcus Lim gn/Lim Hui Min gp/98761234`
-**Delete student** | `deletestudent INDEX`<br> e.g., `deletestudent 3`
 **Add lesson** | `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`<br> e.g., `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800`
+**Add student** | `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `addstudent n/Marcus Lim gn/Lim Hui Min gp/98761234`
 **Clear** | `clear [confirm]`<br> e.g., `clear confirm`
 **Delete lesson** | `deletelesson INDEX`<br> e.g., `deletelesson 2`
-**Edit student** | `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `editstudent 1 p/97654321`; remove a phone with `editstudent 1 p/`
+**Delete student** | `deletestudent INDEX`<br> e.g., `deletestudent 3`
 **Edit lesson** | `editlesson INDEX [n/NAME] [d/DAY] [st/START_TIME] [et/END_TIME]`<br> e.g., `editlesson 1 d/tue st/1700 et/1900`
-**Find students** | `findstudent [n/NAME_KEYWORDS...] [gn/GUARDIAN_NAME_KEYWORDS...] [p/PHONE]`<br> e.g., `findstudent p/4567`
-**List students** | `liststudents [l/LESSON_INDEX]`<br> e.g., `liststudents l/1`
-**List lessons** | `listlessons [d/DAY]`<br> e.g., `listlessons d/mon`
+**Edit student** | `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `editstudent 1 p/97654321`; remove a phone with `editstudent 1 p/`
 **Enrol student** | `enrol s/STUDENT_INDEX l/LESSON_INDEX`<br> e.g., `enrol s/1 l/2`
-**Unenrol student** | `unenrol s/STUDENT_INDEX l/LESSON_INDEX`<br> e.g., `unenrol s/1 l/2`
+**Exit** | `exit`
+**Find students** | `findstudent [n/NAME_KEYWORDS...] [gn/GUARDIAN_NAME_KEYWORDS...] [p/PHONE]`<br> e.g., `findstudent p/4567`
 **Help** | `help`
+**List lessons** | `listlessons [d/DAY]`<br> e.g., `listlessons d/mon`
+**List students** | `liststudents [l/LESSON_INDEX]`<br> e.g., `liststudents l/1`
+**Unenrol student** | `unenrol s/STUDENT_INDEX l/LESSON_INDEX`<br> e.g., `unenrol s/1 l/2`
