@@ -1115,6 +1115,9 @@ testers are expected to do more *exploratory* testing.
    1. Test case: `addlesson n/Sec 4 E-Math d/Tuesday st/16:30 et/18:30`<br>
       Expected: A lesson card for Sec 4 E-Math (Tue 1630-1830) is added. A day may be written in full, and a time may contain a colon.
 
+   1. Test case: `addlesson n/Math d/mon st/1600et/1800`<br>
+      Expected: No lesson is added. The status message says that `et/END_TIME` is missing and that each prefix must have a space before it, followed by the command's usage.
+
    1. Other incorrect commands to try: `addlesson n/Math d/funday st/1600 et/1800`, `addlesson n/Math d/mo st/1600 et/1800`, `addlesson n/Math d/mon st/4pm et/1800`, `addlesson n/Math d/mon st/2400 et/2430`<br>
       Expected: No lesson is added. The status message shows the error for the invalid value: a day must be its name or at least its first three letters, so `funday` and `mo` are rejected, and a time must be `HHMM` or `HH:MM` from `0000` to `2359`.
 
