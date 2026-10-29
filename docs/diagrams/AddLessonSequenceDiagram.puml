@@ -14,6 +14,7 @@ participant ":AddressBook" as AddressBook MODEL_COLOR
 participant "other:Lesson" as Lesson MODEL_COLOR
 end box
 
+activate LogicManager
 LogicManager -> AddLessonCommand : execute(m)
 activate AddLessonCommand
 
@@ -58,4 +59,5 @@ deactivate CommandResult
 
 AddLessonCommand --> LogicManager : r
 deactivate AddLessonCommand
+deactivate LogicManager
 @enduml
