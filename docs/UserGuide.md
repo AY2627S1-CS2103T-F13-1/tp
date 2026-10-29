@@ -60,6 +60,8 @@ TutorReach is a **desktop app for independent private tutors who teach secondary
 * Parameters can be in any order.<br>
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
 
+* A word of one or two lower-case letters followed by `/`, such as `w/` or `x/`, or a prefix typed in capitals, such as `N/`, is read as a prefix. Such a word therefore cannot be part of a value, even where `/` is allowed, and if the command does not take that prefix, the error names it. For example, in a lesson name, write `Chem with Lab` instead of `Chem w/ Lab`. Longer words are fine, as in `Physics/Chem`.
+
 * Extraneous parameters for commands that take no parameters, such as `help` and `exit`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
 
@@ -182,7 +184,7 @@ Shows all lessons, or only lessons that start on a specified day.
 
 Format: `listlessons [d/DAY]`
 
-* `DAY` is a day of the week, written in full or as at least its first three letters, in any letter case; for example, `mon`, `tues`, `weds`, `Thurs` and `friday` all work.
+* `DAY` is a day of the week, written in full, as at least its first three letters, or as `weds`, in any letter case; for example, `mon`, `tues`, `weds`, `Thurs` and `friday` all work.
 * A lesson that runs past midnight belongs to the day on which it starts.
 * Lessons are listed by day, then start time, so the panel reads like a timetable.
 * Running `listlessons` without `d/` clears the lesson filter.
@@ -202,11 +204,11 @@ Format: `editlesson INDEX [n/NAME] [d/DAY] [st/START_TIME] [et/END_TIME]`
 * At least one optional field must be provided. Fields that are not provided remain unchanged.
 * `NAME` must be 1 to 50 characters long, start with a letter or digit, and contain only English letters, digits, spaces and `- : # @ ' . , & / ( ) +`.
 * If every supplied value already matches the lesson, the command is rejected with an error asking you to change at least one field. The data file is not rewritten.
-* `DAY` is a day of the week, written in full or as at least its first three letters, in any letter case; for example, `mon`, `tues`, `weds`, `Thurs` and `friday` all work.
+* `DAY` is a day of the week, written in full, as at least its first three letters, or as `weds`, in any letter case; for example, `mon`, `tues`, `weds`, `Thurs` and `friday` all work.
 * Times use the 24-hour clock, as `HHMM` or `HH:MM`, from `0000` to `2359`; for example, `1700` and `17:00` are both 5:00 PM. The start and end times cannot be equal. An end time earlier than the start time means that the lesson ends on the next day.
 * The edited lesson must not duplicate another lesson.
 * The lesson's identity and student enrolments are preserved. A student list filtered by this lesson remains valid.
-* If the edited lesson's time overlaps other lessons, it is still edited, and the result warns which lessons it clashes with, as `addlesson` does. Lessons hidden by `listlessons d/DAY` count too. The result also warns if the edit makes the lesson run past midnight for more than 12 hours.
+* If the edited lesson's time overlaps other lessons, it is still edited, and the result warns which lessons it clashes with, as `addlesson` does. Lessons hidden by `listlessons d/DAY` count too. The result also warns if the edited lesson ends on the next day and lasts more than 12 hours, as `addlesson` does.
 * The active lesson filter remains in effect and is re-evaluated after the edit. For example, changing the day may remove the lesson from the displayed day filter.
 
 Examples:
@@ -222,7 +224,7 @@ Adds a weekly lesson.
 
 Format: `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`
 
-* `DAY` is a day of the week, written in full or as at least its first three letters, in any letter case; for example, `mon`, `tues`, `weds`, `Thurs` and `friday` all work.
+* `DAY` is a day of the week, written in full, as at least its first three letters, or as `weds`, in any letter case; for example, `mon`, `tues`, `weds`, `Thurs` and `friday` all work.
 * `START_TIME` and `END_TIME` use the 24-hour clock, as `HHMM` or `HH:MM`; for example, `1600` and `16:00` are both 4:00 PM.
 * If the end time is earlier than the start time, the lesson is treated as ending on the next day. If such a lesson lasts more than 12 hours, the result warns that the start and end times may be swapped.
 * The start and end times must be different.

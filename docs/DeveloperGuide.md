@@ -238,13 +238,13 @@ The sequence diagram below shows how `AddLessonCommand` finds the clashes before
 1. `AddLessonCommand#execute()` first calls `ReadOnlyAddressBook#findDuplicateOf()`. A duplicate lesson is rejected with a `CommandException` that names the existing lesson, so it never gets a warning instead.
 1. It calls `ReadOnlyAddressBook#getClashingLessons()`, which checks the full lesson list, so lessons hidden by `listlessons d/DAY` still count. A lesson with the same ID as the given lesson is skipped, so that `editlesson` does not report a lesson as clashing with its own old times.
 1. `getClashingLessons()` compares each lesson with the new one using `Lesson#overlaps()`.
-1. The command adds the lesson, and returns a `CommandResult` whose second line names the clashing lessons, if any. `Messages#formatClashWarning()` formats that line.
+1. The command adds the lesson, and returns a `CommandResult` whose last line names the clashing lessons, if any. `Messages#formatClashWarning()` formats that line.
 
 `EditLessonCommand#execute()` follows the same steps after its own duplicate check. It passes the edited lesson, which keeps the original lesson's ID, to `getClashingLessons()`, and adds the same warning to its result. `EnrolCommand#execute()` keeps only the clashing lessons the student is enrolled in, and names them with `Messages#formatStudentClashWarning()`.
 
 A duplicate lesson is rejected with an error that names the existing lesson (`Messages#formatDuplicateLesson()`), and says how to show it if the lesson list's day filter hides it.
 
-Because an end time earlier than the start time means a lesson past midnight, swapped times are not rejected. Instead, `addlesson` and `editlesson` warn when a lesson runs past midnight for more than 12 hours (`Messages#formatLongLessonWarning()`), which is almost always a mistake, while late lessons of a few hours past midnight give no warning.
+Because an end time earlier than the start time means a lesson past midnight, swapped times are not rejected. Instead, `addlesson` and `editlesson` warn when a lesson that ends on the next day lasts more than 12 hours in total (`Messages#formatLongLessonWarning()`), which is almost always a mistake, while a short late lesson, such as one from 2200 to 0100, gives no warning.
 
 `Lesson#overlaps()` places each lesson on a weekly cycle of 7 × 24 × 60 minutes. A lesson starts at minute `(day - 1) × 1440 + start time` and lasts `(end time - start time) mod 1440` minutes, which also gives the right length for a lesson that runs past midnight. Two lessons overlap if either one starts before the other has ended, counting forward around the week. Counting around the week lets a Sunday lesson that runs past midnight clash with an early Monday lesson. A lesson that starts exactly when another ends does not clash with it.
 
