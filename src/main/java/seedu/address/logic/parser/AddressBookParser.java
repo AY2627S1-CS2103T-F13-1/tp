@@ -71,7 +71,7 @@ public class AddressBookParser {
             case DeleteLessonCommand.COMMAND_WORD -> new DeleteLessonCommandParser().parse(arguments);
             case EditLessonCommand.COMMAND_WORD -> new EditLessonCommandParser().parse(arguments);
             case ClearCommand.COMMAND_WORD -> {
-                if (arguments.trim().equals(ClearCommand.CONFIRMATION_WORD)) {
+                if (arguments.trim().equalsIgnoreCase(ClearCommand.CONFIRMATION_WORD)) {
                     yield ClearCommand.confirmed();
                 }
                 if (!arguments.trim().isEmpty()) {
