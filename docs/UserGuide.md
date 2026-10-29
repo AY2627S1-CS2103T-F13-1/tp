@@ -20,8 +20,8 @@ TutorReach is a **desktop app for independent private tutors who teach secondary
 1. Copy the file to the folder you want to use as the _home folder_ for TutorReach.
 
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar tutorReach.jar`.<br>
-   A GUI similar to the one below should appear in a few seconds. Note how the app contains some sample data.<br>
-   ![Ui](images/Ui.png)
+   The TutorReach window should appear in a few seconds. On the first launch, TutorReach loads sample data if no saved data file exists.<br>
+   ![TutorReach main window](images/Ui.png)
 
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
    Some example commands you can try:
@@ -32,11 +32,11 @@ TutorReach is a **desktop app for independent private tutors who teach secondary
 
    * `liststudents` : Lists all students.
 
-   * `deletestudent 3` : Deletes the 3rd student shown in the current list.
+   * `deletestudent 3` : Deletes the third displayed student, if at least three students are shown.
 
    * `clear` : Shows how to confirm deletion of all students and lessons.
 
-   * `exit` : Exits the app.
+   * `exit` : Closes TutorReach.
 
 1. Refer to the [Features](#features) section below for details of each command.
 
@@ -60,13 +60,19 @@ TutorReach is a **desktop app for independent private tutors who teach secondary
 * Items followed by `...` take one or more keywords separated by spaces.<br>
   For example, `n/NAME_KEYWORDS...` can be written as `n/aid` or as `n/aid chl`.
 
-* Parameters can be in any order.<br>
-  For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
+* Prefixed fields can be in any order. If a command requires an unprefixed `INDEX`, it must come first.<br>
+  For example, `editstudent 1 n/Aiden Tan p/92345678` and `editstudent 1 p/92345678 n/Aiden Tan` are equivalent.
 
-* A word of one or two lower-case letters followed by `/`, such as `w/` or `x/`, or a prefix typed in capitals, such as `N/`, is read as a prefix. Such a word therefore cannot be part of a value, even where `/` is allowed, and if the command does not take that prefix, the error names it. For example, in a lesson name, write `Chem with Lab` instead of `Chem w/ Lab`. Longer words are fine, as in `Physics/Chem`.
+* Each prefix can be supplied at most once. Repeated prefixes are rejected.
+
+* A word of one or two lower-case letters followed by `/`, such as `w/` or `x/`, or a prefix typed in capitals, such as `N/`, is read as a prefix. Such a word therefore cannot be part of a value, even where `/` is allowed, and if the command does not take that prefix, the error names it. For example, in a lesson name, write `Chem with Lab` instead of `Chem w/ Lab`. Longer words are fine, as in `Physics/Chem`. The supported name connectors `s/o`, `d/o`, `a/l` and `a/p` are exceptions and can be used in student and guardian names.
 
 * Extraneous parameters for commands that take no parameters, such as `help` and `exit`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
+
+* The commands in the [Command summary](#command-summary) are the supported commands. Legacy commands such as `add`, `edit`, `delete`, `find` and `list` are not supported; use `addstudent`, `editstudent`, `deletestudent`, `findstudent` and `liststudents` for students.
+
+* Examples throughout this guide illustrate individual commands. Their success depends on your current data, displayed indices and phone-number conflicts.
 
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
 </div>
@@ -85,7 +91,7 @@ Format: `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`
 
 * At least one phone number is required: the student's own `p/`, or a guardian's `gp/`.
 * `gn/` and `gp/` must be given together.
-* Names may contain letters from any language, digits and spaces. Apostrophes (`'` or `’`) and hyphens (`-`) are accepted between letters or digits. The connectors `s/o`, `d/o`, `a/l` and `a/p` are accepted between name parts. Names must not be blank.
+* Names may contain letters from any language, digits and spaces. Apostrophes (`'` or `’`) and hyphens (`-`) are accepted between letters or digits. The connectors `s/o`, `d/o`, `a/l` and `a/p` are accepted between name parts. Names must not be blank. New or edited names must be at most 70 characters long after extra spaces are removed.
 * A Singapore phone number must contain eight digits. It may use spaces or hyphens between digit groups and may start with `+65`. TutorReach removes the formatting and Singapore country code before displaying or saving the number. For example, both `9123 4567` and `+65 9123-4567` are stored as `91234567`.
 * An international phone number must start with `+` and its country code, and contain between 3 and 15 digits. TutorReach removes spaces and hyphens but retains the leading `+` and country code. For example, `+44 7700-900123` is stored as `+447700900123`.
 * Student and guardian phone numbers saved by v1.4 remain available after upgrading. New or edited numbers must follow the rules above.
@@ -99,9 +105,9 @@ Format: `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`
 Examples:
 
 * `addstudent n/Marcus Lim gn/Lim Hui Min gp/98761234` adds a student whose guardian is the only contact.
-* `addstudent n/Daniel Ng p/98765432` adds a student with their own phone number and no guardian.
+* `addstudent n/Daniel Ng p/87654321` adds a student with their own phone number and no guardian.
 * `addstudent n/José Anne-Marie p/97654321 gn/Kumar s/o Ravi gp/98765432` adds names containing accented letters, a hyphen and a local name connector.
-* `addstudent n/Chloe Lim p/+65 9876-5432` adds a student with their own phone number and no guardian. The number is displayed and saved as `98765432`.
+* `addstudent n/Chloe Lim p/+65 8899-0011` adds a student with their own phone number and no guardian. The number is displayed and saved as `88990011`.
 
 ### Deleting a student: `deletestudent`
 
@@ -114,6 +120,7 @@ Format: `deletestudent INDEX`
 * The student filter stays active after the deletion.
 
 Example:
+
 * `findstudent n/aiden` followed by `deletestudent 1` deletes the first student in the search results.
 
 ### Listing students: `liststudents`
@@ -176,6 +183,7 @@ Format: `findstudent [n/NAME_KEYWORDS...] [gn/GUARDIAN_NAME_KEYWORDS...] [p/PHON
 * Each search replaces the current student filter.
 
 Examples:
+
 * `findstudent n/aid chl` shows students whose names contain `aid` or `chl`.
 * `findstudent gn/tan` shows students whose guardian's name contains `tan`.
 * `findstudent p/4567` shows students whose own or guardian's phone number contains `4567`, such as a guardian who just called from an unsaved number.
@@ -210,7 +218,7 @@ Format: `editlesson INDEX [n/NAME] [d/DAY] [st/START_TIME] [et/END_TIME]`
 * `NAME` must be 1 to 50 characters long, start with a letter or digit, and contain only English letters, digits, spaces and `- : # @ ' . , & / ( ) +`.
 * If every supplied value already matches the lesson, the command is rejected with an error asking you to change at least one field. The data file is not rewritten.
 * `DAY` is a day of the week, written in full, as at least its first three letters, or as `weds`, in any letter case; for example, `mon`, `tues`, `weds`, `Thurs` and `friday` all work.
-* Times use the 24-hour clock, as `HHMM` or `HH:MM`, from `0000` to `2359`; for example, `1700` and `17:00` are both 5:00 PM. The start and end times cannot be equal. An end time earlier than the start time means that the lesson ends on the next day.
+* Times use the 24-hour clock, as `HHMM` or `HH:MM`, from `0000` to `2359`; for example, `1700` and `17:00` are both 5:00 PM. With a colon, a single-digit hour is accepted, such as `9:30`. The start and end times cannot be equal. An end time earlier than the start time means that the lesson ends on the next day.
 * The edited lesson must not duplicate another lesson.
 * The lesson's identity and student enrolments are preserved. A student list filtered by this lesson remains valid.
 * If the edited lesson's time overlaps other lessons, it is still edited, and the result warns which lessons it clashes with, as `addlesson` does. Lessons hidden by `listlessons d/DAY` count too. The result also warns if the edited lesson ends on the next day and lasts more than 12 hours, as `addlesson` does.
@@ -222,7 +230,6 @@ Examples:
 * `editlesson 2 n/Sec 3 Mathematics` changes only the name of the second displayed lesson.
 * If the first lesson is already on Tuesday, `editlesson 1 d/tue` is rejected because the incoming changes are identical to the current lesson details.
 
-
 ### Adding a lesson: `addlesson`
 
 Adds a weekly lesson.
@@ -230,7 +237,7 @@ Adds a weekly lesson.
 Format: `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`
 
 * `DAY` is a day of the week, written in full, as at least its first three letters, or as `weds`, in any letter case; for example, `mon`, `tues`, `weds`, `Thurs` and `friday` all work.
-* `START_TIME` and `END_TIME` use the 24-hour clock, as `HHMM` or `HH:MM`; for example, `1600` and `16:00` are both 4:00 PM.
+* `START_TIME` and `END_TIME` use the 24-hour clock, as `HHMM` or `HH:MM`, from `0000` to `2359`; for example, `1600` and `16:00` are both 4:00 PM. With a colon, a single-digit hour is accepted, such as `9:30`.
 * If the end time is earlier than the start time, the lesson is treated as ending on the next day. If such a lesson lasts more than 12 hours, the result warns that the start and end times may be swapped.
 * The start and end times must be different.
 * `NAME` must be 1 to 50 characters long, start with a letter or digit, and contain only English letters, digits, spaces and `- : # @ ' . , & / ( ) +`.
@@ -240,6 +247,7 @@ Format: `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`
 * Results mark a lesson that ends on the next day with `(next day)`, for example `Late Physics (Fri 2300-0100) (next day)`.
 
 Examples:
+
 * `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800` adds a Monday lesson from 4:00 PM to 6:00 PM.
 * `addlesson n/P5 Math: Fractions d/tue st/1400 et/1600` adds a Tuesday lesson whose name contains a colon.
 * `addlesson n/Late Physics d/fri st/2300 et/0100` adds a Friday lesson that ends on Saturday.
@@ -260,6 +268,7 @@ Format: `enrol s/STUDENT_INDEX l/LESSON_INDEX`
 * If the student already attends a lesson at an overlapping time, they are still enrolled, and the result warns which of their lessons clash.
 
 Example:
+
 * `enrol s/1 l/2` enrols the first displayed student in the second displayed lesson.
 
 ### Unenrolling a student: `unenrol`
@@ -275,6 +284,7 @@ Format: `unenrol s/STUDENT_INDEX l/LESSON_INDEX`
 * Both panel filters stay active. If the student list shows only that lesson's students, the unenrolled student disappears from it.
 
 Example:
+
 * `unenrol s/1 l/2` removes the first displayed student from the second displayed lesson.
 
 ### Deleting a lesson: `deletelesson`
@@ -289,29 +299,31 @@ Format: `deletelesson INDEX`
 * If the students panel is showing only the students of that lesson (`liststudents l/INDEX`), all students are shown again.
 
 Examples:
+
 * `deletelesson 2` deletes the second displayed lesson.
 * `listlessons d/mon` followed by `deletelesson 1` deletes the first lesson on Monday.
 
-### Clearing all entries: `clear`
+### Clearing all data: `clear`
 
 Deletes all students, lessons and enrolments. Confirmed deletion cannot be undone.
 
 Format: `clear [confirm]`
 
 `clear` does not delete anything immediately. It shows a warning and asks you to confirm.
-Run `clear confirm` to delete everything.
+Run `clear confirm` to delete everything. This command also works directly, without running `clear` first. Other arguments, such as `clear 1`, are rejected.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
 `clear confirm` deletes everything at once and cannot be undone. It also overwrites the data file. To keep a copy, back up the data file first.
 </div>
 
 Examples:
+
 * `clear` shows the deletion warning.
-* `clear confirm`, after `clear`, deletes all students, lessons and enrolments.
+* `clear confirm` deletes all students, lessons and enrolments.
 
-### Exiting the program: `exit`
+### Exiting TutorReach: `exit`
 
-Exits the program.
+Closes TutorReach.
 
 Format: `exit`
 
@@ -321,26 +333,36 @@ Only one TutorReach instance can use the same data folder at a time. If another 
 close it before starting a new one. The `data/addressbook.json.lock` file may remain after closing the app;
 this is normal and does not prevent reopening it.
 
-TutorReach automatically saves after commands that change data. Commands that leave the data unchanged, including edits whose supplied values already match the record, do not rewrite the data file. Viewing, searching, help and exit commands do not rewrite the data file. You do not need to save manually.
+TutorReach automatically saves after commands that change data. Commands that leave the data unchanged, including edits whose supplied values already match the record, do not rewrite the data file. Viewing, searching, `help` and `exit` do not rewrite the data file. You do not need to save manually.
+
+If saving fails, TutorReach reports the error and restores the data and list filters to their state before the command. Fix the reported storage problem before trying again.
+
+### Backing up and editing saved data
+
+TutorReach stores students, lessons and enrolments in `data/addressbook.json`, relative to the folder from which you launch TutorReach. Window preferences are stored separately in `preferences.json`.
+
+Close TutorReach before copying or editing these files. To back up your data, copy `data/addressbook.json` to a safe location. To restore it, replace `data/addressbook.json` with your backup while TutorReach is closed, then start TutorReach again. Replacing the file replaces the entire saved dataset.
+
+Manual edits must preserve valid JSON, unique field names, valid student and lesson details, and enrolment references to existing students and lessons. Using TutorReach's commands is the recommended way to change your data.
 
 ### If some data cannot be loaded
 
-If TutorReach cannot load some or all of your saved data when it starts, the message box says what was skipped and shows the path of a file containing your original data.
-Open that file in a text editor to see the skipped details, then add them again with commands such as `addstudent`, `addlesson` and `enrol`.
+* **Some records are invalid or duplicated:** TutorReach loads the valid records and shows a warning listing the first few skipped records. Before allowing changes, it saves the original file beside the data file as `addressbook.json.recovery-<unique number>.bak`. Skipped records are omitted from the data file on the next successful data change. Open the backup in a text editor to review their details, then recreate the missing students, lessons and enrolments using TutorReach's commands. Recovery backups remain on disk until you delete them.
+* **The file cannot be safely read, or a recovery backup cannot be created:** TutorReach starts with empty lists and disables changes to saved data to protect the original file. The warning shows the original file's path. Close TutorReach, fix the file or restore a valid backup, then restart TutorReach. Malformed JSON, duplicate JSON field names and a collection written as an object instead of a list can cause this behaviour.
 
 --------------------------------------------------------------------------------------------------------------------
 
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?<br>
-**A**: Close TutorReach. Copy the `data` folder from your TutorReach home folder to the folder holding `tutorReach.jar` on the other computer, replacing any `data` folder there. The `data` folder holds your data file, `addressbook.json`. Then start TutorReach on the other computer.
+**A**: Close TutorReach on both computers. Back up any existing data on the destination computer, then copy `data/addressbook.json` from the original computer to the `data` folder beside `tutorReach.jar` on the destination computer. Start TutorReach from that folder. You do not need to copy the lock file or `preferences.json`.
 
 --------------------------------------------------------------------------------------------------------------------
 
 ## Known issues
 
-1. **When using multiple screens**, if you move the application to a secondary screen, and later switch to using only the primary screen, the GUI will open off-screen. The remedy is to delete the `preferences.json` file created by the application before running the application again.
-2. **If you minimize the Help Window** and then run the `help` command (or use the `Help` menu, or the keyboard shortcut `F1`) again, the original Help Window will remain minimized, and no new Help Window will appear. The remedy is to manually restore the minimized Help Window.
+1. **When using multiple screens**, if you move the application to a secondary screen, and later switch to using only the primary screen, the GUI will open off-screen. The remedy is to close TutorReach, delete its `preferences.json` file, then start TutorReach again. This resets window preferences without deleting students or lessons.
+2. **If you minimize the help window** and then run the `help` command (or use the `Help` menu, or the keyboard shortcut `F1`) again, the original help window will remain minimized, and no new help window will appear. The remedy is to manually restore the minimized help window.
 
 --------------------------------------------------------------------------------------------------------------------
 
