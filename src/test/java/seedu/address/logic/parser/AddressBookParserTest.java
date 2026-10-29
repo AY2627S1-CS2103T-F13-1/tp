@@ -219,6 +219,14 @@ public class AddressBookParserTest {
     }
 
     @Test
+    public void parseCommand_clearConfirmInAnyLetterCase_confirmed() throws Exception {
+        // the confirmation word is part of the command, so it is read in any letter case like the command word
+        for (String command : List.of("clear CONFIRM", "CLEAR CONFIRM", "Clear Confirm")) {
+            assertEquals(ClearCommand.confirmed(), parser.parseCommand(command));
+        }
+    }
+
+    @Test
     public void parseCommand_commandWordInAnyLetterCase_argumentsKeepTheirCase() throws Exception {
         // only the command word is read in any letter case; the lesson name keeps its capitals
         Lesson lesson = new Lesson("Sec 3 A-Math", DayOfWeek.MONDAY, LocalTime.of(16, 0), LocalTime.of(18, 0));
