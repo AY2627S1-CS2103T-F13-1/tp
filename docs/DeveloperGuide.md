@@ -405,7 +405,7 @@ Step 4. Otherwise, the command calls `Model#unenrolStudent()`, which removes the
 1. It splits the `n/` and `gn/` values into keywords, each of which must be a valid name. It reads the `p/` value as one phone number: spaces, hyphens and a leading `+` are allowed, and only the digits are kept.
 1. `FindStudentCommand#execute()` passes the predicate to `Model#updateFilteredStudentList()`, which replaces any earlier search or lesson filter.
 
-The activity diagram below shows how the predicate decides whether a student matches. Name keywords ignore letter case and may match any part of a name.
+The activity diagram below shows how the predicate decides whether a student matches. Name keywords may match any part of a name. Before comparing, the predicate puts both the name and the keyword in lower case, removes the accents of Latin letters (combining marks U+0300 to U+036F after Unicode decomposition) and makes curly apostrophes straight, so `jose` finds `José`. Marks of other scripts, such as Tamil vowel signs, are kept, because they are part of their letters.
 
 ![How findstudent decides whether a student matches](images/FindStudentActivityDiagram.png)
 
@@ -1259,6 +1259,9 @@ testers are expected to do more *exploratory* testing.
 
    1. Test case: `findstudent p/91a`<br>
       Expected: The list is unchanged. The status message states that a phone search should contain only digits, spaces, hyphens and a leading `+`.
+
+   1. Test case: `addstudent n/José O'Connor p/97654321`, followed by `findstudent n/jose`, then `FindStudent n/O’Connor`<br>
+      Expected: Both searches show José O'Connor. Accents, the style of apostrophe and the letter case of the command word are ignored.
 
 ### Saving data
 
