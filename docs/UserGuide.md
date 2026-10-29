@@ -135,13 +135,13 @@ Examples:
 
 Edits the student at the specified index in the displayed student list.
 
-Format: `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`
+Format: `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME] [gp/GUARDIAN_PHONE]`
 
 * `INDEX` must be a positive integer and refers to the index shown in the current student list.
 * At least one optional field must be provided. Fields that are not provided remain unchanged.
 * If every supplied value already matches the student, the command is rejected with an error asking you to change at least one field. The data file is not rewritten.
 * Use `p/` without a value to remove the student's phone number.
-* `gn/GUARDIAN_NAME` and `gp/GUARDIAN_PHONE` must be provided together. They replace the student's existing guardian details. Use `gn/ gp/` without values to remove the guardian.
+* For an existing guardian, `gn/GUARDIAN_NAME` and `gp/GUARDIAN_PHONE` can be edited independently; the omitted detail is kept. Adding a guardian requires both fields. Use `gn/ gp/` without values to remove the guardian; a single blank guardian field is rejected.
 * The edited student must retain at least one contact number: their own phone or a guardian's phone.
 * Names follow the same rules as for `addstudent`. Phone numbers follow the same formatting and normalization rules as for `addstudent`.
 * The final edited contact details must follow the same phone-number sharing rules as for `addstudent`. An unchanged number on the edited student is allowed.
@@ -152,6 +152,7 @@ Format: `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHON
 Examples:
 
 * `editstudent 1 p/9765 4321` changes only the phone number of the first displayed student. The number is displayed and saved as `97654321`.
+* `editstudent 1 gp/91234567` changes only the existing guardian's phone number.
 * `editstudent 2 gn/Lim Mei gp/91234567` replaces only the guardian details of the second displayed student.
 * If the first student's phone number is already `97654321`, `editstudent 1 p/97654321` is rejected because the incoming changes are identical to the current student details.
 * `editstudent 3 p/` removes the third displayed student's phone number if they have a guardian phone.
@@ -353,7 +354,7 @@ Action | Format, Examples
 **Delete lesson** | `deletelesson INDEX`<br> e.g., `deletelesson 2`
 **Delete student** | `deletestudent INDEX`<br> e.g., `deletestudent 3`
 **Edit lesson** | `editlesson INDEX [n/NAME] [d/DAY] [st/START_TIME] [et/END_TIME]`<br> e.g., `editlesson 1 d/tue st/1700 et/1900`
-**Edit student** | `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `editstudent 1 p/97654321`; remove a phone with `editstudent 1 p/`
+**Edit student** | `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME] [gp/GUARDIAN_PHONE]`<br> e.g., `editstudent 1 p/97654321`; remove a phone with `editstudent 1 p/`
 **Enrol student** | `enrol s/STUDENT_INDEX l/LESSON_INDEX`<br> e.g., `enrol s/1 l/2`
 **Exit** | `exit`
 **Find students** | `findstudent [n/NAME_KEYWORDS...] [gn/GUARDIAN_NAME_KEYWORDS...] [p/PHONE]`<br> e.g., `findstudent p/4567`

@@ -53,6 +53,45 @@ public class EditStudentCommandTest {
     }
 
     @Test
+    public void execute_singleGuardianField_retainsOtherField() throws Exception {
+        Student student = new Student(new Name("Test Student"), null,
+                new Guardian(new Name("Original Guardian"), new Phone("91234567")));
+        AddressBook book = new AddressBook();
+        book.addStudent(student);
+        Model testModel = new ModelManager(book, new UserPrefs());
+        EditStudentDescriptor phone = new EditStudentDescriptor();
+        phone.setGuardianPhone(new Phone("92345678"));
+        new EditStudentCommand(INDEX_FIRST_PERSON, phone).execute(testModel);
+        Guardian updated = testModel.getFilteredStudentList().get(0).getGuardian().orElseThrow();
+        assertEquals(new Name("Original Guardian"), updated.getName());
+        assertEquals(new Phone("92345678"), updated.getPhone());
+
+        EditStudentDescriptor name = new EditStudentDescriptor();
+        name.setGuardianName(new Name("Updated Guardian"));
+        new EditStudentCommand(INDEX_FIRST_PERSON, name).execute(testModel);
+        updated = testModel.getFilteredStudentList().get(0).getGuardian().orElseThrow();
+        assertEquals(new Name("Updated Guardian"), updated.getName());
+        assertEquals(new Phone("92345678"), updated.getPhone());
+        assertEquals(student.getId(), testModel.getFilteredStudentList().get(0).getId());
+    }
+
+    @Test
+    public void execute_singleGuardianFieldWithoutExistingGuardian_rejected() {
+        for (boolean editName : List.of(true, false)) {
+            EditStudentDescriptor descriptor = new EditStudentDescriptor();
+            if (editName) {
+                descriptor.setGuardianName(new Name("New Guardian"));
+            } else {
+                descriptor.setGuardianPhone(new Phone("92345678"));
+            }
+            EditStudentCommand command = new EditStudentCommand(Index.fromOneBased(3), descriptor);
+            assertThrows(CommandException.class,
+                    EditStudentCommand.MESSAGE_GUARDIAN_REQUIRED, () -> command.execute(model));
+            assertEquals(RYAN, model.getFilteredStudentList().get(2));
+        }
+    }
+
+    @Test
     public void constructor_nullIndex_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> new EditStudentCommand(null, new EditStudentDescriptor()));
     }
