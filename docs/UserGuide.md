@@ -26,7 +26,7 @@ TutorReach is a **desktop app for independent private tutors who teach secondary
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
    Some example commands you can try:
 
-   * `addstudent n/Ben Koh gn/Koh Siew Lan gp/98765432` : Adds a student named `Ben Koh` with a guardian.
+   * `addstudent n/Ben Koh gn/Koh Siew Lan gp/96543210` : Adds a student named `Ben Koh` with a guardian.
 
    * `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800` : Adds a weekly Monday lesson from 4:00 PM to 6:00 PM.
 
@@ -62,6 +62,8 @@ TutorReach is a **desktop app for independent private tutors who teach secondary
 
 * Parameters can be in any order.<br>
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
+
+* A word of one or two lower-case letters followed by `/`, such as `w/` or `x/`, or a prefix typed in capitals, such as `N/`, is read as a prefix. Such a word therefore cannot be part of a value, even where `/` is allowed, and if the command does not take that prefix, the error names it. For example, in a lesson name, write `Chem with Lab` instead of `Chem w/ Lab`. Longer words are fine, as in `Physics/Chem`.
 
 * Extraneous parameters for commands that take no parameters, such as `help` and `exit`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
@@ -186,7 +188,7 @@ Shows all lessons, or only lessons that start on a specified day.
 
 Format: `listlessons [d/DAY]`
 
-* `DAY` is a day of the week, written in full or as at least its first three letters, in any letter case; for example, `mon`, `tues`, `weds`, `Thurs` and `friday` all work.
+* `DAY` is a day of the week, written in full, as at least its first three letters, or as `weds`, in any letter case; for example, `mon`, `tues`, `weds`, `Thurs` and `friday` all work.
 * A lesson that runs past midnight belongs to the day on which it starts.
 * Lessons are listed by day, then start time, so the panel reads like a timetable.
 * Running `listlessons` without `d/` clears the lesson filter.
@@ -206,11 +208,11 @@ Format: `editlesson INDEX [n/NAME] [d/DAY] [st/START_TIME] [et/END_TIME]`
 * At least one optional field must be provided. Fields that are not provided remain unchanged.
 * `NAME` must be 1 to 50 characters long, start with a letter or digit, and contain only English letters, digits, spaces and `- : # @ ' . , & / ( ) +`.
 * If every supplied value already matches the lesson, the command is rejected with an error asking you to change at least one field. The data file is not rewritten.
-* `DAY` is a day of the week, written in full or as at least its first three letters, in any letter case; for example, `mon`, `tues`, `weds`, `Thurs` and `friday` all work.
+* `DAY` is a day of the week, written in full, as at least its first three letters, or as `weds`, in any letter case; for example, `mon`, `tues`, `weds`, `Thurs` and `friday` all work.
 * Times use the 24-hour clock, as `HHMM` or `HH:MM`, from `0000` to `2359`; for example, `1700` and `17:00` are both 5:00 PM. The start and end times cannot be equal. An end time earlier than the start time means that the lesson ends on the next day.
 * The edited lesson must not duplicate another lesson.
 * The lesson's identity and student enrolments are preserved. A student list filtered by this lesson remains valid.
-* If the edited lesson's time overlaps other lessons, it is still edited, and the result warns which lessons it clashes with, as `addlesson` does. Lessons hidden by `listlessons d/DAY` count too. The result also warns if the edit makes the lesson run past midnight for more than 12 hours.
+* If the edited lesson's time overlaps other lessons, it is still edited, and the result warns which lessons it clashes with, as `addlesson` does. Lessons hidden by `listlessons d/DAY` count too. The result also warns if the edited lesson ends on the next day and lasts more than 12 hours, as `addlesson` does.
 * The active lesson filter remains in effect and is re-evaluated after the edit. For example, changing the day may remove the lesson from the displayed day filter.
 
 Examples:
@@ -226,7 +228,7 @@ Adds a weekly lesson.
 
 Format: `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`
 
-* `DAY` is a day of the week, written in full or as at least its first three letters, in any letter case; for example, `mon`, `tues`, `weds`, `Thurs` and `friday` all work.
+* `DAY` is a day of the week, written in full, as at least its first three letters, or as `weds`, in any letter case; for example, `mon`, `tues`, `weds`, `Thurs` and `friday` all work.
 * `START_TIME` and `END_TIME` use the 24-hour clock, as `HHMM` or `HH:MM`; for example, `1600` and `16:00` are both 4:00 PM.
 * If the end time is earlier than the start time, the lesson is treated as ending on the next day. If such a lesson lasts more than 12 hours, the result warns that the start and end times may be swapped.
 * The start and end times must be different.
@@ -330,7 +332,7 @@ Open that file in a text editor to see the skipped details, then add them again 
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?<br>
-**A**: Install the app on the other computer and overwrite the data file it creates with the data file from your previous TutorReach home folder.
+**A**: Close TutorReach. Copy the `data` folder from your TutorReach home folder to the folder holding `tutorReach.jar` on the other computer, replacing any `data` folder there. The `data` folder holds your data file, `addressbook.json`. Then start TutorReach on the other computer.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -345,16 +347,17 @@ Open that file in a text editor to see the skipped details, then add them again 
 
 Action | Format, Examples
 --------|------------------
-**Add student** | `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `addstudent n/Marcus Lim gn/Lim Hui Min gp/98761234`
-**Delete student** | `deletestudent INDEX`<br> e.g., `deletestudent 3`
 **Add lesson** | `addlesson n/NAME d/DAY st/START_TIME et/END_TIME`<br> e.g., `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800`
+**Add student** | `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `addstudent n/Marcus Lim gn/Lim Hui Min gp/98761234`
 **Clear** | `clear [confirm]`<br> e.g., `clear confirm`
 **Delete lesson** | `deletelesson INDEX`<br> e.g., `deletelesson 2`
-**Edit student** | `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `editstudent 1 p/97654321`; remove a phone with `editstudent 1 p/`
+**Delete student** | `deletestudent INDEX`<br> e.g., `deletestudent 3`
 **Edit lesson** | `editlesson INDEX [n/NAME] [d/DAY] [st/START_TIME] [et/END_TIME]`<br> e.g., `editlesson 1 d/tue st/1700 et/1900`
-**Find students** | `findstudent [n/NAME_KEYWORDS...] [gn/GUARDIAN_NAME_KEYWORDS...] [p/PHONE]`<br> e.g., `findstudent p/4567`
-**List students** | `liststudents [l/LESSON_INDEX]`<br> e.g., `liststudents l/1`
-**List lessons** | `listlessons [d/DAY]`<br> e.g., `listlessons d/mon`
+**Edit student** | `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`<br> e.g., `editstudent 1 p/97654321`; remove a phone with `editstudent 1 p/`
 **Enrol student** | `enrol s/STUDENT_INDEX l/LESSON_INDEX`<br> e.g., `enrol s/1 l/2`
-**Unenrol student** | `unenrol s/STUDENT_INDEX l/LESSON_INDEX`<br> e.g., `unenrol s/1 l/2`
+**Exit** | `exit`
+**Find students** | `findstudent [n/NAME_KEYWORDS...] [gn/GUARDIAN_NAME_KEYWORDS...] [p/PHONE]`<br> e.g., `findstudent p/4567`
 **Help** | `help`
+**List lessons** | `listlessons [d/DAY]`<br> e.g., `listlessons d/mon`
+**List students** | `liststudents [l/LESSON_INDEX]`<br> e.g., `liststudents l/1`
+**Unenrol student** | `unenrol s/STUDENT_INDEX l/LESSON_INDEX`<br> e.g., `unenrol s/1 l/2`
