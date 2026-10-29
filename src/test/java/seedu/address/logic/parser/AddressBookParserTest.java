@@ -12,12 +12,14 @@ import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.commands.AddLessonCommand;
 import seedu.address.logic.commands.AddStudentCommand;
 import seedu.address.logic.commands.ClearCommand;
+import seedu.address.logic.commands.Command;
 import seedu.address.logic.commands.DeleteLessonCommand;
 import seedu.address.logic.commands.DeleteStudentCommand;
 import seedu.address.logic.commands.EditLessonCommand;
@@ -101,10 +103,6 @@ public class AddressBookParserTest {
     @Test
     public void parseCommand_lessonCommandMisspelt_throwsParseException() {
         List<String> misspeltCommands = List.of(
-                // command words are case-sensitive
-                "ADDLESSON n/Sec 3 A-Math d/mon st/1600 et/1800",
-                "addLesson n/Sec 3 A-Math d/mon st/1600 et/1800",
-                "DeleteLesson 1",
                 // near misses are not guessed at
                 "addlessons n/Sec 3 A-Math d/mon st/1600 et/1800",
                 "add lesson n/Sec 3 A-Math d/mon st/1600 et/1800",
@@ -195,8 +193,41 @@ public class AddressBookParserTest {
     }
 
     @Test
-    public void parseCommand_findStudentWrongCase_throwsParseException() {
-        assertThrows(ParseException.class, MESSAGE_UNKNOWN_COMMAND, () -> parser.parseCommand("FINDSTUDENT n/Aiden"));
+    public void parseCommand_commandWordInAnyLetterCase_sameCommand() throws Exception {
+        List<String> commands = List.of(
+                "addlesson n/Sec 3 A-Math d/mon st/1600 et/1800",
+                "deletelesson 1",
+                "findstudent n/Aiden",
+                "listlessons d/mon",
+                "liststudents",
+                "enrol s/1 l/1",
+                "clear confirm",
+                "clear");
+
+        for (String command : commands) {
+            String commandWord = command.split(" ")[0];
+            String arguments = command.substring(commandWord.length());
+            Command expected = parser.parseCommand(command);
+            for (String typedWord : List.of(commandWord.toUpperCase(Locale.ROOT), capitalise(commandWord))) {
+                assertEquals(expected, parser.parseCommand(typedWord + arguments));
+            }
+        }
+
+        // commands whose objects have no equality of their own
+        assertTrue(parser.parseCommand("HELP") instanceof HelpCommand);
+        assertTrue(parser.parseCommand("Exit") instanceof ExitCommand);
+    }
+
+    @Test
+    public void parseCommand_commandWordInAnyLetterCase_argumentsKeepTheirCase() throws Exception {
+        // only the command word is read in any letter case; the lesson name keeps its capitals
+        Lesson lesson = new Lesson("Sec 3 A-Math", DayOfWeek.MONDAY, LocalTime.of(16, 0), LocalTime.of(18, 0));
+        assertEquals(new AddLessonCommand(lesson),
+                parser.parseCommand("AddLesson n/Sec 3 A-Math d/mon st/1600 et/1800"));
+    }
+
+    private static String capitalise(String word) {
+        return Character.toUpperCase(word.charAt(0)) + word.substring(1);
     }
 
     @Test
