@@ -166,6 +166,20 @@ This section describes some noteworthy details on how certain features are imple
 
 ### Saving and recovering tutor data
 
+#### Single-instance protection
+
+Before reading or saving preferences or tutor data, `MainApp.init()` calls
+`ApplicationLock.tryAcquire()` for `data/addressbook.json.lock`. The method opens a `FileChannel`
+and attempts a non-blocking exclusive lock. If another instance holds the lock, startup stops with a
+message asking the user to use the existing window. If the lock file cannot be accessed, startup also
+stops rather than proceeding without protection.
+
+The channel stays open for the lifetime of TutorReach and is closed in `MainApp.stop()`, after saving
+preferences. JVM termination also releases the lock. The lock file itself is deliberately retained:
+its existence does not mean TutorReach is running. The separate lock file is needed because saving
+atomically replaces the data file. This protects instances using the same lock file; it does not prevent
+external editors from modifying the data file while TutorReach is running.
+
 #### Saving after a command
 
 Commands change the model; they do not write files directly. `LogicManager.execute()` controls saving:
@@ -191,21 +205,28 @@ The [save sequence diagram source](diagrams/SaveAddressBookSequenceDiagram.puml)
 #### Loading and partial recovery
 
 `JsonAddressBookStorage.readAddressBook()` reads the original bytes and passes the JSON to
-`AddressBookRecovery`. The root must be one JSON object. Missing or null record lists are treated as empty;
+`AddressBookRecovery`. Jackson's `STRICT_DUPLICATE_DETECTION` rejects duplicate JSON field names
+anywhere in the file, including inside individual records. Such a file is rejected as a whole before
+record recovery begins; the original is preserved and saving is blocked. This differs from duplicate
+student or lesson records, which can be skipped individually.
+
+The root must be one JSON object. Missing or null record lists are treated as empty;
 a present, non-null list must be an array. Records are processed in the order `persons`, `students`,
 `lessons`, then `enrolments`, so enrolment references can be checked against the recovered records.
 
 Each record is validated independently through its JSON adapter and the model's duplicate checks.
 Invalid records, duplicates and enrolments referencing missing records are skipped. The first valid
-occurrence of a duplicate is retained. Skipped positions are recorded using one-based labels such as
-`students[2]`; the warning log includes these labels.
+occurrence of a duplicate is retained. Each skipped record is described by its type, one-based position
+within its list, name when available, and reason, such as `student 2 (Aiden Tan): invalid phone number`.
+The startup warning shows up to five skipped records and indicates how many more were skipped;
+the warning log includes the full list.
 
 | Load result | App behaviour | Protection of the original file |
 | --- | --- | --- |
 | File missing | Starts with sample data. | No file is written just by loading. |
 | Valid file | Loads the records. | No recovery backup is needed. |
 | Invalid individual records | Loads valid records and shows a skipped-record count and backup path. | Backs up the exact original bytes before returning recovered data. |
-| Malformed JSON, invalid list structure, read failure or backup failure | Starts empty with a warning. Read-only commands remain available. | Blocks saving to that normalized absolute path and rejects mutating commands before execution. |
+| Malformed JSON, duplicate JSON field names, invalid list structure, read failure or backup failure | Starts empty with a warning. Read-only commands remain available. | Blocks saving to that normalized absolute path and rejects mutating commands before execution. |
 
 Recovery backups are stored beside the source as `<filename>.recovery-<unique suffix>.bak`. They are
 not overwritten or automatically deleted, and another recovery can create another backup. Loading does
@@ -225,6 +246,15 @@ its phone number is reused in another contact role. New and edited records must 
 
 `JsonSerializableAddressBook.toModelType()` remains a strict conversion API; normal tutor-data loading
 uses `AddressBookRecovery` instead. Partial recovery applies to tutor data, not user preferences.
+
+#### User preferences
+
+`JsonUserPrefsStorage` reads `preferences.json` through `JsonUtil`. `MainApp.initPrefs()` uses default
+preferences when the file is missing or reading throws `DataLoadingException`, then attempts to save
+the initialized preferences. Preferences are saved again on shutdown. They use the same atomic-writing
+helper, but do not use `AddressBookRecovery`, recovery backups or the tutor-data blocked-save guard.
+Duplicate-key detection is enabled for tutor-data recovery only; it is not enabled on the shared
+`JsonUtil` mapper used to read preferences.
 
 
 ### Warning about clashing lessons
@@ -436,6 +466,8 @@ A searched number also matches a stored number of at least seven digits that it 
 ### \[Proposed\] Undo/redo feature
 
 #### Proposed Implementation
+
+This feature and the APIs described below are not currently implemented.
 
 The proposed undo/redo mechanism is facilitated by `VersionedAddressBook`. It extends `AddressBook` with an undo/redo history, stored internally as a `addressBookStateList` and `currentStatePointer`. Additionally, it implements the following operations:
 
@@ -1283,6 +1315,13 @@ editing files, and retain a separate copy of the original data.
 1. Unrecoverable file: remove a closing `}` and restart. Expect an empty app and a warning that saving
    is disabled. `liststudents`, `help` and `exit` must work. An `addstudent` command must report an error
    without adding a student or changing the file. Restore the valid copy and restart to resume normal use.
+1. Duplicate JSON field names: in a disposable valid file, repeat the root `students` key with an
+   empty array as its second value. Restart and expect the same blocked-saving behaviour as an
+   unrecoverable file, with the original bytes unchanged. Repeat with a duplicated `name` key inside
+   one student record; the entire file must be rejected, not partially recovered.
+1. Single-instance protection: launch TutorReach twice from the same working directory. The second
+   instance must show the already-running message and exit without changing the data or preferences.
+   Close the first instance and launch again; startup must succeed even though the lock file remains.
 1. Save failure: with valid data loaded, make the destination unwritable using filesystem permissions
    supported by your OS, then try adding a student. Expect a save error, unchanged stored data and
    restoration of the previous displayed lists. Restore permissions before retrying.
