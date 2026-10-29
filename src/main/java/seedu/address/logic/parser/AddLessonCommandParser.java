@@ -19,6 +19,8 @@ import seedu.address.model.lesson.Lesson;
  */
 public class AddLessonCommandParser implements Parser<AddLessonCommand> {
 
+    public static final String MESSAGE_MISSING_FIELDS = "Missing %1$s. Each prefix must have a space before it.";
+
     /**
      * Parses the given {@code String} of arguments in the context of the {@code AddLessonCommand}
      * and returns an {@code AddLessonCommand} object for execution.

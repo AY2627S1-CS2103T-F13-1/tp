@@ -126,14 +126,24 @@ public class AddLessonCommandParserTest {
         assertParseFailure(parser, "", MESSAGE_INVALID_FORMAT);
         assertParseFailure(parser, "   ", MESSAGE_INVALID_FORMAT);
 
-        // each field missing in turn
-        assertParseFailure(parser, DAY_DESC + START_DESC + END_DESC, MESSAGE_INVALID_FORMAT);
-        assertParseFailure(parser, NAME_DESC + START_DESC + END_DESC, MESSAGE_INVALID_FORMAT);
-        assertParseFailure(parser, NAME_DESC + DAY_DESC + END_DESC, MESSAGE_INVALID_FORMAT);
-        assertParseFailure(parser, NAME_DESC + DAY_DESC + START_DESC, MESSAGE_INVALID_FORMAT);
-
         // values without any prefixes
         assertParseFailure(parser, " Sec 3 A-Math mon 1600 1800", MESSAGE_INVALID_FORMAT);
+    }
+
+    @Test
+    public void parse_someFieldsMissing_throwsParseExceptionNamingThem() {
+        // each field missing in turn
+        assertParseFailure(parser, DAY_DESC + START_DESC + END_DESC, missing("n/NAME"));
+        assertParseFailure(parser, NAME_DESC + START_DESC + END_DESC, missing("d/DAY"));
+        assertParseFailure(parser, NAME_DESC + DAY_DESC + END_DESC, missing("st/START_TIME"));
+        assertParseFailure(parser, NAME_DESC + DAY_DESC + START_DESC, missing("et/END_TIME"));
+
+        // several fields missing, named in the order of the command format
+        assertParseFailure(parser, END_DESC + NAME_DESC, missing("d/DAY and st/START_TIME"));
+        assertParseFailure(parser, NAME_DESC, missing("d/DAY, st/START_TIME and et/END_TIME"));
+
+        // a name typed without its prefix
+        assertParseFailure(parser, " Sec 3 A-Math" + DAY_DESC + START_DESC + END_DESC, missing("n/NAME"));
     }
 
     @Test
@@ -148,11 +158,13 @@ public class AddLessonCommandParserTest {
         assertParseFailure(parser, " n/Sec 3 A-Math d/mon s/1600 e/1800", unknownPrefix("s/"));
 
         // longer words are not taken for prefixes, so the missing st/ and et/ are reported
-        assertParseFailure(parser, " n/Sec 3 A-Math d/mon start/1600 end/1800", MESSAGE_INVALID_FORMAT);
+        assertParseFailure(parser, " n/Sec 3 A-Math d/mon start/1600 end/1800",
+                missing("st/START_TIME and et/END_TIME"));
 
-        // a prefix must follow a space to be read as one
-        assertParseFailure(parser, " n/Sec 3 A-Mathd/mon st/1600 et/1800", MESSAGE_INVALID_FORMAT);
-        assertParseFailure(parser, " n/Sec 3 A-Math d/monst/1600 et/1800", MESSAGE_INVALID_FORMAT);
+        // a prefix must follow a space to be read as one, so a missed space reports that prefix as missing
+        assertParseFailure(parser, " n/Sec 3 A-Mathd/mon st/1600 et/1800", missing("d/DAY"));
+        assertParseFailure(parser, " n/Sec 3 A-Math d/monst/1600 et/1800", missing("st/START_TIME"));
+        assertParseFailure(parser, " n/Sec 3 A-Math d/mon st/1600et/1800", missing("et/END_TIME"));
     }
 
     @Test
@@ -290,6 +302,12 @@ public class AddLessonCommandParserTest {
             assertParseSuccess(parser, " n/" + name + DAY_DESC + START_DESC + END_DESC,
                     addCommand(name, DayOfWeek.MONDAY, "16:00", "18:00"));
         }
+    }
+
+    private static String missing(String fields) {
+        return String.format(MESSAGE_INVALID_COMMAND_FORMAT,
+                String.format(AddLessonCommandParser.MESSAGE_MISSING_FIELDS, fields) + "\n"
+                        + AddLessonCommand.MESSAGE_USAGE);
     }
 
     private static String unknownPrefix(String prefix) {
