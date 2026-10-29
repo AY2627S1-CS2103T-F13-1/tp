@@ -159,7 +159,7 @@ Format: `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME] [gp/GUARDIAN_PH
 Examples:
 
 * `editstudent 1 p/9765 4321` changes only the phone number of the first displayed student. The number is displayed and saved as `97654321`.
-* `editstudent 1 gp/91234567` changes only the existing guardian's phone number.
+* `editstudent 1 gp/96543210` changes only the existing guardian's phone number.
 * `editstudent 2 gn/Lim Mei gp/91234567` replaces only the guardian details of the second displayed student.
 * If the first student's phone number is already `97654321`, `editstudent 1 p/97654321` is rejected because the incoming changes are identical to the current student details.
 * `editstudent 3 p/` removes the third displayed student's phone number if they have a guardian phone.
