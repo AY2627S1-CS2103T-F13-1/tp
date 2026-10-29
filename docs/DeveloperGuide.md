@@ -405,7 +405,7 @@ Step 4. Otherwise, the command calls `Model#unenrolStudent()`, which removes the
 1. It splits the `n/` and `gn/` values into keywords, each of which must be a valid name. It reads the `p/` value as one phone number: spaces, hyphens and a leading `+` are allowed, and only the digits are kept.
 1. `FindStudentCommand#execute()` passes the predicate to `Model#updateFilteredStudentList()`, which replaces any earlier search or lesson filter.
 
-The activity diagram below shows how the predicate decides whether a student matches. Name keywords ignore letter case and may match any part of a name.
+The activity diagram below shows how the predicate decides whether a student matches. Name keywords may match any part of a name. Before comparing, the predicate puts both the name and the keyword in lower case, removes the accents of Latin letters (combining marks U+0300 to U+036F after Unicode decomposition) and makes curly apostrophes straight, so `jose` finds `José`. Marks of other scripts, such as Tamil vowel signs, are kept, because they are part of their letters.
 
 ![How findstudent decides whether a student matches](images/FindStudentActivityDiagram.png)
 
@@ -1115,6 +1115,9 @@ testers are expected to do more *exploratory* testing.
    1. Test case: `addlesson n/Sec 4 E-Math d/Tuesday st/16:30 et/18:30`<br>
       Expected: A lesson card for Sec 4 E-Math (Tue 1630-1830) is added. A day may be written in full, and a time may contain a colon.
 
+   1. Test case: `addlesson n/Math d/mon st/1600et/1800`<br>
+      Expected: No lesson is added. The status message says that `et/END_TIME` is missing and that each prefix must have a space before it, followed by the command's usage.
+
    1. Other incorrect commands to try: `addlesson n/Math d/funday st/1600 et/1800`, `addlesson n/Math d/mo st/1600 et/1800`, `addlesson n/Math d/mon st/4pm et/1800`, `addlesson n/Math d/mon st/2400 et/2430`<br>
       Expected: No lesson is added. The status message shows the error for the invalid value: a day must be its name or at least its first three letters, so `funday` and `mo` are rejected, and a time must be `HHMM` or `HH:MM` from `0000` to `2359`.
 
@@ -1259,6 +1262,9 @@ testers are expected to do more *exploratory* testing.
 
    1. Test case: `findstudent p/91a`<br>
       Expected: The list is unchanged. The status message states that a phone search should contain only digits, spaces, hyphens and a leading `+`.
+
+   1. Test case: `addstudent n/José O'Connor p/97654321`, followed by `findstudent n/jose`, then `FindStudent n/O’Connor`<br>
+      Expected: Both searches show José O'Connor. Accents, the style of apostrophe and the letter case of the command word are ignored.
 
 ### Saving data
 

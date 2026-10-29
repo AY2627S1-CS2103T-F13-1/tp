@@ -2,6 +2,7 @@ package seedu.address.model.student;
 
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.text.Normalizer;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -13,7 +14,8 @@ import seedu.address.model.person.Phone;
 
 /**
  * Tests that a {@code Student}'s name, their guardian's name and their phone numbers match the given keywords.
- * Name matching is case-insensitive, and a keyword may match any part of a name. A phone keyword may match
+ * Name matching ignores letter case, the accents of Latin letters and the style of apostrophe, and a keyword may
+ * match any part of a name. A phone keyword may match
  * any part of the student's own phone number or their guardian's phone number, or be a whole number of at least
  * seven digits with a country code of up to three digits in front. Within each list, any one keyword may match.
  * When several lists are non-empty, the student must match all of them. An empty list places no condition
@@ -23,6 +25,8 @@ public class StudentContainsKeywordsPredicate implements Predicate<Student> {
     // a full number is at least this long, so that a short stored number does not match many keywords
     private static final int MIN_DIGITS_FOR_COUNTRY_CODE_MATCH = 7;
     private static final int MAX_COUNTRY_CODE_DIGITS = 3;
+    // the accents that a Latin letter such as é decomposes into; marks of other scripts are part of their letters
+    private static final String LATIN_ACCENT_REGEX = "[\\u0300-\\u036f]";
 
     private final List<String> nameKeywords;
     private final List<String> guardianNameKeywords;
@@ -70,8 +74,18 @@ public class StudentContainsKeywordsPredicate implements Predicate<Student> {
     }
 
     private static boolean containsAnySubstring(String text, List<String> keywords) {
-        String normalizedText = text.toLowerCase(Locale.ROOT);
-        return toSearchTerms(keywords).anyMatch(normalizedText::contains);
+        String normalizedText = normalizeName(text);
+        return toSearchTerms(keywords).map(StudentContainsKeywordsPredicate::normalizeName)
+                .anyMatch(normalizedText::contains);
+    }
+
+    /**
+     * Returns {@code name} in lower case, without the accents of Latin letters and with curly apostrophes made
+     * straight, so that a keyword typed on any keyboard, or pasted from a document, finds the name as stored.
+     */
+    private static String normalizeName(String name) {
+        String withoutAccents = Normalizer.normalize(name, Normalizer.Form.NFD).replaceAll(LATIN_ACCENT_REGEX, "");
+        return withoutAccents.replace('’', '\'').toLowerCase(Locale.ROOT);
     }
 
     /**

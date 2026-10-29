@@ -51,6 +51,9 @@ TutorReach is a **desktop app for independent private tutors who teach secondary
 * Words in `UPPER_CASE` are the parameters to be supplied by the user.<br>
   For example, in `addstudent n/NAME`, replace `NAME` with a value such as `Aiden Tan`.
 
+* Command words can be typed in any letter case, but prefixes such as `n/` must be in lower case.<br>
+  For example, `AddLesson` and `ADDLESSON` work like `addlesson`.
+
 * Items in square brackets are optional.<br>
   For example, `listlessons [d/DAY]` can be used as `listlessons` or as `listlessons d/mon`.
 
@@ -163,6 +166,7 @@ Format: `findstudent [n/NAME_KEYWORDS...] [gn/GUARDIAN_NAME_KEYWORDS...] [p/PHON
 * `n/` searches students' own names, and `gn/` searches their guardians' names.
 * `p/` takes one phone number, or part of one, and searches both the student's own phone number and their guardian's phone number. You can type the number as it appears elsewhere: spaces and hyphens are ignored, and a full number may start with a country code of up to three digits, such as `+65`. For example, `p/9123 4567` and `p/+65 9123-4567` both find `91234567`.
 * The search is case-insensitive, and a keyword can match any part of a name or number; for example, `aid` matches `Aiden` and `4567` matches `91234567`.
+* Name searches also ignore accents and the style of apostrophe, so `jose` finds `José` and `O’Connor` finds `O'Connor`.
 * Name keywords may contain the same letters, digits, apostrophes, hyphens and connectors accepted in student and guardian names.
 * Within `n/` or `gn/`, a student needs to match only one of the keywords; for example, `n/aid chl` finds both `Aiden Tan` and `Chloe Lim`.
 * If more than one prefix is given, a student must match all of them.

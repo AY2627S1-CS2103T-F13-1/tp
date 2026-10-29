@@ -3,6 +3,7 @@ package seedu.address.logic.parser;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 
+import java.util.Locale;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -51,7 +52,8 @@ public class AddressBookParser {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, HelpCommand.MESSAGE_USAGE));
         }
 
-        final String commandWord = matcher.group("commandWord");
+        // a command word means the same in any letter case, as in ADDLESSON or AddLesson
+        final String commandWord = matcher.group("commandWord").toLowerCase(Locale.ROOT);
         final String arguments = matcher.group("arguments");
 
         // Note to developers: Change LOG_LEVEL in LogsCenter to enable lower level (i.e., FINE, FINER and lower)
@@ -69,7 +71,7 @@ public class AddressBookParser {
             case DeleteLessonCommand.COMMAND_WORD -> new DeleteLessonCommandParser().parse(arguments);
             case EditLessonCommand.COMMAND_WORD -> new EditLessonCommandParser().parse(arguments);
             case ClearCommand.COMMAND_WORD -> {
-                if (arguments.trim().equals(ClearCommand.CONFIRMATION_WORD)) {
+                if (arguments.trim().equalsIgnoreCase(ClearCommand.CONFIRMATION_WORD)) {
                     yield ClearCommand.confirmed();
                 }
                 if (!arguments.trim().isEmpty()) {
