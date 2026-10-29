@@ -6,7 +6,10 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_GUARDIAN_PHONE;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
 
+import java.util.List;
+
 import seedu.address.commons.util.ToStringBuilder;
+import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 import seedu.address.model.student.Student;
@@ -52,8 +55,12 @@ public class AddStudentCommand extends Command {
 
         StudentPhoneConflictValidator.validate(toAdd, model.getAddressBook());
 
+        List<Student> sameNameStudents = model.getAddressBook().getStudentList().stream()
+                .filter(toAdd::hasSameName)
+                .toList();
         model.addStudent(toAdd);
-        return new CommandResult(String.format(MESSAGE_SUCCESS, toAdd));
+        return new CommandResult(String.format(MESSAGE_SUCCESS, toAdd)
+                + Messages.formatSameNameWarning(sameNameStudents));
     }
 
     @Override

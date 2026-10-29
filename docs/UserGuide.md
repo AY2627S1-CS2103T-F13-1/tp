@@ -84,7 +84,9 @@ Format: `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`
 * A Singapore phone number must contain eight digits. It may use spaces or hyphens between digit groups and may start with `+65`. TutorReach removes the formatting and Singapore country code before displaying or saving the number. For example, both `9123 4567` and `+65 9123-4567` are stored as `91234567`.
 * An international phone number must start with `+` and its country code, and contain between 3 and 15 digits. TutorReach removes spaces and hyphens but retains the leading `+` and country code. For example, `+44 7700-900123` is stored as `+447700900123`.
 * Student and guardian phone numbers saved by v1.4 remain available after upgrading. New or edited numbers must follow the rules above.
+* Extra spaces between the words of a name are removed, so `n/Ann   Lee` is saved as `Ann Lee`. This also applies to guardian names and to `editstudent`.
 * A student is a duplicate if another student has the same name, ignoring letter case and extra spaces, and shares at least one phone number with them (own or guardian's). Siblings with different names can share a guardian's number.
+* If another student has the same name but no shared phone number, the student is still added, with a warning naming the other student, in case it is the same child added twice.
 * A student's own phone number cannot be used as any other student's or guardian's number, including their own guardian's number. A guardian's number can be shared by multiple guardians, such as for siblings. Formatted versions of the same number, including a Singapore number written with `+65`, are treated as the same number.
 * A phone-number conflict rejects the entire command. The error message states whether the number belongs to another student, a guardian, or both contacts in the same record.
 * Adding a student clears the student filter, so all students are shown.
@@ -92,7 +94,7 @@ Format: `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`
 Examples:
 
 * `addstudent n/Marcus Lim gn/Lim Hui Min gp/98761234` adds a student whose guardian is the only contact.
-* `addstudent n/Chloe Lim p/98765432` adds a student with their own phone number and no guardian.
+* `addstudent n/Daniel Ng p/98765432` adds a student with their own phone number and no guardian.
 * `addstudent n/José Anne-Marie p/97654321 gn/Kumar s/o Ravi gp/98765432` adds names containing accented letters, a hyphen and a local name connector.
 * `addstudent n/Chloe Lim p/+65 9876-5432` adds a student with their own phone number and no guardian. The number is displayed and saved as `98765432`.
 
@@ -138,7 +140,7 @@ Format: `editstudent INDEX [n/NAME] [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHON
 * The edited student must retain at least one contact number: their own phone or a guardian's phone.
 * Names follow the same rules as for `addstudent`. Phone numbers follow the same formatting and normalization rules as for `addstudent`.
 * The final edited contact details must follow the same phone-number sharing rules as for `addstudent`. An unchanged number on the edited student is allowed.
-* The edited student must not duplicate another student.
+* The edited student must not duplicate another student. If a renamed student has the same name as another student, the edit is still made, with a warning naming the other student.
 * The student's identity and lesson enrolments are preserved.
 * The active student filter remains in effect and is re-evaluated after the edit. For example, a renamed student may disappear from a name search that they no longer match.
 
@@ -314,30 +316,10 @@ this is normal and does not prevent reopening it.
 
 TutorReach automatically saves after commands that change data. Commands that leave the data unchanged, including edits whose supplied values already match the record, do not rewrite the data file. Viewing, searching, help and exit commands do not rewrite the data file. You do not need to save manually.
 
-If saving fails, the data change is undone and the previous display filters are restored. Fix the reported storage problem before retrying the command. Saves use atomic file replacement; a filesystem that does not support this will report a save error instead of overwriting the existing file unsafely.
+### If some data cannot be loaded
 
-### Editing the data file
-
-TutorReach stores data in `data/addressbook.json` by default, relative to the folder from which you launch the app.
-Only edit this file while the app is closed.
-
-<div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-If individual records are invalid or duplicated, the app loads the valid records and skips the invalid ones.
-Enrolments referencing missing students or lessons are also skipped. The first valid duplicate is kept.
-A warning in the message box reports how many records were skipped and where the original file was backed up.
-Backups are saved beside the data file as `addressbook.json.recovery-<unique number>.bak`; older backups are preserved.
-These files remain on disk after closing the app and are not automatically deleted. Open a backup in a text editor
-to review the original data, including skipped records. A recovery backup contains the original problems too;
-repair those entries before using it as your data file.
-The source file is unchanged until a successful command that changes records saves the recovered data.<br>
-If the JSON cannot be read, its lists have an invalid structure, or a backup cannot be created, the app starts empty
-with a warning and **disables saving** to protect the source file. Fix the file or restore a backup while the app
-is closed, then restart. While saving is disabled, commands that change records are rejected before changing the data.
-Listing, searching, help, and exit remain available.<br>
-Only edit the file while the app is closed, and keep a backup before editing it.<br>
-Keep student and lesson IDs unchanged when editing details, as enrolments use those IDs to link records.
-Lesson `day` and time values in the data file accept the same formats as the `addlesson` and `editlesson` commands.
-</div>
+If TutorReach cannot load some or all of your saved data when it starts, the message box says what was skipped and shows the path of a file containing your original data.
+Open that file in a text editor to see the skipped details, then add them again with commands such as `addstudent`, `addlesson` and `enrol`.
 
 --------------------------------------------------------------------------------------------------------------------
 

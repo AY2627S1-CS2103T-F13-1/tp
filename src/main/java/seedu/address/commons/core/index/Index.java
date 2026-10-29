@@ -18,6 +18,7 @@ public class Index {
      * {@link Index#fromOneBased(int)}.
      */
     private Index(int zeroBasedIndex) {
+        // Integer.MAX_VALUE is rejected because its one-based form would overflow
         if (zeroBasedIndex < 0 || zeroBasedIndex == Integer.MAX_VALUE) {
             throw new IndexOutOfBoundsException();
         }
@@ -62,6 +63,11 @@ public class Index {
         }
 
         return zeroBasedIndex == otherIndex.zeroBasedIndex;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(zeroBasedIndex);
     }
 
     @Override

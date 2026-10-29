@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
@@ -47,6 +48,21 @@ public class AddStudentCommandTest {
 
         assertEquals(String.format(AddStudentCommand.MESSAGE_SUCCESS, student), result.getFeedbackToUser());
         assertEquals(List.of(student), model.getAddressBook().getStudentList());
+    }
+
+    @Test
+    public void execute_sameNameDifferentPhone_addSuccessfulWithWarning() throws Exception {
+        Model model = new ModelManager();
+        model.addStudent(AIDEN);
+        model.addStudent(RYAN);
+        Student sameName = new Student(new Name("aiden  tan"), new Phone("88888888"), null);
+
+        CommandResult result = new AddStudentCommand(sameName).execute(model);
+
+        assertEquals(String.format(AddStudentCommand.MESSAGE_SUCCESS, sameName)
+                + "\n" + String.format(Messages.MESSAGE_SAME_NAME_WARNING, Messages.format(AIDEN)),
+                result.getFeedbackToUser());
+        assertEquals(List.of(AIDEN, RYAN, sameName), model.getAddressBook().getStudentList());
     }
 
     @Test

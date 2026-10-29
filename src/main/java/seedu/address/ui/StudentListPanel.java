@@ -52,6 +52,11 @@ public class StudentListPanel extends UiPart<Region> {
      * Displays each student using a {@link StudentCard}.
      */
     class StudentListViewCell extends ListCell<Student> {
+        StudentListViewCell() {
+            // size the cell to the list rather than its content, so long names wrap instead of scrolling sideways
+            setPrefWidth(0);
+        }
+
         @Override
         protected void updateItem(Student student, boolean empty) {
             super.updateItem(student, empty);

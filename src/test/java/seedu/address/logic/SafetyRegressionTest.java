@@ -94,6 +94,7 @@ public class SafetyRegressionTest {
 
     @Test
     public void execute_queries_doNotAttemptSave() throws Exception {
+        // Every save fails, so any of these commands throws if it tries to save
         seed();
         Logic logic = failingLogic();
         logic.execute("liststudents");

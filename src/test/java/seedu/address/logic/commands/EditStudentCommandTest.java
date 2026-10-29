@@ -230,6 +230,35 @@ public class EditStudentCommandTest {
     }
 
     @Test
+    public void execute_renamedToExistingName_successWithWarning() {
+        EditStudentDescriptor descriptor = createDescriptor(RYAN.getName(), null, null);
+        EditStudentCommand command = new EditStudentCommand(INDEX_FIRST_PERSON, descriptor);
+        Student editedStudent = new Student(AIDEN.getId(), RYAN.getName(), null, AIDEN.getGuardian().orElseThrow());
+        Model expectedModel = new ModelManager(getStudentAddressBook(), new UserPrefs());
+        expectedModel.setStudent(AIDEN, editedStudent);
+        String expectedMessage = String.format(EditStudentCommand.MESSAGE_EDIT_STUDENT_SUCCESS,
+                Messages.format(editedStudent))
+                + "\n" + String.format(Messages.MESSAGE_SAME_NAME_WARNING, Messages.format(RYAN));
+
+        assertCommandSuccess(command, model, expectedMessage, expectedModel);
+    }
+
+    @Test
+    public void execute_nameUnchangedButShared_successWithoutWarning() {
+        Student sameNameAsRyan = new Student(RYAN.getName(), new Phone("81112222"), null);
+        model.addStudent(sameNameAsRyan);
+        EditStudentDescriptor descriptor = createDescriptor(null, new Phone("81113333"), null);
+        EditStudentCommand command = new EditStudentCommand(Index.fromOneBased(4), descriptor);
+        Student editedStudent = new Student(sameNameAsRyan.getId(), RYAN.getName(), new Phone("81113333"), null);
+        Model expectedModel = new ModelManager(getStudentAddressBook(), new UserPrefs());
+        expectedModel.addStudent(editedStudent);
+        String expectedMessage = String.format(EditStudentCommand.MESSAGE_EDIT_STUDENT_SUCCESS,
+                Messages.format(editedStudent));
+
+        assertCommandSuccess(command, model, expectedMessage, expectedModel);
+    }
+
+    @Test
     public void execute_duplicateStudent_throwsCommandException() {
         EditStudentDescriptor descriptor = createDescriptor(RYAN.getName(), RYAN.getPhone().orElseThrow(), null);
         EditStudentCommand command = new EditStudentCommand(INDEX_FIRST_PERSON, descriptor);
