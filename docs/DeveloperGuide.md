@@ -990,7 +990,7 @@ testers are expected to do more *exploratory* testing.
       Expected: No student is added, since the name matches (ignoring case and extra spaces) and a phone number is shared. The status message shows `This student already exists`.
 
    1. Test case: `addstudent n/Marcus Lim p/88887777`<br>
-      Expected: The student is added, since no phone number is shared.
+      Expected: The student is added, since no phone number is shared. The status message also warns that another student has the same name, in case it is the same child added twice.
 
 1. Preventing conflicting phone-number reuse
 
@@ -1095,7 +1095,7 @@ testers are expected to do more *exploratory* testing.
 1. Adding a lesson
 
    1. Test case: `addlesson n/Sec 3 A-Math d/mon st/1600 et/1800`<br>
-      Expected: A lesson card for Sec 3 A-Math (Mon 1600-1800) with no students is added at the end of the lessons panel.
+      Expected: A lesson card for Sec 3 A-Math (Mon 1600-1800) with no students is added to the lessons panel, which lists lessons by day and then start time.
 
    1. Test case: the same command again<br>
       Expected: No lesson is added. The status message shows `This lesson already exists: Sec 3 A-Math (Mon 1600-1800)`.
@@ -1212,7 +1212,7 @@ testers are expected to do more *exploratory* testing.
       Expected: No change. The status message shows the invalid command format error.
 
    1. Test case: `enrol s/x l/1` (where x is larger than the number of students shown)<br>
-      Expected: No change. The status message shows `The student index provided is invalid`.
+      Expected: No change. The status message shows `Student index exceeds the number of students in the displayed list.`
 
 1. Enrolling a student in a clashing lesson
 
