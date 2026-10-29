@@ -13,8 +13,6 @@ import seedu.address.commons.core.index.Index;
 import seedu.address.logic.commands.EditStudentCommand;
 import seedu.address.logic.commands.EditStudentCommand.EditStudentDescriptor;
 import seedu.address.logic.parser.exceptions.ParseException;
-import seedu.address.model.person.Name;
-import seedu.address.model.person.Phone;
 import seedu.address.model.student.Guardian;
 
 /**
@@ -52,9 +50,6 @@ public class EditStudentCommandParser implements Parser<EditStudentCommand> {
         Optional<String> phoneValue = argMultimap.getValue(PREFIX_PHONE);
         Optional<String> guardianNameValue = argMultimap.getValue(PREFIX_GUARDIAN_NAME);
         Optional<String> guardianPhoneValue = argMultimap.getValue(PREFIX_GUARDIAN_PHONE);
-        if (guardianNameValue.isPresent() != guardianPhoneValue.isPresent()) {
-            throw new ParseException(MESSAGE_INCOMPLETE_GUARDIAN);
-        }
 
         EditStudentDescriptor editStudentDescriptor = new EditStudentDescriptor();
         if (argMultimap.getValue(PREFIX_NAME).isPresent()) {
@@ -83,24 +78,32 @@ public class EditStudentCommandParser implements Parser<EditStudentCommand> {
     }
 
     /**
-     * Parses a complete guardian edit, including empty values that remove the guardian.
+     * Parses guardian fields independently, or two empty values that remove the guardian.
      */
     private static void parseGuardian(Optional<String> nameValue, Optional<String> phoneValue,
             EditStudentDescriptor editStudentDescriptor) throws ParseException {
-        if (nameValue.isEmpty()) {
+        if (nameValue.isEmpty() && phoneValue.isEmpty()) {
             return;
         }
-        String name = nameValue.orElseThrow();
-        String phone = phoneValue.orElseThrow();
-        if (name.isEmpty() != phone.isEmpty()) {
+        if (nameValue.filter(String::isEmpty).isPresent()
+                || phoneValue.filter(String::isEmpty).isPresent()) {
+            if (nameValue.filter(String::isEmpty).isPresent()
+                    && phoneValue.filter(String::isEmpty).isPresent()) {
+                editStudentDescriptor.setGuardian(null);
+                return;
+            }
             throw new ParseException(MESSAGE_INCOMPLETE_GUARDIAN);
         }
-        if (name.isEmpty()) {
-            editStudentDescriptor.setGuardian(null);
+        if (nameValue.isPresent() && phoneValue.isPresent()) {
+            editStudentDescriptor.setGuardian(new Guardian(ParserUtil.parseName(nameValue.orElseThrow()),
+                    ParserUtil.parseStudentPhone(phoneValue.orElseThrow())));
             return;
         }
-        Name guardianName = ParserUtil.parseName(name);
-        Phone guardianPhone = ParserUtil.parseStudentPhone(phone);
-        editStudentDescriptor.setGuardian(new Guardian(guardianName, guardianPhone));
+        if (nameValue.isPresent()) {
+            editStudentDescriptor.setGuardianName(ParserUtil.parseName(nameValue.orElseThrow()));
+        }
+        if (phoneValue.isPresent()) {
+            editStudentDescriptor.setGuardianPhone(ParserUtil.parseStudentPhone(phoneValue.orElseThrow()));
+        }
     }
 }

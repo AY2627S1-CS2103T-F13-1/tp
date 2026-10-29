@@ -62,16 +62,23 @@ public class EditStudentCommandParserTest {
 
     @Test
     public void parse_incompleteGuardian_throwsParseException() {
-        assertParseFailure(parser, "1 gn/Tan Mei Ling",
-                EditStudentCommandParser.MESSAGE_INCOMPLETE_GUARDIAN);
-        assertParseFailure(parser, "1 gp/91234567",
-                EditStudentCommandParser.MESSAGE_INCOMPLETE_GUARDIAN);
-        assertParseFailure(parser, "1 p/92345678 gn/Tan Mei Ling",
-                EditStudentCommandParser.MESSAGE_INCOMPLETE_GUARDIAN);
         assertParseFailure(parser, "1 gn/Tan Mei Ling gp/",
                 EditStudentCommandParser.MESSAGE_INCOMPLETE_GUARDIAN);
         assertParseFailure(parser, "1 gn/ gp/91234567",
                 EditStudentCommandParser.MESSAGE_INCOMPLETE_GUARDIAN);
+    }
+
+    @Test
+    public void parse_singleGuardianField_returnsEditStudentCommand() {
+        EditStudentDescriptor name = new EditStudentDescriptor();
+        name.setGuardianName(new Name("Tan Mei Ling"));
+        assertParseSuccess(parser, "1 gn/Tan Mei Ling", new EditStudentCommand(Index.fromOneBased(1), name));
+
+        EditStudentDescriptor phone = new EditStudentDescriptor();
+        phone.setGuardianPhone(new Phone("91234567"));
+        assertParseSuccess(parser, "1 gp/+65 9123-4567", new EditStudentCommand(Index.fromOneBased(1), phone));
+        assertParseFailure(parser, "1 gn/", EditStudentCommandParser.MESSAGE_INCOMPLETE_GUARDIAN);
+        assertParseFailure(parser, "1 gp/", EditStudentCommandParser.MESSAGE_INCOMPLETE_GUARDIAN);
     }
 
     @Test
