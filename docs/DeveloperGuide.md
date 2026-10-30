@@ -304,7 +304,7 @@ Because an end time earlier than the start time means a lesson past midnight, sw
 
 The `editstudent` and `editlesson` commands replace immutable domain objects without changing their stable UUIDs.
 
-1. The command parser reads a positive displayed-list index and one or more optional fields. It rejects repeated prefixes, missing edit fields and invalid values. For `editstudent`, a blank `p/` removes the student's phone, while blank `gn/ gp/` values remove the guardian. The guardian prefixes must be given together with either two values or two blanks because a guardian is replaced as one value.
+1. The command parser reads a positive displayed-list index and one or more optional fields. It rejects repeated prefixes, missing edit fields and invalid values. For `editstudent`, a blank `p/` removes the student's phone, while blank `gn/ gp/` values remove the guardian. If the student already has a guardian, `gn/` and `gp/` can be edited independently, and the omitted detail is kept. Adding a guardian requires both values, while supplying only one blank guardian field is rejected.
 1. The command resolves the index against the corresponding filtered list, so it edits the item the user can see rather than the same position in the complete list.
 1. The command creates a replacement object using the supplied values, `null` for an optional contact being removed, the target's values for unspecified fields and the target's UUID. The student model rejects a replacement with no contact number.
 1. If the replacement equals the target, the command throws a `CommandException` explaining that the incoming changes are identical and asking the user to change at least one field. It does not call `Model#setStudent()` or `Model#setLesson()`, so `LogicManager` does not save the address book.
@@ -1079,8 +1079,8 @@ testers are expected to do more *exploratory* testing.
    1. Test case: `editstudent 1 p/ gn/ gp/`<br>
       Expected: No student is edited because the result would have no contact number. The status message states that at least one phone number is required.
 
-   1. Test case: `editstudent 1 gn/Lim Mei`<br>
-      Expected: No student is edited. The status message states that guardian name and guardian phone must be given together.
+   1. Test case: `editstudent 1 gn/Lim Hui`<br>
+      Expected: Only the first student's guardian name changes. The guardian phone and all other details remain unchanged.
 
    1. Other incorrect commands to try: `editstudent 1`, `editstudent 0 n/Aiden`, `editstudent 1 p/12`, `editstudent 1 n/Aiden n/Ryan`<br>
       Expected: No student is edited. The status message shows the relevant missing field, invalid index, invalid phone or duplicate-prefix error.
