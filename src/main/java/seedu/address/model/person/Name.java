@@ -12,9 +12,10 @@ import java.util.Locale;
 public class Name {
 
     public static final String MESSAGE_CONSTRAINTS =
-            "Names should use letters from any language, digits, spaces, apostrophes or hyphens. "
-                    + "Apostrophes and hyphens must appear between letters or digits, and s/o, d/o, a/l and a/p "
-                    + "may appear between name parts. Names should not be blank.";
+            "Names should use letters from any language, digits, spaces and common name punctuation. "
+                    + "Apostrophes and hyphens must appear between letters or digits; periods may appear after "
+                    + "letters or digits; commas may end name parts; parentheses must enclose name parts; and @, "
+                    + "s/o, d/o, a/l and a/p may appear between name parts. Names should not be blank.";
 
     public final String fullName;
 
@@ -45,16 +46,21 @@ public class Name {
 
         int partStart = 0;
         boolean previousPartWasConnector = false;
+        boolean isInsideParentheses = false;
         while (partStart < nameEnd) {
             int nextSpace = test.indexOf(' ', partStart);
             int partEnd = nextSpace == -1 ? nameEnd : nextSpace;
             String part = test.substring(partStart, partEnd);
             boolean isConnector = isNameConnector(part);
-            if (isConnector && (partStart == 0 || previousPartWasConnector)) {
+            if (isConnector && (partStart == 0 || previousPartWasConnector || isInsideParentheses)) {
                 return false;
             }
-            if (!isConnector && !isValidNamePart(part)) {
-                return false;
+            if (!isConnector) {
+                NamePartValidation validation = validateNamePart(part, isInsideParentheses);
+                if (!validation.isValid()) {
+                    return false;
+                }
+                isInsideParentheses = validation.isInsideParentheses();
             }
             previousPartWasConnector = isConnector;
 
@@ -63,7 +69,7 @@ public class Name {
                 partStart++;
             }
         }
-        return !previousPartWasConnector;
+        return !previousPartWasConnector && !isInsideParentheses;
     }
 
     /**
@@ -71,34 +77,81 @@ public class Name {
      */
     public static boolean isValidSearchKeyword(String test) {
         requireNonNull(test);
-        return isValidNamePart(test) || isNameConnector(test);
+        return isNameConnector(test)
+                || validateNamePart(test, false).isValid()
+                || validateNamePart(test, true).isValid();
     }
 
-    private static boolean isValidNamePart(String part) {
+    private static NamePartValidation validateNamePart(String part, boolean isInsideParentheses) {
+        String content = part;
+        if (content.startsWith("(")) {
+            if (isInsideParentheses) {
+                return NamePartValidation.invalid();
+            }
+            isInsideParentheses = true;
+            content = content.substring(1);
+        }
+        if (content.contains("(")) {
+            return NamePartValidation.invalid();
+        }
+
+        if (content.endsWith(")")) {
+            if (!isInsideParentheses) {
+                return NamePartValidation.invalid();
+            }
+            isInsideParentheses = false;
+            content = content.substring(0, content.length() - 1);
+        }
+        if (content.contains(")") || !isValidNamePartContent(content)) {
+            return NamePartValidation.invalid();
+        }
+        return new NamePartValidation(true, isInsideParentheses);
+    }
+
+    private static boolean isValidNamePartContent(String part) {
         boolean canEndPart = false;
         boolean canTakeCombiningMark = false;
+        boolean canTakePunctuation = false;
         for (int offset = 0; offset < part.length();) {
             int codePoint = part.codePointAt(offset);
+            int codePointLength = Character.charCount(codePoint);
             if (Character.isLetter(codePoint)) {
                 canEndPart = true;
                 canTakeCombiningMark = true;
+                canTakePunctuation = true;
             } else if (codePoint >= '0' && codePoint <= '9') {
                 canEndPart = true;
                 canTakeCombiningMark = false;
+                canTakePunctuation = true;
             } else if (isCombiningMark(codePoint)) {
                 if (!canTakeCombiningMark) {
                     return false;
                 }
             } else if (codePoint == '\'' || codePoint == '’' || codePoint == '-') {
-                if (!canEndPart) {
+                if (!canTakePunctuation) {
                     return false;
                 }
                 canEndPart = false;
                 canTakeCombiningMark = false;
+                canTakePunctuation = false;
+            } else if (codePoint == '.') {
+                if (!canTakePunctuation) {
+                    return false;
+                }
+                canEndPart = true;
+                canTakeCombiningMark = false;
+                canTakePunctuation = false;
+            } else if (codePoint == ',') {
+                if (!canTakePunctuation || offset + codePointLength != part.length()) {
+                    return false;
+                }
+                canEndPart = true;
+                canTakeCombiningMark = false;
+                canTakePunctuation = false;
             } else {
                 return false;
             }
-            offset += Character.charCount(codePoint);
+            offset += codePointLength;
         }
         return canEndPart;
     }
@@ -112,9 +165,18 @@ public class Name {
 
     private static boolean isNameConnector(String part) {
         return switch (part.toLowerCase(Locale.ROOT)) {
-            case "s/o", "d/o", "a/l", "a/p" -> true;
+            case "@", "s/o", "d/o", "a/l", "a/p" -> true;
             default -> false;
         };
+    }
+
+    /**
+     * Represents the result of validating one whitespace-delimited name part.
+     */
+    private record NamePartValidation(boolean isValid, boolean isInsideParentheses) {
+        private static NamePartValidation invalid() {
+            return new NamePartValidation(false, false);
+        }
     }
 
     @Override

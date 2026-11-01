@@ -119,6 +119,18 @@ public class AddStudentCommandParserTest {
     }
 
     @Test
+    public void parse_commonNamePunctuation_returnsAddStudentCommand() {
+        assertParsedStudent(" n/Ng Ah Kow @ Ng Kok Wee p/81000003",
+                new Student(new Name("Ng Ah Kow @ Ng Kok Wee"), new Phone("81000003"), null));
+        assertParsedStudent(" n/S. Ramasamy p/81000004",
+                new Student(new Name("S. Ramasamy"), new Phone("81000004"), null));
+        assertParsedStudent(" n/Tan Wei Ming (David) p/81000005",
+                new Student(new Name("Tan Wei Ming (David)"), new Phone("81000005"), null));
+        assertParsedStudent(" n/Tan Ah Kow Jr. p/81000006",
+                new Student(new Name("Tan Ah Kow Jr."), new Phone("81000006"), null));
+    }
+
+    @Test
     public void parse_formattedPhones_returnsAddStudentCommandWithNormalizedPhones() {
         Guardian guardian = new Guardian(new Name("Tan Mei Ling"), new Phone("91234567"));
         Student student = new Student(new Name("Aiden Tan"), new Phone("92345678"), guardian);
