@@ -1008,6 +1008,9 @@ testers are expected to do more *exploratory* testing.
    1. Test case: `addstudent n/Ryan Lim p/93210283`<br>
       Expected: A student with no guardian is added. The status message shows the added student's details.
 
+   1. Test case: `addstudent n/Ng Ah Kow @ Ng Kok Wee p/81000003`, followed by `addstudent n/S. Ramasamy p/81000004`, `addstudent n/Tan Wei Ming (David) p/81000005` and `addstudent n/Tan Ah Kow Jr. p/81000006`<br>
+      Expected: All four students are added. Their aliases, initials, parenthesized names and suffix punctuation are preserved in the displayed names.
+
    1. Test case: `addstudent n/Ryan Lim`<br>
       Expected: No student is added. The status message states that at least one phone number is required.
 

@@ -91,7 +91,7 @@ Format: `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`
 
 * At least one phone number is required: the student's own `p/`, or a guardian's `gp/`.
 * `gn/` and `gp/` must be given together.
-* Names may contain letters from any language, digits and spaces. Apostrophes (`'` or `’`) and hyphens (`-`) are accepted between letters or digits. The connectors `s/o`, `d/o`, `a/l` and `a/p` are accepted between name parts. Names must not be blank. New or edited names must be at most 70 characters long after extra spaces are removed.
+* Names may contain letters from any language, digits and spaces. Apostrophes (`'` or `’`) and hyphens (`-`) are accepted between letters or digits. Periods (`.`) are accepted after letters or digits, commas (`,`) are accepted at the end of name parts, and parentheses may enclose one or more name parts. The alias separator `@` and connectors `s/o`, `d/o`, `a/l` and `a/p` are accepted between name parts. Names must not be blank. New or edited names must be at most 70 characters long after extra spaces are removed.
 * A Singapore phone number must contain eight digits. It may use spaces or hyphens between digit groups and may start with `+65`. TutorReach removes the formatting and Singapore country code before displaying or saving the number. For example, both `9123 4567` and `+65 9123-4567` are stored as `91234567`.
 * An international phone number must start with `+` and its country code, and contain between 3 and 15 digits. TutorReach removes spaces and hyphens but retains the leading `+` and country code. For example, `+44 7700-900123` is stored as `+447700900123`.
 * Student and guardian phone numbers saved by v1.4 remain available after upgrading. New or edited numbers must follow the rules above.
@@ -107,6 +107,8 @@ Examples:
 * `addstudent n/Marcus Lim gn/Lim Hui Min gp/98761234` adds a student whose guardian is the only contact.
 * `addstudent n/Daniel Ng p/87654321` adds a student with their own phone number and no guardian.
 * `addstudent n/José Anne-Marie p/97654321 gn/Kumar s/o Ravi gp/98765432` adds names containing accented letters, a hyphen and a local name connector.
+* `addstudent n/Ng Ah Kow @ Ng Kok Wee p/81000003` adds a student whose name contains an alias.
+* `addstudent n/Tan Wei Ming (David) p/81000005` adds a student whose name contains a parenthesized additional name.
 * `addstudent n/Chloe Lim p/+65 8899-0011` adds a student with their own phone number and no guardian. The number is displayed and saved as `88990011`.
 
 ### Deleting a student: `deletestudent`
