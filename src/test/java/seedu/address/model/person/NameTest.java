@@ -40,15 +40,19 @@ public class NameTest {
         assertFalse(Name.isValidName("\u0301Jose")); // combining mark without a preceding letter
         assertFalse(Name.isValidName("1\u0301 Jose")); // combining mark after a digit
         assertFalse(Name.isValidName(". Peter")); // period without a preceding name character
+        assertFalse(Name.isValidName(", Peter")); // comma without a preceding name character
         assertFalse(Name.isValidName("Peter.. Tan")); // consecutive periods
         assertFalse(Name.isValidName("Tan,David")); // comma within a name part
         assertFalse(Name.isValidName("@ Peter")); // alias separator without a preceding name part
         assertFalse(Name.isValidName("Peter @")); // alias separator without a following name part
         assertFalse(Name.isValidName("Peter @ @ David")); // consecutive alias separators
+        assertFalse(Name.isValidName("Peter (David @ Smith)")); // alias separator inside parentheses
         assertFalse(Name.isValidName("Peter (David")); // unclosed parentheses
         assertFalse(Name.isValidName("Peter David)")); // closing parenthesis without an opening one
+        assertFalse(Name.isValidName("Peter Da)vid")); // closing parenthesis inside a name part
         assertFalse(Name.isValidName("Peter () David")); // empty parentheses
         assertFalse(Name.isValidName("Peter ((David))")); // nested parentheses
+        assertFalse(Name.isValidName("Peter (David (Junior))")); // nested parentheses across name parts
 
         // valid name
         assertTrue(Name.isValidName("peter jack")); // alphabets only
