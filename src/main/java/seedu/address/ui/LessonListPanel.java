@@ -41,6 +41,11 @@ public class LessonListPanel extends UiPart<Region> {
      * Displays each lesson using a {@link LessonCard}.
      */
     class LessonListViewCell extends ListCell<Lesson> {
+        LessonListViewCell() {
+            // size the cell to the list rather than its content, so long names wrap instead of scrolling sideways
+            setPrefWidth(0);
+        }
+
         @Override
         protected void updateItem(Lesson lesson, boolean empty) {
             super.updateItem(lesson, empty);
