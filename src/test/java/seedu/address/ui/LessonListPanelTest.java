@@ -51,6 +51,7 @@ public class LessonListPanelTest {
                     model.getAddressBook());
             LessonListPanel.LessonListViewCell cell = panel.new LessonListViewCell();
 
+            assertEquals(0, cell.getPrefWidth());
             cell.updateItem(lesson, false);
             assertNotNull(cell.getGraphic());
             assertEquals("Math", ((Label) cell.getGraphic().lookup("#lessonName")).getText());
