@@ -241,6 +241,8 @@ an immediately usable restore point. Repair the file while the app is closed, th
 
 Older students without IDs receive UUIDs in memory. These IDs are written on the next successful save;
 reopening an unchanged legacy file before that save generates new IDs. Lessons and enrolments require IDs.
+A lesson without an ID is an invalid record, so recovery skips it, reports it in the load warning and
+preserves its original data in the recovery backup.
 
 Stored student and guardian phone numbers use the legacy validation rule when loading, so numbers accepted
 by v1.4 remain available after upgrading. The stricter student-phone rule is applied only to new values parsed
@@ -1064,31 +1066,31 @@ testers are expected to do more *exploratory* testing.
 
 1. Editing a student while all students are shown
 
-   1. Prerequisites: List all students using `liststudents`. The first student has their own phone and a guardian, and is enrolled in at least one lesson.
+   1. Prerequisites: Start with an empty address book. Execute `addstudent n/Aiden Tan p/91234567 gn/Tan Mei gp/92345678`, `addlesson n/Math d/mon st/1600 et/1800`, `enrol s/1 l/1` and `liststudents`, in that order.
 
-   1. Test case: `editstudent 1 p/92345678`<br>
+   1. Test case: `editstudent 1 p/97654321`<br>
       Expected: Only the first student's phone number changes. Their name, guardian and lesson enrolments remain unchanged, and the status message shows the edited student's details.
 
    1. Test case: `editstudent 1 gn/Lim Mei gp/91234567`<br>
       Expected: Only the first student's guardian details are replaced. Their own details and lesson enrolments remain unchanged.
 
-   1. Test case: Repeat `editstudent 1 p/92345678` after the preceding test case.<br>
+   1. Test case: Repeat `editstudent 1 p/97654321` after the preceding test case.<br>
       Expected: No student is edited, and the data file is not rewritten. The status message shows an error stating that the incoming changes are identical to the current student details and asks the user to change at least one field.
 
-   1. Test case: `editstudent 1 p/92345678 gn/Lim Wei gp/98765432`<br>
+   1. Test case: `editstudent 1 p/97654321 gn/Lim Wei gp/98765432`<br>
       Expected: The unchanged phone number is accepted, the guardian details change and the address book is saved because at least one resulting field is different.
+
+   1. Test case: `editstudent 1 gn/Lim Hui`<br>
+      Expected: Only the first student's guardian name changes. The guardian phone and all other details remain unchanged.
 
    1. Test case: `editstudent 1 p/`<br>
       Expected: The first student's own phone is removed. Their guardian, identity and lesson enrolments remain unchanged.
 
-   1. Test case: `editstudent 1 p/92345678 gn/ gp/`<br>
-      Expected: The first student's own phone is set to `92345678` and their guardian is removed. Their identity and lesson enrolments remain unchanged.
+   1. Test case: `editstudent 1 p/97654321 gn/ gp/`<br>
+      Expected: The first student's own phone is set to `97654321` and their guardian is removed. Their identity and lesson enrolments remain unchanged.
 
    1. Test case: `editstudent 1 p/ gn/ gp/`<br>
       Expected: No student is edited because the result would have no contact number. The status message states that at least one phone number is required.
-
-   1. Test case: `editstudent 1 gn/Lim Hui`<br>
-      Expected: Only the first student's guardian name changes. The guardian phone and all other details remain unchanged.
 
    1. Other incorrect commands to try: `editstudent 1`, `editstudent 0 n/Aiden`, `editstudent 1 p/12`, `editstudent 1 n/Aiden n/Ryan`<br>
       Expected: No student is edited. The status message shows the relevant missing field, invalid index, invalid phone or duplicate-prefix error.
