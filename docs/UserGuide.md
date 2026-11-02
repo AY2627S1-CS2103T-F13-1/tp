@@ -21,6 +21,7 @@ TutorReach is a **desktop app for independent private tutors who teach secondary
 
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar tutorReach.jar`.<br>
    The TutorReach window should appear in a few seconds. On the first launch, TutorReach loads sample data if no saved data file exists.<br>
+   The screenshot below is an example of the window after lessons have been added; the first-launch sample data contains students but no lessons.<br>
    ![TutorReach main window](images/Ui.png)
 
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
@@ -202,6 +203,7 @@ Format: `listlessons [d/DAY]`
 * `DAY` is a day of the week, written in full, as at least its first three letters, or as `weds`, in any letter case; for example, `mon`, `tues`, `weds`, `Thurs` and `friday` all work.
 * A lesson that runs past midnight belongs to the day on which it starts.
 * Lessons are listed by day, then start time, so the panel reads like a timetable.
+* If no lessons match the selected day, the lesson panel is shown empty.
 * Running `listlessons` without `d/` clears the lesson filter.
 
 Examples:
