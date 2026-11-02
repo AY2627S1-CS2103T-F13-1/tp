@@ -33,6 +33,11 @@ public class ParserUtil {
     public static final String MESSAGE_INVALID_INDEX = "Index must be a positive integer.";
     public static final int MAX_NAME_LENGTH = 70;
     public static final String MESSAGE_NAME_TOO_LONG = "Names must be at most " + MAX_NAME_LENGTH + " characters long.";
+    public static final String MESSAGE_STUDENT_NAME_CONSTRAINTS =
+            "Student and guardian names should use English letters, spaces and common name punctuation. "
+                    + "Apostrophes and hyphens must appear between letters; periods may appear after letters; "
+                    + "commas may end name parts; parentheses must enclose name parts; and @, s/o, d/o, a/l "
+                    + "and a/p may appear between name parts. Names should not be blank.";
     public static final String MESSAGE_INVALID_DAY =
             "Day must be a day's name or at least its first 3 letters, e.g. mon, tues or friday.";
     public static final String MESSAGE_INVALID_TIME =
@@ -101,6 +106,22 @@ public class ParserUtil {
             throw new ParseException(Name.MESSAGE_CONSTRAINTS);
         }
         // only typed names are limited, so longer names saved by older releases still load
+        if (trimmedName.length() > MAX_NAME_LENGTH) {
+            throw new ParseException(MESSAGE_NAME_TOO_LONG);
+        }
+        return new Name(trimmedName);
+    }
+
+    /**
+     * Parses a new or edited student or guardian name. Stored names created by earlier versions may contain digits,
+     * but newly supplied names may not.
+     */
+    public static Name parseStudentName(String name) throws ParseException {
+        requireNonNull(name);
+        String trimmedName = name.trim().replaceAll(" +", " ");
+        if (!Name.isValidName(trimmedName) || trimmedName.chars().anyMatch(Character::isDigit)) {
+            throw new ParseException(MESSAGE_STUDENT_NAME_CONSTRAINTS);
+        }
         if (trimmedName.length() > MAX_NAME_LENGTH) {
             throw new ParseException(MESSAGE_NAME_TOO_LONG);
         }

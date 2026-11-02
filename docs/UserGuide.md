@@ -92,7 +92,8 @@ Format: `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`
 
 * At least one phone number is required: the student's own `p/`, or a guardian's `gp/`.
 * `gn/` and `gp/` must be given together.
-* Names may contain English letters, digits and spaces. Apostrophes (`'` or `’`) and hyphens (`-`) are accepted between letters or digits. Periods (`.`) are accepted after letters or digits, commas (`,`) are accepted at the end of name parts, and parentheses may enclose one or more name parts. The alias separator `@` and connectors `s/o`, `d/o`, `a/l` and `a/p` are accepted between name parts. Names must not be blank. New or edited names must be at most 70 characters long after extra spaces are removed.
+* New or edited student and guardian names may contain English letters and spaces. Apostrophes (`'` or `’`) and hyphens (`-`) are accepted between letters. Periods (`.`) are accepted after letters, commas (`,`) are accepted at the end of name parts, and parentheses may enclose one or more name parts. The alias separator `@` and connectors `s/o`, `d/o`, `a/l` and `a/p` are accepted between name parts. Names must not be blank and must be at most 70 characters long after extra spaces are removed.
+* Student and guardian names containing digits that were saved by earlier versions remain available and searchable. Their other details can still be edited, but a changed name must follow the current rules above.
 * A Singapore phone number must contain eight digits. It may use spaces or hyphens between digit groups, including several in a row, and may start with `+65`. TutorReach removes the formatting and Singapore country code before displaying or saving the number. For example, `9123 4567`, `9123 - 4567` and `+65 9123-4567` are all stored as `91234567`.
 * An international phone number must start with `+` and its country code, and contain between 3 and 15 digits. TutorReach removes spaces and hyphens but retains the leading `+` and country code. For example, `+44 7700-900123` is stored as `+447700900123`.
 * Student and guardian phone numbers saved by v1.4 remain available after upgrading. New or edited numbers must follow the rules above.
@@ -180,7 +181,7 @@ Format: `findstudent [n/NAME_KEYWORDS...] [gn/GUARDIAN_NAME_KEYWORDS...] [p/PHON
 * `p/` takes one phone number, or part of one, and searches both the student's own phone number and their guardian's phone number. You can type the number as it appears elsewhere: spaces and hyphens are ignored, and a full Singapore number may start with `+65`. For example, `p/9123 4567` and `p/+65 9123-4567` both find `91234567`.
 * The search is case-insensitive, and a keyword can match any part of a name or number; for example, `aid` matches `Aiden` and `4567` matches `91234567`.
 * Name searches also ignore the style of apostrophe, so `O’Connor` finds `O'Connor`.
-* Name keywords may contain the same letters, digits, apostrophes, hyphens and connectors accepted in student and guardian names. A keyword may also start or end with one apostrophe or hyphen, so `o'` finds `O'Connor` and `-marie` finds `Anne-Marie`.
+* Name keywords may contain letters, digits, apostrophes, hyphens and supported name connectors. Digits remain searchable for names saved by earlier versions. A keyword may also start or end with one apostrophe or hyphen, so `o'` finds `O'Connor` and `-marie` finds `Anne-Marie`.
 * Within `n/` or `gn/`, a student needs to match only one of the keywords; for example, `n/aid chl` finds both `Aiden Tan` and `Chloe Lim`.
 * If more than one prefix is given, a student must match all of them.
 * Each search replaces the current student filter.

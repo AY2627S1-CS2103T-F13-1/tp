@@ -47,6 +47,21 @@ public class StudentStorageTest {
     }
 
     @Test
+    public void read_namesWithDigits_preservesExistingStudentAndGuardian() throws Exception {
+        Path file = testFolder.resolve("digitNames.json");
+        Files.writeString(file, """
+                {"students":[{"name":"Aiden2","guardianName":"Parent2","guardianPhone":"91234567"}]}
+                """);
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(file);
+
+        Student student = storage.readAddressBook().orElseThrow().getStudentList().getFirst();
+
+        assertEquals("Aiden2", student.getName().fullName);
+        assertEquals("Parent2", student.getGuardian().orElseThrow().getName().fullName);
+        assertEquals("", storage.getLoadWarning());
+    }
+
+    @Test
     public void readAndSave_v14StudentPhones_preservesStudentsAndEnrolments() throws Exception {
         Path sourceFile = testFolder.resolve("v14.json");
         Files.writeString(sourceFile, """

@@ -156,6 +156,24 @@ public class EditStudentCommandTest {
     }
 
     @Test
+    public void execute_phoneEdit_nameWithDigitRetained() {
+        Student student = new Student(new Name("Aiden2"), new Phone("91234567"), null);
+        AddressBook book = new AddressBook();
+        book.addStudent(student);
+        Model testModel = new ModelManager(book, new UserPrefs());
+        Phone updatedPhone = new Phone("92345678");
+        EditStudentDescriptor descriptor = createDescriptor(null, updatedPhone, null);
+        EditStudentCommand command = new EditStudentCommand(INDEX_FIRST_PERSON, descriptor);
+        Student editedStudent = new Student(student.getId(), student.getName(), updatedPhone, null);
+        Model expectedModel = new ModelManager(book, new UserPrefs());
+        expectedModel.setStudent(student, editedStudent);
+
+        assertCommandSuccess(command, testModel,
+                String.format(EditStudentCommand.MESSAGE_EDIT_STUDENT_SUCCESS, Messages.format(editedStudent)),
+                expectedModel);
+    }
+
+    @Test
     public void execute_unchangedAndChangedFields_success() {
         Phone updatedPhone = new Phone("92345678");
         EditStudentDescriptor descriptor = createDescriptor(AIDEN.getName(), updatedPhone,

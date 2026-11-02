@@ -103,6 +103,17 @@ public class ParserUtilTest {
     }
 
     @Test
+    public void parseStudentName_nameWithDigit_throwsParseException() {
+        assertThrows(ParseException.class, ParserUtil.MESSAGE_STUDENT_NAME_CONSTRAINTS, () ->
+                ParserUtil.parseStudentName("Rachel 2 Walker"));
+    }
+
+    @Test
+    public void parseStudentName_validValue_returnsName() throws Exception {
+        assertEquals(new Name(VALID_NAME), ParserUtil.parseStudentName(VALID_NAME));
+    }
+
+    @Test
     public void parsePhone_null_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> ParserUtil.parsePhone((String) null));
     }

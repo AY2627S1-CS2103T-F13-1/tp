@@ -53,7 +53,7 @@ public class AddStudentCommandParser implements Parser<AddStudentCommand> {
             throw new ParseException(Student.MESSAGE_CONTACT_REQUIRED);
         }
 
-        Name name = ParserUtil.parseName(argMultimap.getValue(PREFIX_NAME).orElseThrow());
+        Name name = ParserUtil.parseStudentName(argMultimap.getValue(PREFIX_NAME).orElseThrow());
         Phone phone = phoneValue.isPresent() ? ParserUtil.parseStudentPhone(phoneValue.get()) : null;
         Guardian guardian = parseGuardian(guardianNameValue, guardianPhoneValue);
 
@@ -65,7 +65,7 @@ public class AddStudentCommandParser implements Parser<AddStudentCommand> {
         if (nameValue.isEmpty()) {
             return null;
         }
-        Name name = ParserUtil.parseName(nameValue.get());
+        Name name = ParserUtil.parseStudentName(nameValue.get());
         Phone phone = ParserUtil.parseStudentPhone(phoneValue.orElseThrow());
         return new Guardian(name, phone);
     }

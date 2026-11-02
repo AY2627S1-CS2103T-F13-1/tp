@@ -95,9 +95,12 @@ public class EditStudentCommandParserTest {
 
     @Test
     public void parse_invalidValues_throwsParseException() {
-        assertParseFailure(parser, "1 n/Aiden!", Name.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, "1 n/Aiden!", ParserUtil.MESSAGE_STUDENT_NAME_CONSTRAINTS);
+        assertParseFailure(parser, "1 n/Aiden2", ParserUtil.MESSAGE_STUDENT_NAME_CONSTRAINTS);
         assertParseFailure(parser, "1 p/phone", Phone.MESSAGE_STUDENT_PHONE_CONSTRAINTS);
-        assertParseFailure(parser, "1 gn/Tan! gp/91234567", Name.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, "1 gn/Tan! gp/91234567", ParserUtil.MESSAGE_STUDENT_NAME_CONSTRAINTS);
+        assertParseFailure(parser, "1 gn/Parent2 gp/91234567", ParserUtil.MESSAGE_STUDENT_NAME_CONSTRAINTS);
+        assertParseFailure(parser, "1 gn/Parent2", ParserUtil.MESSAGE_STUDENT_NAME_CONSTRAINTS);
         assertParseFailure(parser, "1 gn/Tan gp/phone", Phone.MESSAGE_STUDENT_PHONE_CONSTRAINTS);
     }
 

@@ -81,9 +81,13 @@ public class AddStudentCommandParserTest {
 
     @Test
     public void parse_invalidValues_throwsParseException() {
-        assertParseFailure(parser, " n/Aiden! p/93210283", Name.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, " n/Aiden! p/93210283", ParserUtil.MESSAGE_STUDENT_NAME_CONSTRAINTS);
+        assertParseFailure(parser, " n/Aiden2 p/93210283", ParserUtil.MESSAGE_STUDENT_NAME_CONSTRAINTS);
+        assertParseFailure(parser, " n/123 p/93210283", ParserUtil.MESSAGE_STUDENT_NAME_CONSTRAINTS);
         assertParseFailure(parser, " n/Aiden p/phone", Phone.MESSAGE_STUDENT_PHONE_CONSTRAINTS);
-        assertParseFailure(parser, " n/Aiden gn/Tan! gp/91234567", Name.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, " n/Aiden gn/Tan! gp/91234567", ParserUtil.MESSAGE_STUDENT_NAME_CONSTRAINTS);
+        assertParseFailure(parser, " n/Aiden gn/Parent2 gp/91234567",
+                ParserUtil.MESSAGE_STUDENT_NAME_CONSTRAINTS);
         assertParseFailure(parser, " n/Aiden gn/Tan gp/phone", Phone.MESSAGE_STUDENT_PHONE_CONSTRAINTS);
     }
 
