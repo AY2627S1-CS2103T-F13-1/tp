@@ -7,7 +7,7 @@ participant ":LogicManager" as LogicManager LOGIC_COLOR
 participant ":AddressBookParser" as AddressBookParser LOGIC_COLOR
 participant ":EditStudentCommandParser" as EditStudentCommandParser LOGIC_COLOR
 participant "e:EditStudentCommand" as EditStudentCommand LOGIC_COLOR
-participant ":StudentPhoneConflictValidator" as StudentPhoneConflictValidator LOGIC_COLOR
+participant "StudentPhoneConflictValidator" as StudentPhoneConflictValidator LOGIC_COLOR
 participant "r:CommandResult" as CommandResult LOGIC_COLOR
 end box
 
@@ -106,6 +106,11 @@ deactivate CommandResult
 
 EditStudentCommand --> LogicManager : r
 deactivate EditStudentCommand
+
+note over LogicManager
+  The subsequent persistence flow is covered
+  by the separate save sequence diagram.
+end note
 
 [<-- LogicManager : r
 deactivate LogicManager
