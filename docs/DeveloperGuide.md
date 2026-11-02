@@ -950,10 +950,10 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 ### Non-Functional Requirements
 
-1.  Should work on any _mainstream OS_ as long as it has Java `25` or above installed.
-2.  A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should be able to accomplish most of the tasks faster using commands than using the mouse.
+1.  Should run on Windows, macOS, and Linux when Java `25` or later is installed.
+2.  A tutor familiar with the documented command formats should be able to execute every supported command using only the keyboard after TutorReach starts.
 3.  Should work without an internet connection.
-4.  Should save the data after every command that changes it, so that no data is lost if the app is closed or the computer shuts down unexpectedly after that command.
+4.  Should save stored data before reporting successful completion of each command that changes it. If saving fails, TutorReach should report the failure and restore the data and displayed lists to their state before the command.
 5.  Should store the data locally in a human-editable text file, so that advanced users can edit or back up the data directly.
 6.  Should not send any student or guardian data off the user's computer.
 7.  Should run from a single JAR file without an installer, and the JAR file should not exceed 100MB.
@@ -962,7 +962,6 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 ### Glossary
 
-* **Mainstream OS**: Windows, Linux, Unix, or macOS
 * **Tutor**: The user of TutorReach; an independent private tutor
 * **Student**: A person the tutor teaches; stored with their name, an optional phone number and an optional guardian
 * **Guardian**: A parent or other adult responsible for a student, stored as part of that student's record with a name and phone number
