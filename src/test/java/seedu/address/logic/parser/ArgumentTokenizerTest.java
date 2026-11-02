@@ -137,6 +137,39 @@ public class ArgumentTokenizerTest {
     }
 
     @Test
+    public void tokenize_nameConnectorInName_staysInName() {
+        Prefix dSlash = new Prefix("d/");
+        ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(
+                " n/Siti d/o Ahmad d/mon", CliSyntax.PREFIX_NAME, dSlash);
+        assertArgumentPresent(argMultimap, CliSyntax.PREFIX_NAME, "Siti d/o Ahmad");
+        assertArgumentPresent(argMultimap, dSlash, "mon");
+
+        argMultimap = ArgumentTokenizer.tokenize(" gn/Siti d/o", CliSyntax.PREFIX_GUARDIAN_NAME, dSlash);
+        assertArgumentPresent(argMultimap, CliSyntax.PREFIX_GUARDIAN_NAME, "Siti d/o");
+        assertArgumentAbsent(argMultimap, dSlash);
+    }
+
+    @Test
+    public void tokenize_connectorLikeWordOutsideName_readAsPrefix() {
+        Prefix dSlash = new Prefix("d/");
+
+        // no name before it
+        ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(" d/o n/Siti", CliSyntax.PREFIX_NAME, dSlash);
+        assertArgumentPresent(argMultimap, dSlash, "o");
+        assertArgumentPresent(argMultimap, CliSyntax.PREFIX_NAME, "Siti");
+
+        // another value before it
+        argMultimap = ArgumentTokenizer.tokenize(" n/Siti st/1600 d/o",
+                CliSyntax.PREFIX_NAME, CliSyntax.PREFIX_START_TIME, dSlash);
+        assertArgumentPresent(argMultimap, dSlash, "o");
+
+        // not a whole word
+        argMultimap = ArgumentTokenizer.tokenize(" n/Siti d/on", CliSyntax.PREFIX_NAME, dSlash);
+        assertArgumentPresent(argMultimap, CliSyntax.PREFIX_NAME, "Siti");
+        assertArgumentPresent(argMultimap, dSlash, "on");
+    }
+
+    @Test
     public void equalsMethod() {
         Prefix aaa = new Prefix("aaa");
 

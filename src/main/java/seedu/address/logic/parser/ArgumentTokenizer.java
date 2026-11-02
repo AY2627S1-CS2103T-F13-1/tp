@@ -2,6 +2,7 @@ package seedu.address.logic.parser;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,6 +18,7 @@ import seedu.address.logic.parser.exceptions.ParseException;
  * 2. Leading and trailing whitespaces of an argument value will be discarded.<br>
  * 3. An argument may be repeated and all its values will be accumulated e.g. the value of {@code t/}
  *    in the above example.<br>
+ * 4. A name connector such as {@code d/o} inside a name is part of the name, even if {@code d/} is a prefix.<br>
  */
 public class ArgumentTokenizer {
 
@@ -84,6 +86,28 @@ public class ArgumentTokenizer {
     }
 
     /**
+     * Removes the positions in {@code sortedPositions} that are name connectors inside a name, as in
+     * {@code n/Math d/o Science d/mon}, where only the second {@code d/} is a prefix. Outside a name, as in
+     * {@code d/o n/Math}, the word stays a prefix, so that its value is the one reported as invalid.
+     */
+    private static void removeNameConnectors(String argsString, List<PrefixPosition> sortedPositions) {
+        Prefix currentPrefix = null;
+        Iterator<PrefixPosition> positions = sortedPositions.iterator();
+        while (positions.hasNext()) {
+            PrefixPosition position = positions.next();
+            if (isNamePrefix(currentPrefix) && isNameConnector(argsString, position.getStartPosition())) {
+                positions.remove();
+            } else {
+                currentPrefix = position.getPrefix();
+            }
+        }
+    }
+
+    private static boolean isNamePrefix(Prefix prefix) {
+        return CliSyntax.PREFIX_NAME.equals(prefix) || CliSyntax.PREFIX_GUARDIAN_NAME.equals(prefix);
+    }
+
+    /**
      * Finds all zero-based prefix positions in the given arguments string.
      *
      * @param argsString Arguments string of the form: {@code preamble <prefix>value <prefix>value ...}
@@ -143,6 +167,7 @@ public class ArgumentTokenizer {
 
         // Sort by start position
         prefixPositions.sort((prefix1, prefix2) -> prefix1.getStartPosition() - prefix2.getStartPosition());
+        removeNameConnectors(argsString, prefixPositions);
 
         // Insert a PrefixPosition to represent the preamble
         PrefixPosition preambleMarker = new PrefixPosition(new Prefix(""), 0);

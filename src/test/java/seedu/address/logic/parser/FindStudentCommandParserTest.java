@@ -165,6 +165,14 @@ public class FindStudentCommandParserTest {
     }
 
     @Test
+    public void parse_keywordCutAtPunctuation_returnsFindStudentCommand() {
+        assertParseSuccess(parser, " n/o'", new FindStudentCommand(
+                new StudentContainsKeywordsPredicate(List.of("o'"), List.of())));
+        assertParseSuccess(parser, " gn/-marie", new FindStudentCommand(
+                new StudentContainsKeywordsPredicate(List.of(), List.of("-marie"))));
+    }
+
+    @Test
     public void parse_studentAndGuardianNameKeywords_returnsFindStudentCommand() {
         FindStudentCommand expectedCommand = new FindStudentCommand(
                 new StudentContainsKeywordsPredicate(List.of("Aiden"), List.of("Mei", "Ling")));

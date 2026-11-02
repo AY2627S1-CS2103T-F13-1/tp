@@ -432,14 +432,14 @@ Step 4. Otherwise, the command calls `Model#unenrolStudent()`, which removes the
 
 1. `AddressBookParser` first turns every Unicode space in the command, such as a no-break space pasted from a PDF or a messaging app, into a plain space, and drops zero-width characters (`StringUtil#normalizeSpaces()`).
 1. `FindStudentCommandParser` rejects a word that looks like a prefix but is not `n/`, `gn/` or `p/` (`ArgumentTokenizer#verifyNoUnknownPrefixes()`), so the error names it instead of blaming a valid value.
-1. It splits the `n/` and `gn/` values into keywords, each of which must be a valid name. It reads the `p/` value as one phone number: spaces, hyphens and a leading `+` are allowed, and only the digits are kept.
+1. It splits the `n/` and `gn/` values into keywords, each of which must be a valid name part, which may be cut at an apostrophe or hyphen, as in `o'`. It reads the `p/` value as one phone number: spaces, hyphens and a leading `+` are allowed, and only the digits are kept.
 1. `FindStudentCommand#execute()` passes the predicate to `Model#updateFilteredStudentList()`, which replaces any earlier search or lesson filter.
 
 The activity diagram below shows how the predicate decides whether a student matches. Name keywords may match any part of a name. Before comparing, the predicate puts both the name and the keyword in lower case, removes the accents of Latin letters (combining marks U+0300 to U+036F after Unicode decomposition) and makes curly apostrophes straight, so `jose` finds `José`. Marks of other scripts, such as Tamil vowel signs, are kept, because they are part of their letters.
 
 ![How findstudent decides whether a student matches](images/FindStudentActivityDiagram.png)
 
-A searched number also matches a stored number of at least seven digits that it ends with, if no more than three digits come before it. This finds a number copied with its country code, such as `+65 9123 4567`, while a short stored number, such as `567`, is only found as part of a longer search.
+A searched number also matches a stored number of at least seven digits if it is that number with `65` in front. This finds a number copied with the Singapore country code, such as `+65 9123 4567`, while a short stored number, such as `567`, is only found as part of a longer search, and `+852 9123 4567` does not find the local number `91234567`. An international number is stored with its country code, so it is found by the same digits.
 
 #### Design considerations:
 
@@ -455,13 +455,13 @@ A searched number also matches a stored number of at least seven digits that it 
 
 **Aspect: How to match a number with a country code:**
 
-* **Alternative 1 (current choice):** Match a stored number that the search ends with, if at most three digits come before it.
-  * Pros: Works for any country code without a list of codes.
-  * Cons: A full number from another country with the same last digits would also match, which is unlikely for numbers of seven or more digits.
+* **Alternative 1 (current choice):** Match a stored number only with the Singapore country code, `65`, in front.
+  * Pros: A caller from another country never finds a family with the same last digits.
+  * Cons: A legacy number saved without its foreign country code is not found when searched with that code, though its own digits still find it.
 
-* **Alternative 2:** Strip known country codes, such as `65`, before matching.
-  * Pros: Exact for the codes on the list.
-  * Cons: Needs a list of codes, and fails for codes not on it.
+* **Alternative 2:** Match a stored number that the search ends with, if at most three digits come before it.
+  * Pros: Works for any country code without a list of codes.
+  * Cons: A foreign caller ID such as `+852 9123 4567` finds the unrelated local number `91234567`.
 
 ### \[Proposed\] Undo/redo feature
 
@@ -780,7 +780,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 1b. Tutor gives a phone number, or part of one, instead of, or as well as, names.
 
-  Use case resumes at step 2, with TutorReach matching students whose own or guardian's phone number contains it, ignoring spaces, hyphens and any country code in front of a full number.
+  Use case resumes at step 2, with TutorReach matching students whose own or guardian's phone number contains it, ignoring spaces, hyphens and the Singapore country code in front of a full number.
 
 * 1c. No keywords are given, or the phone number contains a character other than a digit, space, hyphen or leading `+`.
 

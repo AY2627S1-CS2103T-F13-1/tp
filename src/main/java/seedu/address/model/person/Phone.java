@@ -14,7 +14,7 @@ public class Phone {
                     + "and may start with +";
     public static final String MESSAGE_STUDENT_PHONE_CONSTRAINTS =
             "Phone must be 8 local digits, +65 with 8 digits, or + with 3-15 digits.";
-    private static final String SINGAPORE_COUNTRY_CODE = "65";
+    public static final String SINGAPORE_COUNTRY_CODE = "65";
     private static final int SINGAPORE_PHONE_DIGIT_COUNT = 8;
     private static final int MINIMUM_PHONE_DIGIT_COUNT = 3;
     private static final int MAXIMUM_INTERNATIONAL_DIGIT_COUNT = 15;
@@ -47,7 +47,7 @@ public class Phone {
             if (isAsciiDigit(currentCharacter)) {
                 digitCount++;
                 previousCharacterIsDigit = true;
-            } else if ((currentCharacter == ' ' || currentCharacter == '-') && previousCharacterIsDigit) {
+            } else if ((currentCharacter == ' ' || currentCharacter == '-') && digitCount > 0) {
                 previousCharacterIsDigit = false;
             } else {
                 return false;

@@ -188,6 +188,17 @@ public class EditLessonCommandParserTest {
         assertThrows(NullPointerException.class, () -> parser.parse(null));
     }
 
+    @Test
+    public void parse_nameConnectorInLessonName_staysInLessonName() {
+        assertParseSuccess(parser, "1 n/Math d/o Science", command(descriptorWithName("Math d/o Science")));
+        assertParseSuccess(parser, "1 n/Math d/o", command(descriptorWithName("Math d/o")));
+    }
+
+    @Test
+    public void parse_dayPrefixOutsideName_stillReadAsDay() {
+        assertParseFailure(parser, "1 d/o", ParserUtil.MESSAGE_INVALID_DAY);
+    }
+
     private static EditLessonCommand command(EditLessonDescriptor descriptor) {
         return new EditLessonCommand(INDEX_FIRST_LESSON, descriptor);
     }
