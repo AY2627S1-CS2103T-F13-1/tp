@@ -28,6 +28,9 @@ public class PhoneTest {
         assertEquals("91234567", new Phone("+65 9123-4567").value);
         assertEquals("+447700900123", new Phone("+44 7700-900123").value);
         assertEquals("+651234", new Phone("+65 1234").value);
+        assertEquals("91234567", new Phone("9123  4567").value);
+        assertEquals("91234567", new Phone("9123 - 4567").value);
+        assertEquals("91234567", new Phone("+65  9123 - 4567").value);
     }
 
     @Test
@@ -50,9 +53,9 @@ public class PhoneTest {
         assertFalse(Phone.isValidPhone("++6591234567")); // repeated plus signs
         assertFalse(Phone.isValidPhone("-91234567")); // leading separator
         assertFalse(Phone.isValidPhone("91234567-")); // trailing separator
-        assertFalse(Phone.isValidPhone("9123--4567")); // repeated separators
-        assertFalse(Phone.isValidPhone("9123  4567")); // repeated separators
-        assertFalse(Phone.isValidPhone("9123 -4567")); // adjacent separators
+        assertFalse(Phone.isValidPhone("  91234567")); // leading separators
+        assertFalse(Phone.isValidPhone("+ 91234567")); // separator before the first digit
+        assertFalse(Phone.isValidPhone("91234567 - ")); // trailing separators
         assertFalse(Phone.isValidPhone("９１２３４５６７")); // non-ASCII digits
 
         // valid phone numbers
@@ -63,6 +66,9 @@ public class PhoneTest {
         assertTrue(Phone.isValidPhone("+65 9312-1534"));
         assertTrue(Phone.isValidPhone("+44 7700-900123")); // international number
         assertTrue(Phone.isValidPhone("+123")); // minimum international length
+        assertTrue(Phone.isValidPhone("9123  4567")); // repeated separators
+        assertTrue(Phone.isValidPhone("9123--4567")); // repeated separators
+        assertTrue(Phone.isValidPhone("9123 - 4567")); // adjacent separators
         assertTrue(Phone.isValidPhone("1".repeat(10_000))); // legacy phone value without a length limit
         assertTrue(Phone.isValidPhone("1 ".repeat(2_999) + "1")); // many formatted groups
     }
@@ -85,6 +91,8 @@ public class PhoneTest {
         assertTrue(Phone.isValidStudentPhone("91234567"));
         assertTrue(Phone.isValidStudentPhone("9123-4567"));
         assertTrue(Phone.isValidStudentPhone("+65 9123-4567"));
+        assertTrue(Phone.isValidStudentPhone("8123  4567"));
+        assertTrue(Phone.isValidStudentPhone("8123 - 4567"));
 
         // valid international numbers
         assertTrue(Phone.isValidStudentPhone("+123"));

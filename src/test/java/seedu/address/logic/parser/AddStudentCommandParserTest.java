@@ -138,6 +138,14 @@ public class AddStudentCommandParserTest {
         assertParsedStudent(" n/Aiden Tan p/9234 5678 gn/Tan Mei Ling gp/+65 9123-4567", student);
     }
 
+    @Test
+    public void parse_phonesWithRepeatedSeparators_returnsAddStudentCommandWithNormalizedPhones() {
+        Guardian guardian = new Guardian(new Name("Tan Mei Ling"), new Phone("91234567"));
+        Student student = new Student(new Name("Aiden Tan"), new Phone("92345678"), guardian);
+
+        assertParsedStudent(" n/Aiden Tan p/9234  5678 gn/Tan Mei Ling gp/9123 - 4567", student);
+    }
+
     private void assertParsedStudent(String input, Student expected) {
         try {
             ModelManager model = new ModelManager();

@@ -304,6 +304,32 @@ public class AddLessonCommandParserTest {
         }
     }
 
+    @Test
+    public void parse_nameConnectorInLessonName_staysInLessonName() {
+        // d/o must behave like the other connectors even though d/ is also the day prefix
+        for (String name : List.of("Math d/o", "Math d/o Science", "Math s/o", "Math a/l", "Math a/p")) {
+            assertParseSuccess(parser, " n/" + name + DAY_DESC + START_DESC + END_DESC,
+                    addCommand(name, DayOfWeek.MONDAY, "16:00", "18:00"));
+        }
+        assertParseSuccess(parser, DAY_DESC + START_DESC + END_DESC + " n/Math d/o Science",
+                addCommand("Math d/o Science", DayOfWeek.MONDAY, "16:00", "18:00"));
+    }
+
+    @Test
+    public void parse_nameConnectorInNameWithoutDay_throwsParseExceptionNamingDay() {
+        assertParseFailure(parser, " n/Math d/o" + START_DESC + END_DESC, missing("d/DAY"));
+    }
+
+    @Test
+    public void parse_dayPrefixOutsideName_stillReadAsDay() {
+        // d/o is read as a connector only inside a name
+        assertParseFailure(parser, " d/o" + NAME_DESC + START_DESC + END_DESC, ParserUtil.MESSAGE_INVALID_DAY);
+        assertParseFailure(parser, NAME_DESC + START_DESC + " d/o" + END_DESC, ParserUtil.MESSAGE_INVALID_DAY);
+        assertParseFailure(parser, NAME_DESC + " d/on" + START_DESC + END_DESC, ParserUtil.MESSAGE_INVALID_DAY);
+        assertParseFailure(parser, NAME_DESC + DAY_DESC + " d/o" + START_DESC + END_DESC,
+                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_DAY));
+    }
+
     private static String missing(String fields) {
         return String.format(MESSAGE_INVALID_COMMAND_FORMAT,
                 String.format(AddLessonCommandParser.MESSAGE_MISSING_FIELDS, fields) + "\n"
