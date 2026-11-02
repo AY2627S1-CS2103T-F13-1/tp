@@ -31,7 +31,7 @@ endif
 if () then ([p/ given])
     if () then ([neither phone contains the digits,
     nor do they end with a full phone
-    after a country code])
+    after the code 65])
         :Not matched;
         stop
     else ([a phone matches])
