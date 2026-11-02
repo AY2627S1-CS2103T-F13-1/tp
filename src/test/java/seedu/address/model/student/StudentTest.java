@@ -34,6 +34,10 @@ public class StudentTest {
         assertTrue(student.hasSameName(new Student(new Name("aiden  tan "), new Phone("88888888"), null)));
         assertTrue(student.hasSameName(new Student(name, null, guardian)));
         assertFalse(student.hasSameName(new Student(new Name("Aiden Lim"), phone, null)));
+        assertFalse(new Student(new Name("Aiden1"), phone, null)
+                .hasSameName(new Student(new Name("Aiden2"), phone, null)));
+        assertFalse(new Student(new Name("123"), phone, null)
+                .hasSameName(new Student(new Name("456"), phone, null)));
         assertFalse(student.hasSameName(null));
     }
 
