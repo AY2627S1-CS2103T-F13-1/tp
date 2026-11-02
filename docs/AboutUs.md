@@ -5,7 +5,7 @@ title: About Us
 
 We are a team based in the [School of Computing, National University of Singapore](https://www.comp.nus.edu.sg).
 
-You can reach us at the email `seer[at]comp.nus.edu.sg`
+You can reach us by opening an issue on our [GitHub repository](https://github.com/AY2627S1-CS2103T-F13-1/tp/issues).
 
 ## Project team
 
@@ -23,7 +23,7 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 <img src="images/keejuanfoo.png" width="200px">
 
-[[github](http://github.com/keejuanfoo)]]
+[[github](http://github.com/keejuanfoo)]
 
 * Role: Product Manager
 * Responsibilities: Data + Testing
