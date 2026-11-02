@@ -14,8 +14,14 @@ title: Developer Guide
 
 Notable uses of AI:
 
-* Claude Code and Codex were used to create test cases for alpha and beta testing.
-* Claude Code and Codex were used for general development.
+* Claude Code and Codex were used in development by Ravan (`ravanc`), Foo Kee Juan (`keejuanfoo`), Ling Si Han (`LINGSIHAN`), Wee Yen Zhe (`randomwish`) and Way Yan (`greysome`).
+* The tools were used for:
+  * **Implementation:** drafting features and bug fixes.
+  * **Automated testing:** writing and extending JUnit tests, including edge cases.
+  * **Documentation:** updating the User Guide and Developer Guide, including the PlantUML diagrams.
+  * **Alpha and beta testing:** creating test cases, running commands against the built JAR file and triaging the bugs found.
+  * **Pull request checks:** reviewing changes against the project's requirements before merging.
+* Each team member remains responsible for the work they submitted.
 
 --------------------------------------------------------------------------------------------------------------------
 
