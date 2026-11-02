@@ -285,6 +285,20 @@ public class StudentContainsKeywordsPredicateTest {
     }
 
     @Test
+    public void test_nameKeywordCutAtPunctuation_returnsTrue() {
+        Student straight = new Student(new Name("Liam O'Connor"), new Phone("81112222"), null);
+        Student curly = new Student(new Name("Liam O’Connor"), new Phone("81112223"), null);
+        Student hyphenated = new Student(new Name("Anne-Marie Tan"), new Phone("81112224"), null);
+        StudentContainsKeywordsPredicate apostrophe = new StudentContainsKeywordsPredicate(List.of("o'"), List.of());
+
+        assertTrue(apostrophe.test(straight));
+        assertTrue(apostrophe.test(curly));
+        assertFalse(apostrophe.test(hyphenated));
+        assertTrue(new StudentContainsKeywordsPredicate(List.of("-marie"), List.of()).test(hyphenated));
+        assertTrue(new StudentContainsKeywordsPredicate(List.of("anne-"), List.of()).test(hyphenated));
+    }
+
+    @Test
     public void test_phoneKeywordWithCountryCode_returnsTrue() {
         // the keyword ends with the whole stored number, as when a caller ID shows +65 in front
         assertTrue(phonePredicate("6593210283").test(ryan));
@@ -293,6 +307,15 @@ public class StudentContainsKeywordsPredicateTest {
 
         // a different number with the same country code does not match
         assertFalse(phonePredicate("6593210284").test(ryan));
+    }
+
+    @Test
+    public void test_phoneKeywordWithForeignCountryCode_returnsFalse() {
+        // stored numbers without a country code are Singapore numbers, so another country's caller is someone else
+        assertFalse(phonePredicate("85291234567").test(aiden));
+        assertFalse(phonePredicate("4491234567").test(aiden));
+        assertFalse(phonePredicate("191234567").test(aiden));
+        assertFalse(phonePredicate("16591234567").test(aiden));
     }
 
     @Test
@@ -311,11 +334,8 @@ public class StudentContainsKeywordsPredicateTest {
         Student withExtension = new Student(new Name("Short Num"), new Phone("567"), null);
         assertFalse(phonePredicate("6591234567").test(withExtension));
         assertFalse(phonePredicate("15550567").test(withExtension));
+        assertFalse(phonePredicate("65567").test(withExtension));
         assertTrue(phonePredicate("567").test(withExtension));
-
-        // a country code has at most three digits
-        assertFalse(phonePredicate("123493210283").test(ryan));
-        assertTrue(phonePredicate("12393210283").test(ryan));
     }
 
     @Test

@@ -89,6 +89,12 @@ public class NameTest {
         assertFalse(Name.isValidSearchKeyword(""));
         assertFalse(Name.isValidSearchKeyword("Anne Marie"));
         assertFalse(Name.isValidSearchKeyword("a/b"));
+        assertFalse(Name.isValidSearchKeyword("'")); // nothing but punctuation
+        assertFalse(Name.isValidSearchKeyword("-"));
+        assertFalse(Name.isValidSearchKeyword("''"));
+        assertFalse(Name.isValidSearchKeyword("o''")); // repeated punctuation is a typo, even at an edge
+        assertFalse(Name.isValidSearchKeyword("--ann"));
+        assertFalse(Name.isValidSearchKeyword("Anne--Marie"));
 
         assertTrue(Name.isValidSearchKeyword("José"));
         assertTrue(Name.isValidSearchKeyword("Anne-Marie"));
@@ -100,6 +106,12 @@ public class NameTest {
         assertTrue(Name.isValidSearchKeyword("Tan,"));
         assertTrue(Name.isValidSearchKeyword("(Tan"));
         assertTrue(Name.isValidSearchKeyword("Lian)"));
+        assertTrue(Name.isValidSearchKeyword("o'")); // part of a name, cut at its punctuation
+        assertTrue(Name.isValidSearchKeyword("o’"));
+        assertTrue(Name.isValidSearchKeyword("'connor"));
+        assertTrue(Name.isValidSearchKeyword("anne-"));
+        assertTrue(Name.isValidSearchKeyword("-marie"));
+        assertTrue(Name.isValidSearchKeyword("-ann-"));
     }
 
     @Test
