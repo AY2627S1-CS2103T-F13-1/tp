@@ -65,7 +65,7 @@ TutorReach is a **desktop app for independent private tutors who teach secondary
 
 * Each prefix can be supplied at most once. Repeated prefixes are rejected.
 
-* A word of one or two lower-case letters followed by `/`, such as `w/` or `x/`, or a prefix typed in capitals, such as `N/`, is read as a prefix. Such a word therefore cannot be part of a value, even where `/` is allowed, and if the command does not take that prefix, the error names it. For example, in a lesson name, write `Chem with Lab` instead of `Chem w/ Lab`. Longer words are fine, as in `Physics/Chem`. The supported name connectors `s/o`, `d/o`, `a/l` and `a/p` are exceptions and can be used in student and guardian names.
+* A word of one or two lower-case letters followed by `/`, such as `w/` or `x/`, or a prefix typed in capitals, such as `N/`, is read as a prefix. Such a word therefore cannot be part of a value, even where `/` is allowed, and if the command does not take that prefix, the error names it. For example, in a lesson name, write `Chem with Lab` instead of `Chem w/ Lab`. Longer words are fine, as in `Physics/Chem`. The supported name connectors `s/o`, `d/o`, `a/l` and `a/p` are exceptions and can be used in student, guardian and lesson names, as in `Math d/o Science`.
 
 * Extraneous parameters for commands that take no parameters, such as `help` and `exit`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
@@ -92,7 +92,7 @@ Format: `addstudent n/NAME [p/PHONE] [gn/GUARDIAN_NAME gp/GUARDIAN_PHONE]`
 * At least one phone number is required: the student's own `p/`, or a guardian's `gp/`.
 * `gn/` and `gp/` must be given together.
 * Names may contain letters from any language, digits and spaces. Apostrophes (`'` or `’`) and hyphens (`-`) are accepted between letters or digits. Periods (`.`) are accepted after letters or digits, commas (`,`) are accepted at the end of name parts, and parentheses may enclose one or more name parts. The alias separator `@` and connectors `s/o`, `d/o`, `a/l` and `a/p` are accepted between name parts. Names must not be blank. New or edited names must be at most 70 characters long after extra spaces are removed.
-* A Singapore phone number must contain eight digits. It may use spaces or hyphens between digit groups and may start with `+65`. TutorReach removes the formatting and Singapore country code before displaying or saving the number. For example, both `9123 4567` and `+65 9123-4567` are stored as `91234567`.
+* A Singapore phone number must contain eight digits. It may use spaces or hyphens between digit groups, including several in a row, and may start with `+65`. TutorReach removes the formatting and Singapore country code before displaying or saving the number. For example, `9123 4567`, `9123 - 4567` and `+65 9123-4567` are all stored as `91234567`.
 * An international phone number must start with `+` and its country code, and contain between 3 and 15 digits. TutorReach removes spaces and hyphens but retains the leading `+` and country code. For example, `+44 7700-900123` is stored as `+447700900123`.
 * Student and guardian phone numbers saved by v1.4 remain available after upgrading. New or edited numbers must follow the rules above.
 * Extra spaces between the words of a name are removed, so `n/Ann   Lee` is saved as `Ann Lee`. This also applies to guardian names and to `editstudent`.
