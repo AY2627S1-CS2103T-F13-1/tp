@@ -47,7 +47,7 @@ public class Phone {
             if (isAsciiDigit(currentCharacter)) {
                 digitCount++;
                 previousCharacterIsDigit = true;
-            } else if ((currentCharacter == ' ' || currentCharacter == '-') && previousCharacterIsDigit) {
+            } else if ((currentCharacter == ' ' || currentCharacter == '-') && digitCount > 0) {
                 previousCharacterIsDigit = false;
             } else {
                 return false;
