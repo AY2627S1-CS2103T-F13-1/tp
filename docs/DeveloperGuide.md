@@ -12,6 +12,11 @@ title: Developer Guide
 * TutorReach is based on the [AddressBook-Level3](https://se-education.org/addressbook-level3/) project created by the [SE-EDU initiative](https://se-education.org).
 * Libraries used: [JavaFX](https://openjfx.io/), [Jackson](https://github.com/FasterXML/jackson), [JUnit5](https://github.com/junit-team/junit5)
 
+Notable uses of AI:
+
+* Claude Code and Codex were used to create test cases for alpha and beta testing.
+* Claude Code and Codex were used for general development.
+
 --------------------------------------------------------------------------------------------------------------------
 
 ## **Setting up, getting started**
