@@ -16,6 +16,8 @@ public class Name {
                     + "Apostrophes and hyphens must appear between letters or digits; periods may appear after "
                     + "letters or digits; commas may end name parts; parentheses must enclose name parts; and @, "
                     + "s/o, d/o, a/l and a/p may appear between name parts. Names should not be blank.";
+    // an apostrophe or hyphen at either end of a keyword, which is part of a name cut at its punctuation, as in o'
+    private static final String KEYWORD_EDGE_PUNCTUATION_REGEX = "^['’-]|['’-]$";
 
     public final String fullName;
 
@@ -73,13 +75,15 @@ public class Name {
     }
 
     /**
-     * Returns true if {@code test} is a name part or a supported connector that can be used as a search keyword.
+     * Returns true if {@code test} is a name part, a name part cut at its apostrophe or hyphen, or a supported
+     * connector, and so can be used as a search keyword.
      */
     public static boolean isValidSearchKeyword(String test) {
         requireNonNull(test);
         return isNameConnector(test)
                 || validateNamePart(test, false).isValid()
-                || validateNamePart(test, true).isValid();
+                || validateNamePart(test, true).isValid()
+                || isValidNamePartContent(test.replaceAll(KEYWORD_EDGE_PUNCTUATION_REGEX, ""));
     }
 
     private static NamePartValidation validateNamePart(String part, boolean isInsideParentheses) {
