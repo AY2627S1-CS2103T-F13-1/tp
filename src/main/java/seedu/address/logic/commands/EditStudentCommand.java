@@ -69,13 +69,13 @@ public class EditStudentCommand extends Command {
     @Override
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
-        List<Student> lastShownList = model.getFilteredStudentList();
+        List<Student> lastShownStudents = model.getFilteredStudentList();
 
-        if (index.getZeroBased() >= lastShownList.size()) {
+        if (index.getZeroBased() >= lastShownStudents.size()) {
             throw new CommandException(Messages.MESSAGE_INVALID_STUDENT_DISPLAYED_INDEX);
         }
 
-        Student studentToEdit = lastShownList.get(index.getZeroBased());
+        Student studentToEdit = lastShownStudents.get(index.getZeroBased());
         Student editedStudent;
         try {
             editedStudent = createEditedStudent(studentToEdit, editStudentDescriptor);

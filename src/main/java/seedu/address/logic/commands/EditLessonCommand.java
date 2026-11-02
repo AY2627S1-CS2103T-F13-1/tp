@@ -66,13 +66,13 @@ public class EditLessonCommand extends Command {
     @Override
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
-        List<Lesson> lastShownList = model.getFilteredLessonList();
+        List<Lesson> lastShownLessons = model.getFilteredLessonList();
 
-        if (index.getZeroBased() >= lastShownList.size()) {
+        if (index.getZeroBased() >= lastShownLessons.size()) {
             throw new CommandException(Messages.MESSAGE_INVALID_LESSON_DISPLAYED_INDEX);
         }
 
-        Lesson lessonToEdit = lastShownList.get(index.getZeroBased());
+        Lesson lessonToEdit = lastShownLessons.get(index.getZeroBased());
         Lesson editedLesson;
         try {
             editedLesson = createEditedLesson(lessonToEdit, editLessonDescriptor);
