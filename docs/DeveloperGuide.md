@@ -311,6 +311,8 @@ Because an end time earlier than the start time means a lesson past midnight, sw
 
 The `editstudent` and `editlesson` commands replace immutable domain objects without changing their stable UUIDs.
 
+Support for digits in student and guardian name fields is intentional. It accommodates tutor-defined class-level, cohort, or year identifiers, such as `John P5` or `Aiden 2026`. Validation remains restricted to the documented character set, and digit-containing identifiers remain searchable using `findstudent`.
+
 1. The command parser reads a positive displayed-list index and one or more optional fields. It rejects repeated prefixes, missing edit fields and invalid values. For `editstudent`, a blank `p/` removes the student's phone, while blank `gn/ gp/` values remove the guardian. If the student already has a guardian, `gn/` and `gp/` can be edited independently, and the omitted detail is kept. Adding a guardian requires both values, while supplying only one blank guardian field is rejected.
 1. The command resolves the index against the corresponding filtered list, so it edits the item the user can see rather than the same position in the complete list.
 1. The command creates a replacement object using the supplied values, `null` for an optional contact being removed, the target's values for unspecified fields and the target's UUID. The student model rejects a replacement with no contact number.
