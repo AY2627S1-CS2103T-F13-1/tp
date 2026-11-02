@@ -3,7 +3,6 @@ package seedu.address.model.student;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.AppUtil.checkArgument;
 
-import java.text.Normalizer;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
@@ -58,7 +57,7 @@ public final class Student {
     }
 
     /**
-     * Returns whether the names match ignoring case and extra spaces, and at least one phone
+     * Returns whether the names have the same letters, and at least one phone
      * matches across either student's own or guardian's number. This is a duplicate check,
      * not value equality; siblings with different names are allowed.
      */
@@ -70,14 +69,16 @@ public final class Student {
                 || (guardian != null && other.hasPhone(guardian.getPhone()));
     }
 
-    /** Returns whether the names match ignoring case and extra spaces, whatever the phone numbers. */
+    /**
+     * Returns whether the names have the same letters, ignoring case and everything else, such as spaces,
+     * punctuation and digits, whatever the phone numbers.
+     */
     public boolean hasSameName(Student other) {
         return other != null && normalizedName().equals(other.normalizedName());
     }
 
     private String normalizedName() {
-        return Normalizer.normalize(name.fullName, Normalizer.Form.NFC)
-                .trim().replaceAll(" +", " ").toLowerCase(Locale.ROOT);
+        return name.fullName.toLowerCase(Locale.ROOT).replaceAll("[^a-z]", "");
     }
 
     private boolean hasPhone(Phone number) {

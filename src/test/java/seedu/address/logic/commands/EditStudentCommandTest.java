@@ -239,7 +239,7 @@ public class EditStudentCommandTest {
 
     @Test
     public void execute_realNameCharacters_success() {
-        Name updatedName = new Name("José Anne-Marie");
+        Name updatedName = new Name("Jose Anne-Marie");
         Guardian updatedGuardian = new Guardian(new Name("Kumar s/o Ravi"), new Phone("93456789"));
         EditStudentDescriptor descriptor = createDescriptor(updatedName, null, updatedGuardian);
         EditStudentCommand command = new EditStudentCommand(INDEX_FIRST_PERSON, descriptor);

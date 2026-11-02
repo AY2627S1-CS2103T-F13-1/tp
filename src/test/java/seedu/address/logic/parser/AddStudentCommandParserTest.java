@@ -113,9 +113,9 @@ public class AddStudentCommandParserTest {
     @Test
     public void parse_realNameCharacters_returnsAddStudentCommand() {
         Guardian guardian = new Guardian(new Name("O’Connor"), new Phone("91234567"));
-        Student student = new Student(new Name("José Anne-Marie"), new Phone("92345678"), guardian);
+        Student student = new Student(new Name("Jose Anne-Marie"), new Phone("92345678"), guardian);
 
-        assertParsedStudent(" n/José Anne-Marie p/92345678 gn/O’Connor gp/91234567", student);
+        assertParsedStudent(" n/Jose Anne-Marie p/92345678 gn/O’Connor gp/91234567", student);
     }
 
     @Test

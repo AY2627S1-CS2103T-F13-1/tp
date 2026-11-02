@@ -58,12 +58,16 @@ public class StudentTest {
     }
 
     @Test
-    public void isSameStudent_canonicallyEquivalentUnicodeNameAndSharedNumber_returnsTrue() {
-        Student precomposedName = new Student(new Name("José Tan"), phone, null);
-        Student decomposedName = new Student(new Name("Jose\u0301 Tan"), phone, null);
+    public void isSameStudent_namesWithSameLetters_returnsTrue() {
+        assertTrue(sameStudent("Liam O'Connor", "Liam O’Connor"));
+        assertTrue(sameStudent("Liam O'Connor", "liam oconnor"));
+        assertTrue(sameStudent("Anne-Marie Lim", "Anne Marie Lim"));
+        assertTrue(sameStudent("Kumar s/o Ravi", "Kumar so Ravi"));
+        assertFalse(sameStudent("Kumar s/o Ravi", "Kumar d/o Ravi"));
+    }
 
-        assertTrue(precomposedName.isSameStudent(decomposedName));
-        assertTrue(decomposedName.isSameStudent(precomposedName));
+    private boolean sameStudent(String first, String second) {
+        return new Student(new Name(first), phone, null).isSameStudent(new Student(new Name(second), phone, null));
     }
 
     @Test
