@@ -37,8 +37,10 @@ public class NameTest {
         assertFalse(Name.isValidName("s/o Ravi")); // connector without a preceding name part
         assertFalse(Name.isValidName("Kumar s/o d/o Ravi")); // consecutive connectors
         assertFalse(Name.isValidName("Peter a/b Paul")); // unsupported slash connector
-        assertFalse(Name.isValidName("\u0301Jose")); // combining mark without a preceding letter
-        assertFalse(Name.isValidName("1\u0301 Jose")); // combining mark after a digit
+        assertFalse(Name.isValidName("José Tan")); // accented letter
+        assertFalse(Name.isValidName("Jose\u0301 Tan")); // decomposed accented letter
+        assertFalse(Name.isValidName("का")); // letters from another script
+        assertFalse(Name.isValidName("李小龍"));
         assertFalse(Name.isValidName(". Peter")); // period without a preceding name character
         assertFalse(Name.isValidName(", Peter")); // comma without a preceding name character
         assertFalse(Name.isValidName("Peter.. Tan")); // consecutive periods
@@ -60,11 +62,6 @@ public class NameTest {
         assertTrue(Name.isValidName("peter the 2nd")); // alphanumeric characters
         assertTrue(Name.isValidName("Capital Tan")); // with capital letters
         assertTrue(Name.isValidName("David Roger Jackson Ray Jr 2nd")); // long names
-        assertTrue(Name.isValidName("José Tan")); // accented letter
-        assertTrue(Name.isValidName("Jose\u0301 Tan")); // decomposed accented letter
-        assertTrue(Name.isValidName("का")); // combining spacing mark
-        assertTrue(Name.isValidName("A⃝")); // enclosing combining mark
-        assertTrue(Name.isValidName("李小龍")); // letters from another script
         assertTrue(Name.isValidName("Anne-Marie Lim")); // internal hyphen
         assertTrue(Name.isValidName("O'Connor")); // straight apostrophe
         assertTrue(Name.isValidName("O’Connor")); // curly apostrophe
@@ -95,8 +92,8 @@ public class NameTest {
         assertFalse(Name.isValidSearchKeyword("o''")); // repeated punctuation is a typo, even at an edge
         assertFalse(Name.isValidSearchKeyword("--ann"));
         assertFalse(Name.isValidSearchKeyword("Anne--Marie"));
+        assertFalse(Name.isValidSearchKeyword("José"));
 
-        assertTrue(Name.isValidSearchKeyword("José"));
         assertTrue(Name.isValidSearchKeyword("Anne-Marie"));
         assertTrue(Name.isValidSearchKeyword("O'Connor"));
         assertTrue(Name.isValidSearchKeyword("s/o"));

@@ -25,7 +25,7 @@ public class StudentStorageTest {
     public void saveAndReload_preservesAllContactCombinationsAndDeletions() throws Exception {
         AddressBook book = new AddressBook();
         Guardian guardian = new Guardian(new Name("O'Connor"), new Phone("91234567"));
-        Student jose = new Student(new Name("José Anne-Marie"), null, guardian);
+        Student jose = new Student(new Name("Jose Anne-Marie"), null, guardian);
         book.addStudent(jose);
         book.addStudent(new Student(new Name("Chloe Tan"), new Phone("88888888"), null));
         book.addStudent(new Student(new Name("Kumar s/o Ravi"), new Phone("99999999"), guardian));

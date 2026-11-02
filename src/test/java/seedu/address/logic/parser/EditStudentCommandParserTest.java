@@ -164,9 +164,9 @@ public class EditStudentCommandParserTest {
     public void parse_realNameCharacters_returnsEditStudentCommand() {
         Index index = Index.fromOneBased(1);
         Guardian guardian = new Guardian(new Name("O'Connor"), new Phone("91234567"));
-        EditStudentDescriptor descriptor = createDescriptor(new Name("José Anne-Marie"), null, guardian);
+        EditStudentDescriptor descriptor = createDescriptor(new Name("Jose Anne-Marie"), null, guardian);
 
-        assertParseSuccess(parser, "1 n/José Anne-Marie gn/O'Connor gp/91234567",
+        assertParseSuccess(parser, "1 n/Jose Anne-Marie gn/O'Connor gp/91234567",
                 new EditStudentCommand(index, descriptor));
     }
 

@@ -154,8 +154,8 @@ public class FindStudentCommandParserTest {
 
     @Test
     public void parse_realNameCharacters_returnsFindStudentCommand() {
-        assertParseSuccess(parser, " n/José Anne-Marie s/o", new FindStudentCommand(
-                new StudentContainsKeywordsPredicate(List.of("José", "Anne-Marie", "s/o"), List.of())));
+        assertParseSuccess(parser, " n/Jose Anne-Marie s/o", new FindStudentCommand(
+                new StudentContainsKeywordsPredicate(List.of("Jose", "Anne-Marie", "s/o"), List.of())));
         assertParseSuccess(parser, " gn/O'Neil", new FindStudentCommand(
                 new StudentContainsKeywordsPredicate(List.of(), List.of("O'Neil"))));
         assertParseSuccess(parser, " n/Ng @ S.", new FindStudentCommand(

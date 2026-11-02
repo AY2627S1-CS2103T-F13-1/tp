@@ -12,7 +12,7 @@ import java.util.Locale;
 public class Name {
 
     public static final String MESSAGE_CONSTRAINTS =
-            "Names should use letters from any language, digits, spaces and common name punctuation. "
+            "Names should use English letters, digits, spaces and common name punctuation. "
                     + "Apostrophes and hyphens must appear between letters or digits; periods may appear after "
                     + "letters or digits; commas may end name parts; parentheses must enclose name parts; and @, "
                     + "s/o, d/o, a/l and a/p may appear between name parts. Names should not be blank.";
@@ -114,43 +114,33 @@ public class Name {
 
     private static boolean isValidNamePartContent(String part) {
         boolean canEndPart = false;
-        boolean canTakeCombiningMark = false;
         boolean canTakePunctuation = false;
         for (int offset = 0; offset < part.length();) {
             int codePoint = part.codePointAt(offset);
             int codePointLength = Character.charCount(codePoint);
-            if (Character.isLetter(codePoint)) {
+            if (isEnglishLetter(codePoint)) {
                 canEndPart = true;
-                canTakeCombiningMark = true;
                 canTakePunctuation = true;
             } else if (codePoint >= '0' && codePoint <= '9') {
                 canEndPart = true;
-                canTakeCombiningMark = false;
                 canTakePunctuation = true;
-            } else if (isCombiningMark(codePoint)) {
-                if (!canTakeCombiningMark) {
-                    return false;
-                }
             } else if (codePoint == '\'' || codePoint == '’' || codePoint == '-') {
                 if (!canTakePunctuation) {
                     return false;
                 }
                 canEndPart = false;
-                canTakeCombiningMark = false;
                 canTakePunctuation = false;
             } else if (codePoint == '.') {
                 if (!canTakePunctuation) {
                     return false;
                 }
                 canEndPart = true;
-                canTakeCombiningMark = false;
                 canTakePunctuation = false;
             } else if (codePoint == ',') {
                 if (!canTakePunctuation || offset + codePointLength != part.length()) {
                     return false;
                 }
                 canEndPart = true;
-                canTakeCombiningMark = false;
                 canTakePunctuation = false;
             } else {
                 return false;
@@ -160,11 +150,8 @@ public class Name {
         return canEndPart;
     }
 
-    private static boolean isCombiningMark(int codePoint) {
-        int type = Character.getType(codePoint);
-        return type == Character.NON_SPACING_MARK
-                || type == Character.COMBINING_SPACING_MARK
-                || type == Character.ENCLOSING_MARK;
+    private static boolean isEnglishLetter(int codePoint) {
+        return (codePoint >= 'a' && codePoint <= 'z') || (codePoint >= 'A' && codePoint <= 'Z');
     }
 
     private static boolean isNameConnector(String part) {
