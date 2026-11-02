@@ -65,7 +65,7 @@ TutorReach is a **desktop app for independent private tutors who teach secondary
 
 * Each prefix can be supplied at most once. Repeated prefixes are rejected.
 
-* A word of one or two lower-case letters followed by `/`, such as `w/` or `x/`, or a prefix typed in capitals, such as `N/`, is read as a prefix. Such a word therefore cannot be part of a value, even where `/` is allowed, and if the command does not take that prefix, the error names it. For example, in a lesson name, write `Chem with Lab` instead of `Chem w/ Lab`. Longer words are fine, as in `Physics/Chem`. The supported name connectors `s/o`, `d/o`, `a/l` and `a/p` are exceptions and can be used in student, guardian and lesson names, as in `Math d/o Science`.
+* A word of one or two lower-case letters followed by `/`, such as `w/` or `x/`, or a prefix typed in capitals, such as `N/`, is read as a prefix. Such a word therefore cannot be part of a value, even where `/` is allowed. If `addstudent`, `editstudent`, `addlesson` or `findstudent` does not take that prefix, the error names it; other commands reject the word, but their error may only show the command's format. For example, in a lesson name, write `Chem with Lab` instead of `Chem w/ Lab`. Longer words are fine, as in `Physics/Chem`. The supported name connectors `s/o`, `d/o`, `a/l` and `a/p` are exceptions and can be used in student, guardian and lesson names, as in `Math d/o Science`.
 
 * Extraneous parameters for commands that take no parameters, such as `help` and `exit`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
@@ -176,10 +176,10 @@ Format: `findstudent [n/NAME_KEYWORDS...] [gn/GUARDIAN_NAME_KEYWORDS...] [p/PHON
 
 * At least one of `n/`, `gn/` and `p/` must be given, and each can be given at most once.
 * `n/` searches students' own names, and `gn/` searches their guardians' names.
-* `p/` takes one phone number, or part of one, and searches both the student's own phone number and their guardian's phone number. You can type the number as it appears elsewhere: spaces and hyphens are ignored, and a full number may start with a country code of up to three digits, such as `+65`. For example, `p/9123 4567` and `p/+65 9123-4567` both find `91234567`.
+* `p/` takes one phone number, or part of one, and searches both the student's own phone number and their guardian's phone number. You can type the number as it appears elsewhere: spaces and hyphens are ignored, and a full Singapore number may start with `+65`. For example, `p/9123 4567` and `p/+65 9123-4567` both find `91234567`.
 * The search is case-insensitive, and a keyword can match any part of a name or number; for example, `aid` matches `Aiden` and `4567` matches `91234567`.
 * Name searches also ignore accents and the style of apostrophe, so `jose` finds `José` and `O’Connor` finds `O'Connor`.
-* Name keywords may contain the same letters, digits, apostrophes, hyphens and connectors accepted in student and guardian names.
+* Name keywords may contain the same letters, digits, apostrophes, hyphens and connectors accepted in student and guardian names. A keyword may also start or end with one apostrophe or hyphen, so `o'` finds `O'Connor` and `-marie` finds `Anne-Marie`.
 * Within `n/` or `gn/`, a student needs to match only one of the keywords; for example, `n/aid chl` finds both `Aiden Tan` and `Chloe Lim`.
 * If more than one prefix is given, a student must match all of them.
 * Each search replaces the current student filter.
